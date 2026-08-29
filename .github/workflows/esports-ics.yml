@@ -22,6 +22,8 @@ jobs:
           python-version: "3.12"
       - name: Regénérer les .ics
         run: python home/calendars/esports/build_ics.py
+        env:
+          PANDASCORE_TOKEN: ${{ secrets.PANDASCORE_TOKEN }}
       - name: Commit si changement réel
         run: |
           git config user.name "github-actions[bot]"

@@ -22,5 +22,20 @@
       "leagueIds": ["113464388705111224", "98767991325878492", "98767975604431411"],
       "label": "LoL International"
     }
+  },
+  "cs2": {
+    "main": {
+      "source": "pandascore",
+      "videogame": "csgo",
+      "label": "CS2",
+      "team_ids": [3455],
+      "league_ids": [4161, 4568, 5365, 5442, 4163, 4992, 5445, 5285],
+      "_doc": "team 3455 = Vitality ; leagues : IEM 4161, ESL Pro League 4568, PGL 5365, PGL Masters 5442, PGL Major 4163, BLAST.tv Major 4992, StarLadder Major 5445, Perfect World Major 5285",
+      "manual_events": [
+        { "startDate": "2026-10-03", "endDate": "2026-10-11", "title": "ESL Pro League S24 — Katowice" },
+        { "startDate": "2026-11-02", "endDate": "2026-11-08", "title": "IEM Beijing 2026" },
+        { "startDate": "2026-11-25", "endDate": "2026-12-13", "title": "PGL Major Singapour 2026" }
+      ]
+    }
   }
 }

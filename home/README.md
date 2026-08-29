@@ -67,8 +67,20 @@ que s'il y a un vrai changement (DTSTAMP stable = DTSTART, pas l'heure de géné
 Abonnement Google Calendar (une fois pour toutes) :
 `https://raw.githubusercontent.com/frgrz-pro/portal6/main/home/calendars/esports/ics/lol/lec.ics`
 
-Autres jeux (CS2 Vitality, RL KC/M8/Vitality, CoD M8) : brancher PandaScore tier
-gratuit sur le même générateur, même logique par ligue/équipes.
+**CS2 (fait le 2026-08-29)** : source **PandaScore** (`source: "pandascore"` dans
+`leagues.json`, token gratuit dans `PANDASCORE_TOKEN` — `.env` local + secret GitHub
+Actions). Un seul calendrier `ics/cs2/main.ics` qui agrège :
+- tous les matchs à venir de **Vitality** (team id 3455), quel que soit le tournoi ;
+- les **phases finales** (stages playoff/final/knockout, hors qualifiers) des circuits
+  suivis : IEM, ESL Pro League, PGL/PGL Masters et les 4 organisateurs de Majors —
+  brackets TBD inclus, mis à jour en place quand les équipes se qualifient ;
+- des **placeholders manuels journée-entière** pour les gros événements annoncés mais
+  pas encore dans PandaScore (EPL S24 Katowice 3-11/10, IEM Beijing 2-8/11, PGL Major
+  Singapour 25/11-13/12) — auto-supprimés dès que l'API charge le bracket réel de
+  l'événement. PandaScore ne charge les matchs CS que peu avant chaque événement :
+  le flux se densifie tout seul à l'approche des tournois.
+
+Reste : RL (KC/M8/Vitality) et CoD (M8), même mécanique PandaScore.
 
 Côté TRMNL : plugin **Google Calendar** officiel (OAuth) → le calendrier « sport »
 s'affiche tel quel.
