@@ -1,5 +1,17 @@
 {
   "lol": {
-    "lec": { "leagueId": "98767991302996019", "label": "LEC", "teams": ["KC", "G2"] }
+    "lec": {
+      "leagueId": "98767991302996019",
+      "label": "LEC",
+      "teams": ["KC", "G2"],
+      "manual_events": [
+        { "start": "2026-09-05T10:00:00Z", "title": "TBD vs TBD — LEC Playoffs (Madrid)" },
+        { "start": "2026-09-05T15:00:00Z", "title": "TBD vs TBD — LEC Playoffs (Madrid)" },
+        { "start": "2026-09-06T15:00:00Z", "title": "TBD vs TBD — LEC Playoffs (Madrid)" },
+        { "start": "2026-09-18T15:00:00Z", "title": "TBD vs TBD — LEC Finals (Nice, J1)" },
+        { "start": "2026-09-19T15:00:00Z", "title": "TBD vs TBD — LEC Finals (Nice, J2)" },
+        { "start": "2026-09-20T15:00:00Z", "title": "TBD vs TBD — LEC Grande Finale (Nice)" }
+      ]
+    }
   }
 }

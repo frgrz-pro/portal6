@@ -50,8 +50,15 @@ par équipe crée des doublons dans l'agenda dès que deux équipes suivies se r
   est mis à jour en place (pas dupliqué) quand les équipes se définissent.
 
 Validé le 2026-08-29 sur la LCK (playoffs programmés : `TBD vs Gen.G` du 1/09 →
-`TBD vs TBD — Finals` du 13/09). LEC seul actif dans `leagues.json` pour l'instant ;
-les playoffs LEC d'été apparaîtront quand Riot les programmera.
+`TBD vs TBD — Finals` du 13/09). LEC seul actif dans `leagues.json` pour l'instant.
+
+**Placeholders manuels** (`manual_events` dans `leagues.json`) : quand des dates de
+phases finales sont annoncées publiquement mais pas encore chargées dans l'API Riot,
+on les saisit à la main ; elles s'effacent automatiquement dès que l'API expose le
+bracket officiel. En place pour les playoffs LEC Summer 2026 : Madrid 5-6/09 (Bo5 à
+12h et 17h CEST le samedi, 17h le dimanche), finales à Nice 18-20/09 (Bo5 à 17h) —
+source : annonce lolesports « 2026 LEC Summer: Format, Roadtrips, Tickets ». Jours
+intermédiaires éventuels non annoncés, à compléter si besoin.
 
 **Hébergement** : portal6 étant public sur GitHub, les .ics générés sont **commités**
 dans `calendars/esports/ics/<jeu>/<ligue>.ics` et servis par raw.githubusercontent.com.

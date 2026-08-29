@@ -11,6 +11,11 @@ Filtrage par ligue (clé "teams" de leagues.json, codes d'équipe lolesports) :
   quand les équipes se définissent.
 Sans clé "teams" : tous les matchs de la ligue.
 
+Placeholders manuels (clé "manual_events" : [{start, title, hours?}]) : dates de phases
+finales annoncées publiquement mais pas encore chargées dans l'API Riot. Ils ne sont
+émis QUE tant que l'API n'a aucun match de phase finale à venir pour la ligue — dès que
+Riot programme le bracket, les données officielles les remplacent automatiquement.
+
 Usage :
     python build_ics.py [--out DIR]        # génère <out>/lol/<slug>.ics pour chaque ligue de leagues.json
 """
@@ -90,11 +95,36 @@ def event_to_vevent(ev: dict, label: str, now: datetime) -> str | None:
     ])
 
 
+def manual_vevent(me: dict, slug: str) -> str:
+    start = datetime.strptime(me["start"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    end = start + timedelta(hours=me.get("hours", 3))
+    stamp = start.strftime("%Y%m%dT%H%M%SZ")
+    return "\n".join([
+        "BEGIN:VEVENT",
+        f"UID:manual-{slug}-{stamp}@portal6-esports-ics",
+        f"DTSTAMP:{stamp}",
+        f"DTSTART:{stamp}",
+        f"DTEND:{end.strftime('%Y%m%dT%H%M%SZ')}",
+        f"SUMMARY:{ics_escape(me['title'])}",
+        "DESCRIPTION:Placeholder (dates annoncées) — sera remplacé par le planning officiel Riot",
+        "END:VEVENT",
+    ])
+
+
 def build_calendar(slug: str, cfg: dict, now: datetime) -> str:
     team_codes = set(cfg.get("teams") or [])
     events = fetch_schedule(cfg["leagueId"])
     vevents = [v for ev in events
                if wanted(ev, team_codes) and (v := event_to_vevent(ev, cfg["label"], now))]
+    api_has_bracket = any(
+        ev.get("state") != "completed"
+        and not REGULAR_SEASON_RE.match(ev.get("blockName") or "")
+        for ev in events
+    )
+    if not api_has_bracket:
+        vevents += [manual_vevent(me, slug) for me in cfg.get("manual_events", [])
+                    if datetime.strptime(me["start"], "%Y-%m-%dT%H:%M:%SZ")
+                       .replace(tzinfo=timezone.utc) > now - timedelta(days=KEEP_PAST_DAYS)]
     body = "\n".join([
         "BEGIN:VCALENDAR",
         "VERSION:2.0",

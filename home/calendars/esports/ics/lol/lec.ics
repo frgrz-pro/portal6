@@ -11,4 +11,52 @@ DTEND:20260829T170000Z
 SUMMARY:SK Gaming vs Karmine Corp — LEC Week 6
 DESCRIPTION:LEC · Week 6 · Bo3
 END:VEVENT
+BEGIN:VEVENT
+UID:manual-lec-20260905T100000Z@portal6-esports-ics
+DTSTAMP:20260905T100000Z
+DTSTART:20260905T100000Z
+DTEND:20260905T130000Z
+SUMMARY:TBD vs TBD — LEC Playoffs (Madrid)
+DESCRIPTION:Placeholder (dates annoncées) — sera remplacé par le planning officiel Riot
+END:VEVENT
+BEGIN:VEVENT
+UID:manual-lec-20260905T150000Z@portal6-esports-ics
+DTSTAMP:20260905T150000Z
+DTSTART:20260905T150000Z
+DTEND:20260905T180000Z
+SUMMARY:TBD vs TBD — LEC Playoffs (Madrid)
+DESCRIPTION:Placeholder (dates annoncées) — sera remplacé par le planning officiel Riot
+END:VEVENT
+BEGIN:VEVENT
+UID:manual-lec-20260906T150000Z@portal6-esports-ics
+DTSTAMP:20260906T150000Z
+DTSTART:20260906T150000Z
+DTEND:20260906T180000Z
+SUMMARY:TBD vs TBD — LEC Playoffs (Madrid)
+DESCRIPTION:Placeholder (dates annoncées) — sera remplacé par le planning officiel Riot
+END:VEVENT
+BEGIN:VEVENT
+UID:manual-lec-20260918T150000Z@portal6-esports-ics
+DTSTAMP:20260918T150000Z
+DTSTART:20260918T150000Z
+DTEND:20260918T180000Z
+SUMMARY:TBD vs TBD — LEC Finals (Nice\, J1)
+DESCRIPTION:Placeholder (dates annoncées) — sera remplacé par le planning officiel Riot
+END:VEVENT
+BEGIN:VEVENT
+UID:manual-lec-20260919T150000Z@portal6-esports-ics
+DTSTAMP:20260919T150000Z
+DTSTART:20260919T150000Z
+DTEND:20260919T180000Z
+SUMMARY:TBD vs TBD — LEC Finals (Nice\, J2)
+DESCRIPTION:Placeholder (dates annoncées) — sera remplacé par le planning officiel Riot
+END:VEVENT
+BEGIN:VEVENT
+UID:manual-lec-20260920T150000Z@portal6-esports-ics
+DTSTAMP:20260920T150000Z
+DTSTART:20260920T150000Z
+DTEND:20260920T180000Z
+SUMMARY:TBD vs TBD — LEC Grande Finale (Nice)
+DESCRIPTION:Placeholder (dates annoncées) — sera remplacé par le planning officiel Riot
+END:VEVENT
 END:VCALENDAR
