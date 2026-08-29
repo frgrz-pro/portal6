@@ -12,6 +12,11 @@
         { "start": "2026-09-19T15:00:00Z", "title": "TBD vs TBD — LEC Finals (Nice, J2)" },
         { "start": "2026-09-20T15:00:00Z", "title": "TBD vs TBD — LEC Grande Finale (Nice)" }
       ]
+    },
+    "lck": {
+      "leagueId": "98767991310872058",
+      "label": "LCK",
+      "teams": ["T1", "KT", "GEN", "HLE", "DK"]
     }
   }
 }
