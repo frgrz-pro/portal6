@@ -11,6 +11,10 @@ Filtrage par ligue (clé "teams" de leagues.json, codes d'équipe lolesports) :
   quand les équipes se définissent.
 Sans clé "teams" : tous les matchs de la ligue.
 
+Un calendrier peut agréger plusieurs compétitions (clé "leagueIds", liste — ex.
+« international » : First Stand + MSI + Worlds) ; le libellé de chaque event vient
+alors de la compétition du match.
+
 Placeholders manuels (clé "manual_events" : [{start, title, hours?}]) : dates de phases
 finales annoncées publiquement mais pas encore chargées dans l'API Riot. Ils ne sont
 émis QUE tant que l'API n'a aucun match de phase finale à venir pour la ligue — dès que
@@ -113,9 +117,12 @@ def manual_vevent(me: dict, slug: str) -> str:
 
 def build_calendar(slug: str, cfg: dict, now: datetime) -> str:
     team_codes = set(cfg.get("teams") or [])
-    events = fetch_schedule(cfg["leagueId"])
+    league_ids = cfg.get("leagueIds") or [cfg["leagueId"]]
+    events = [ev for lid in league_ids for ev in fetch_schedule(lid)]
+    # plusieurs compétitions dans un même calendrier : le libellé vient du match lui-même
     vevents = [v for ev in events
-               if wanted(ev, team_codes) and (v := event_to_vevent(ev, cfg["label"], now))]
+               if wanted(ev, team_codes)
+               and (v := event_to_vevent(ev, (ev.get("league") or {}).get("name") or cfg["label"], now))]
     api_has_bracket = any(
         ev.get("state") != "completed"
         and not REGULAR_SEASON_RE.match(ev.get("blockName") or "")
