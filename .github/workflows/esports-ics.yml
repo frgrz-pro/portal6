@@ -1,0 +1,35 @@
+name: esports-ics
+
+on:
+  schedule:
+    - cron: "23 5,11,17,23 * * *" # 4x/jour UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: esports-ics
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Regénérer les .ics
+        run: python home/calendars/esports/build_ics.py
+      - name: Commit si changement réel
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add home/calendars/esports/ics
+          if git diff --cached --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "esports-ics: refresh"
+            git push
+          fi

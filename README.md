@@ -1,8 +1,12 @@
 # Portal6
 
-Monorepo perso autour de la musique : référentiel unifié de la bibliothèque (Spotify + fichiers locaux),
-outils d'analyse/rationalisation des playlists, et à terme web radio privée + sync multi-plateformes
-(iTunes / Spotify / YouTube).
+Monorepo perso, deux domaines :
+
+- **Portal6-music** : référentiel unifié de la bibliothèque (Spotify + fichiers locaux),
+  outils d'analyse/rationalisation des playlists, et à terme web radio privée + sync
+  multi-plateformes (iTunes / Spotify / YouTube) — tout ce README ci-dessous.
+- **Portal6-home** (`home/`) : domotique & affichage e-ink TRMNL — calendriers sport/eSport,
+  météo, marées, courses/recettes, état Zigbee via Home Assistant — cf. [home/README.md](home/README.md).
 
 Le domaine musique (**Portal6-music**) a deux faces : la partie **software** (ETL, DB, analyses —
 tout ce qui est décrit ci-dessous) et la partie **hardware** (`hardware/` : transformation d'un
@@ -25,7 +29,8 @@ Portal6/
 │   └── library_scan.csv       # scan des fichiers locaux (produit par scan_library.py)
 ├── docs/                      # notes d'analyse et décisions
 ├── exports/                   # extended streaming history Spotify (quand reçu)
-└── hardware/                  # projet Radio : Brandt RK 711S → web-radio (notes de design + BOM)
+├── hardware/                  # projet Radio : Brandt RK 711S → web-radio (notes de design + BOM)
+└── home/                      # Portal6-home : TRMNL, domotique, calendriers, courses/recettes
 ```
 
 ## Setup d'une nouvelle machine
