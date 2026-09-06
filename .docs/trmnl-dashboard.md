@@ -125,6 +125,12 @@ nécessaire, le repli est un dépôt privé lu via `polling_headers` (en-tête
 champ personnalisé (`polling_url: "##{{ payload_url }}"`), dont la valeur vit dans
 l'instance TRMNL — un `trmnlp push` ne l'écrase donc pas.
 
+⚠️ **La syntaxe est `{{ champ }}`, pas `##{{ champ }}`.** La doc TRMNL note les
+variables `##{{ api_key }}` dans ses exemples de polling URL ; le `##` est un artefact
+de notation, pas de la syntaxe. Poussé tel quel, il est pris **littéralement** et
+l'appel échoue avec `the url is not a complete http(s) url` — l'interpolation, elle,
+avait bien eu lieu. Constaté le 2026-09-06 après un premier push erroné.
+
 ⚠️ **Piège de l'URL du gist.** Le `raw_url` que renvoie l'API GitHub contient un SHA de
 version : `.../raw/d275acb…/dashboard.json`. Collée telle quelle, elle **fige l'écran sur
 la version du jour**, définitivement. C'est l'URL **sans SHA** qu'il faut —
