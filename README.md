@@ -25,8 +25,10 @@ Portal6/
 │           ├── spotify/       # extraction & enrichissement Spotify (API, Last.fm, ReccoBeats…)
 │           └── local/         # scan & dedup de la bibliothèque de fichiers locale
 ├── data/                      # VAULT : donnée brute qui hydrate la DB (gitignoré)
-│   ├── extract_spotify.xlsx   # export complet du Google Sheet « extract spotify »
-│   └── library_scan.csv       # scan des fichiers locaux (produit par scan_library.py)
+│   ├── music/
+│   │   ├── extract_spotify.xlsx   # export complet du Google Sheet « extract spotify »
+│   │   └── library_scan.csv       # scan des fichiers locaux (produit par scan_library.py)
+│   └── places/                # Takeout / KMZ du domaine Lieux
 ├── docs/                      # notes d'analyse et décisions
 ├── exports/                   # extended streaming history Spotify (quand reçu)
 ├── hardware/                  # projet Radio : Brandt RK 711S → web-radio (notes de design + BOM)
@@ -66,13 +68,13 @@ elle devient référentiel maître.
 ## Flow local — scanner la bibliothèque de fichiers
 
 ```bash
-python plugin/etl/music/local/scan_library.py "/mnt/m" --out data/library_scan.csv
+python plugin/etl/music/local/scan_library.py "/mnt/m" --out data/music/library_scan.csv
 ```
 
 Lecture seule (tags via mutagen, fallback nom de fichier). Puis `npm run build:db` pour
 intégrer et matcher contre les tracks Spotify.
 
-Dédoublonnage : `python plugin/etl/music/local/dedup_library.py --csv data/library_scan.csv`
+Dédoublonnage : `python plugin/etl/music/local/dedup_library.py --csv data/music/library_scan.csv`
 génère un rapport + un `.ps1` de quarantaine qui **déplace** (jamais ne supprime) les
 doublons de moindre qualité vers `_a_trier` — à relire avant exécution.
 
@@ -80,7 +82,7 @@ doublons de moindre qualité vers `_a_trier` — à relire avant exécution.
 
 L'extraction complète a déjà tourné : 14 017 titres, 110 playlists, enrichis à 95 % en genres
 (Last.fm), 84 % en pays (MusicBrainz), ~18 % en audio features (ReccoBeats, moisson interrompue).
-Le tout vit dans le Google Sheet « extract spotify », dont `data/extract_spotify.xlsx` est l'export.
+Le tout vit dans le Google Sheet « extract spotify », dont `data/music/extract_spotify.xlsx` est l'export.
 
 Scripts dans `plugin/etl/music/spotify/` :
 - `export_library.py` — export incrémental des playlists (résilient au quota API 24h, cache reprennable)
