@@ -13,10 +13,17 @@ les use cases et la fiche technique du TRMNL dans
   météo) et un point *en mer* proche (Open-Meteo renvoie des nulls sur une maille
   terrestre). Rappel : ce fichier est commité dans un repo public → lieu public
   uniquement, jamais le domicile.
-- [ ] **Marées : approximation ou source officielle ?** Aujourd'hui les heures de pleine
-  et basse mer sont *dérivées* du niveau d'eau horaire d'Open-Meteo (précision ~±15 min,
-  pas de coefficient). Si ça ne suffit pas → SHOM (officiel, payant) ou WorldTides
-  (crédits bon marché, clé API à mettre en secret).
+- [ ] **Marées : passer au SHOM ?** ⚠️ **Priorité relevée le 2026-09-06** après le
+  premier run sur le vrai spot (Côtes-d'Armor, baie de Saint-Malo). Les extremums
+  dérivés du niveau horaire d'Open-Meteo tombent à **5h25 / 7h13 / 5h25** d'intervalle
+  au lieu des ~6h10 d'un régime semi-diurne : le calcul est correct (vérifié à la main
+  sur la série brute), mais **l'échantillonnage horaire ne résout pas les pics aplatis**.
+  L'erreur réelle est plutôt de ±30-40 min que des ±15 min annoncés. Sur une côte à
+  12 m de marnage, ça ne suffit pas pour décider d'y aller. → viser le **SHOM**
+  (officiel, coefficients inclus) ou WorldTides.
+- [ ] **Température de l'eau douteuse.** Open-Meteo annonce ~21 °C sur ce point en
+  septembre, là où la Côte d'Émeraude est plutôt à 17-18 °C. Maille SST trop grossière
+  près de la côte. À recouper avant de faire confiance au chiffre affiché.
 - [ ] **Quels agendas dans l'écran semaine ?** Un code court par agenda est affiché à
   côté de l'heure (`P` perso, `S` sport…). À arrêter en même temps que la question
   « un agenda sport ou plusieurs » de [trmnl.md](trmnl.md).
