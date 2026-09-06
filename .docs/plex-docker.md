@@ -413,3 +413,13 @@ devient structurel au lieu d'être une simple consigne.
 **Reste armé, à désactiver** : `PlexUpdateService` (*Running/Automatic*) et la clé `Run`
 du registre. Tant qu'ils le sont, chaque reboot relance le Plex natif qui vient disputer
 32400 au conteneur. C'est la phase 7, qui devient de fait prioritaire.
+
+### 2026-09-06 (septies) — phase 5 : l'historique a survécu
+Contrôle chiffré base native ↔ base migrée : **3 693 `metadata_item_views`, 13 922
+`metadata_item_settings`, 13 311 items marqués vus, même `max(viewed_at)`** des deux côtés.
+Rien n'a été perdu au passage cross-OS.
+⚠️ Piège de vérification : `/status/sessions/history/all` ne renvoyait que **22** entrées —
+c'est la portée par défaut de l'endpoint, **pas** l'historique complet. Ne pas conclure à
+une perte sur cette base ; compter dans la table.
+Côté natif : clé `Run` **désarmée**, aucun processus PMS. Mais **`PlexUpdateService` tourne
+toujours en `Automatic`** — dernier reste de la phase 7.
