@@ -120,7 +120,12 @@ référentiel, pas de réparer l'existante.
    (`.m3u`/XML) à partir des `files` matchés → pas de doublon par construction, et les
    tags « bricolés » de l'ancienne bibliothèque ne sont plus le support des playlists.
 5. **Dédup** : local = déjà fait (quarantaine), à rejouer après chaque nouveau scan ;
-   Spotify = intra d'abord (677), inter par groupe de playlists ensuite.
+   Spotify = intra d'abord (677), inter par groupe de playlists ensuite. Les décisions
+   se prennent dans le portail (vue façon dupeGuru) et sortent en **plan JSON** que les
+   scripts appliquent en `--dry-run` d'abord — voir [portail-web.md](portail-web.md).
+6. **Propositions de juillet 2026** (onglets Monolithes / Cohérence du Sheet) : 26
+   monolithes → 215 volumes gravables, 366 titres hors profil avec reco. Revues dans le
+   portail, même mécanique de plan ; `create` ne touche jamais la playlist d'origine.
 
 **Prérequis, dans l'ordre** : (1) ré-export Spotify avec IDs → `platform_refs` ;
 (2) rebuild `music.db` sur un scan à périmètre tranché ; (3) scan étendu aux tags
@@ -162,3 +167,11 @@ d'IDs de titres (cause de `platform_refs` = 0) ; le scan courant a rétréci le 
 `m:/music` ; 52 % des fichiers sans artiste ; le scan ne lit pas genre/comment/grouping.
 Modèle de sync posé (DB pivot, maître par playlist, push dry-run, iTunes généré depuis
 la DB). Chiffre de dédup corrigé (2 049 groupes / 2 464 quarantainés).
+
+### 2026-09-06 (quinquies) — vues d'action du portail
+Doublons et propositions passent de « bouton qui affiche une commande » à de vraies
+listes de résolution avec plan de changements (détail dans
+[portail-web.md](portail-web.md)). Chiffres relus dans les sources : 2 049 groupes /
+2 464 copies / 12,4 Go dans le rapport daté ; 430 groupes dont la référence est dans
+le workspace ; 677 intra / 2 972 inter ; 26 monolithes / 215 volumes / 366 déplacements.
+Trois scripts consommateurs de plans restent à écrire (question ouverte du portail).

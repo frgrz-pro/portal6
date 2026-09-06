@@ -77,14 +77,21 @@
       <h3>Fichiers <code>M:\\music</code></h3>
       <p>${num(M.local_quarantined)} doublons déjà déplacés vers <code>_a_trier</code>
          le 2026-08-20. Rescan : ${num(M.local_dupes_pending || 0)} restant.</p>
-      <p style="margin-top:10px"><button class="btn" data-action="dedup-local">Relancer la dédup</button></p>
+      <p style="margin-top:10px"><a class="btn" href="music-dedup.html#local">Résoudre les doublons</a></p>
     </div>
     <div class="card">
       <span class="tag">spotify</span>
       <h3>Playlists Spotify</h3>
       <p>${num(sd.intra)} titres en double <em>dans</em> une même playlist,
          ${num(sd.inter)} présents dans plusieurs playlists (onglet « doublons » de l'export).</p>
-      <p style="margin-top:10px"><button class="btn" data-action="dedup-spotify">Nettoyer Spotify</button></p>
+      <p style="margin-top:10px"><a class="btn" href="music-dedup.html#intra">Nettoyer Spotify</a></p>
+    </div>
+    <div class="card">
+      <span class="tag">propositions</span>
+      <h3>Découpes &amp; déplacements</h3>
+      <p>${num(M.proposals?.splits || 0)} sous-playlists proposées pour ${num(M.proposals?.monoliths || 0)} monolithes,
+         ${num(M.proposals?.moves || 0)} titres hors profil à déplacer (analyses de juillet 2026).</p>
+      <p style="margin-top:10px"><a class="btn" href="music-proposals.html">Revoir les propositions</a></p>
     </div>
     <div class="card disabled">
       <span class="tag">itunes</span>
@@ -246,31 +253,6 @@
         <pre>python plugin/etl/music/sync/push.py --playlist "${esc(p.id)}" --master ${master} --to ${targets.join(',')} --dry-run</pre>
         <p class="hint">Rien n'a été exécuté. Le script n'existe pas encore — voir
            <code>.docs/musique.md</code>, section « Modèle de sync ».</p>`;
-    } else if (action === 'dedup-local') {
-      title.textContent = 'Dédup locale';
-      body.innerHTML = `
-        <p>Déjà faite le 2026-08-20 : ${num(M.local_quarantined)} fichiers déplacés vers
-           <code>_a_trier</code>, rescan vide. À relancer seulement après un nouveau scan.</p>
-        <h4>Séquence (à lancer toi-même, dans WSL)</h4>
-        <pre>python plugin/etl/music/local/scan_library.py /mnt/m --out data/music/library_scan.csv
-python plugin/etl/music/local/dedup_library.py --csv data/music/library_scan.csv
-# relire data/music/quarantine_duplicates.ps1 AVANT de l'exécuter</pre>
-        <p class="hint">Le script déplace, ne supprime jamais.</p>`;
-    } else if (action === 'dedup-spotify') {
-      title.textContent = 'Nettoyer les playlists Spotify';
-      body.innerHTML = `
-        <p>${num(sd.intra)} doublons <em>intra</em> (même titre deux fois dans une playlist) :
-           suppression sans risque. ${num(sd.inter)} <em>inter</em> (même titre dans plusieurs
-           playlists) : ce n'est pas forcément une erreur — à traiter par groupe.</p>
-        <h4>Prérequis</h4>
-        <ul class="checks">
-          <li class="bad">Écriture via l'API Spotify — scope <code>playlist-modify-*</code>,
-              non demandé par <code>auth.py</code> aujourd'hui.</li>
-          <li class="bad">IDs de titres — même blocage que le push.</li>
-        </ul>
-        <pre>python plugin/etl/music/spotify/dedup_playlists.py --intra --dry-run</pre>
-        <p class="hint">Script à écrire. La liste des doublons est déjà dans l'onglet
-           « doublons » de <code>extract_spotify.xlsx</code>.</p>`;
     } else {
       return;
     }

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal6 — Propositions</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="has-planbar">
+
+<header class="top">
+  <div class="wrap">
+    <h1><a href="index.html">Portal6</a></h1>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="music.html">Music</a>
+      <a href="music-dedup.html">Doublons</a>
+      <a href="music-proposals.html" aria-current="page">Propositions</a>
+      <a href="music-data.html">Données</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="missing" hidden>
+    <div class="note bad">
+      <p><strong>Propositions absentes</strong> (<code>data/proposals.js</code> n'est pas versionné).
+         Les générer avec :</p>
+      <p><code>python apps/web/build_manifest.py</code></p>
+    </div>
+  </div>
+
+  <div id="content" hidden>
+
+    <p class="lede">
+      Les propositions issues des analyses Spotify (juillet 2026) : <strong>découper</strong>
+      les playlists monolithiques en volumes gravables (double CD ≈ 150 min), et
+      <strong>déplacer</strong> les titres hors profil vers la playlist qui leur ressemble.
+      Accepte, renomme, rejette — puis <strong>Commit changes</strong>.
+    </p>
+
+    <nav class="tabs" id="tabs">
+      <a href="#splits" data-tab="splits">Découpes <span class="pill" id="n-splits"></span></a>
+      <a href="#moves" data-tab="moves">Déplacements <span class="pill" id="n-moves"></span></a>
+    </nav>
+
+    <!-- ============================================================ SPLITS -->
+    <section class="tab-pane" id="pane-splits" hidden>
+      <div class="stats" id="s-kpis" style="margin-top:12px"></div>
+      <div class="toolbar">
+        <input type="search" id="s-q" placeholder="Filtrer playlist / thème / artiste…" aria-label="Filtrer">
+        <select id="s-f" aria-label="Filtre">
+          <option value="">Toutes</option>
+          <option value="pending">À décider</option>
+          <option value="accepted">Acceptées</option>
+          <option value="rejected">Rejetées</option>
+        </select>
+        <span class="spacer"></span>
+        <button class="btn small ghost" data-spreset="accept">Tout accepter (vue)</button>
+        <button class="btn small ghost" data-spreset="reset">Tout remettre à zéro (vue)</button>
+      </div>
+      <div id="s-list"></div>
+    </section>
+
+    <!-- ============================================================= MOVES -->
+    <section class="tab-pane" id="pane-moves" hidden>
+      <div class="note" style="margin-top:12px">
+        <p>Un titre est signalé quand ses tags ou ses features audio s'écartent du profil de sa
+           playlist. <strong>Déplacer</strong> = retirer d'ici, ajouter là-bas ; <strong>Retirer</strong>
+           = enlever sans destination ; la cible est modifiable.</p>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="m-q" placeholder="Filtrer playlist / artiste / titre…" aria-label="Filtrer">
+        <select id="m-pl" aria-label="Playlist"><option value="">Toutes les playlists</option></select>
+        <select id="m-gap" aria-label="Écart"><option value="">Tous les écarts</option></select>
+        <label class="muted" style="font-size:13px"><input type="checkbox" id="m-reco" checked> seulement avec une recommandation</label>
+        <span class="spacer"></span>
+        <button class="btn small ghost" data-mpreset="move">Tout déplacer vers la reco (vue)</button>
+        <button class="btn small ghost" data-mpreset="none">Démarquer (vue)</button>
+      </div>
+      <div class="scroll">
+        <table class="dg">
+          <thead><tr><th>Playlist</th><th>Titre</th><th>Écart</th><th>Vers</th><th>Action</th></tr></thead>
+          <tbody id="m-rows"></tbody>
+        </table>
+        <datalist id="pl-list"></datalist>
+      </div>
+    </section>
+
+    <h2>Plans validés</h2>
+    <p class="hint">Chaque validation produit un JSON téléchargé et une commande à lancer (dry-run d'abord).</p>
+    <div id="plan-history"></div>
+
+  </div>
+
+  <footer><span id="generated"></span></footer>
+</main>
+
+<script src="data/manifest.js" onerror="window.PORTAL6_MISSING = true"></script>
+<script src="data/proposals.js" onerror="window.PORTAL6_PROPOSALS_MISSING = true"></script>
+<script src="assets/plan.js"></script>
+<script src="assets/proposals.js"></script>
+
+</body>
+</html>

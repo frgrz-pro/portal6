@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal6 — Doublons</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="has-planbar">
+
+<header class="top">
+  <div class="wrap">
+    <h1><a href="index.html">Portal6</a></h1>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="music.html">Music</a>
+      <a href="music-dedup.html" aria-current="page">Doublons</a>
+      <a href="music-proposals.html">Propositions</a>
+      <a href="music-data.html">Données</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="missing" hidden>
+    <div class="note bad">
+      <p><strong>Détail des doublons absent</strong> (<code>data/dedup.js</code> n'est pas versionné).
+         Le générer avec :</p>
+      <p><code>python apps/web/build_manifest.py</code></p>
+    </div>
+  </div>
+
+  <div id="content" hidden>
+
+    <p class="lede">
+      Résolution des doublons façon dupeGuru : un groupe = un même titre trouvé
+      plusieurs fois, <strong>★ la référence</strong> = la meilleure copie (bitrate, puis
+      taille). Marque ce que tu veux déplacer, supprimer ou ignorer, puis
+      <strong>Commit changes</strong> pour revoir et figer le plan.
+    </p>
+
+    <nav class="tabs" id="tabs">
+      <a href="#local" data-tab="local">Fichiers locaux <span class="pill" id="n-local"></span></a>
+      <a href="#intra" data-tab="intra">Spotify — intra <span class="pill" id="n-intra"></span></a>
+      <a href="#inter" data-tab="inter">Spotify — inter <span class="pill" id="n-inter"></span></a>
+    </nav>
+
+    <!-- ============================================================ LOCAL -->
+    <section class="tab-pane" id="pane-local" hidden>
+      <div id="local-banner"></div>
+      <div class="stats" id="local-kpis" style="margin-top:12px"></div>
+
+      <div class="toolbar">
+        <input type="search" id="l-q" placeholder="Filtrer artiste / titre / fichier…" aria-label="Filtrer">
+        <select id="l-f" aria-label="Filtre">
+          <option value="">Tous les groupes</option>
+          <option value="marked">Avec actions en attente</option>
+          <option value="unmarked">Sans action</option>
+          <option value="samefolder">Copies dans le même dossier</option>
+          <option value="cross">library ↔ workspace</option>
+          <option value="refws">Référence dans workspace</option>
+        </select>
+        <span class="spacer"></span>
+        <button class="btn small ghost" data-preset="all">Marquer tous les doublons</button>
+        <button class="btn small ghost" data-preset="ws">Marquer ceux du workspace</button>
+        <button class="btn small ghost" data-preset="none">Démarquer (vue)</button>
+      </div>
+
+      <div class="scroll">
+        <table class="dg" id="l-table">
+          <thead><tr>
+            <th title="Référence">★</th><th>Fichier</th><th>Dossier</th>
+            <th class="num">kbps</th><th class="num">Taille</th><th>Ext</th><th>Action</th>
+          </tr></thead>
+          <tbody id="l-rows"></tbody>
+        </table>
+        <div class="more" id="l-more"></div>
+      </div>
+    </section>
+
+    <!-- ====================================================== SPOTIFY INTRA -->
+    <section class="tab-pane" id="pane-intra" hidden>
+      <div class="note" style="margin-top:12px">
+        <p><strong>Intra</strong> = le même titre plusieurs fois <em>dans la même playlist</em>.
+           Suppression sans risque : on garde une occurrence. Aucune écriture tant que
+           l'export Spotify n'a pas les IDs de titres (voir Données).</p>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="i-q" placeholder="Filtrer playlist / artiste / titre…" aria-label="Filtrer">
+        <select id="i-pl" aria-label="Playlist"><option value="">Toutes les playlists</option></select>
+        <span class="spacer"></span>
+        <button class="btn small ghost" data-ipreset="all">Tout dédoublonner (vue)</button>
+        <button class="btn small ghost" data-ipreset="none">Démarquer (vue)</button>
+      </div>
+      <div class="scroll">
+        <table class="dg">
+          <thead><tr><th>Playlist</th><th>Artiste</th><th>Titre</th><th class="num">Occ.</th><th>Action</th></tr></thead>
+          <tbody id="i-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================== SPOTIFY INTER -->
+    <section class="tab-pane" id="pane-inter" hidden>
+      <div class="note" style="margin-top:12px">
+        <p><strong>Inter</strong> = le même titre dans <em>plusieurs playlists</em>. Ce n'est pas
+           forcément une erreur : clique sur une playlist pour <s>la retirer</s>, les autres
+           gardent le titre. Les archives annuelles « (All) » sont grisées et laissées
+           tranquilles.</p>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="x-q" placeholder="Filtrer artiste / titre / playlist…" aria-label="Filtrer">
+        <select id="x-min" aria-label="Minimum">
+          <option value="2">≥ 2 playlists</option>
+          <option value="3">≥ 3 playlists</option>
+          <option value="4">≥ 4 playlists</option>
+          <option value="6">≥ 6 playlists</option>
+        </select>
+        <select id="x-group" aria-label="Groupe"><option value="">Tous les groupes</option></select>
+        <label class="muted" style="font-size:13px"><input type="checkbox" id="x-arch" checked> masquer les archives « (All) »</label>
+        <span class="spacer"></span>
+        <button class="btn small ghost" data-xpreset="first">Garder la 1re, retirer des autres (vue)</button>
+        <button class="btn small ghost" data-xpreset="none">Démarquer (vue)</button>
+      </div>
+      <div class="scroll">
+        <table class="dg">
+          <thead><tr><th>Titre</th><th>Playlists (clic = retirer)</th><th class="num">N</th><th>Action</th></tr></thead>
+          <tbody id="x-rows"></tbody>
+        </table>
+        <div class="more" id="x-more"></div>
+      </div>
+    </section>
+
+    <h2>Plans validés</h2>
+    <p class="hint">Chaque validation produit un JSON téléchargé et une commande à lancer (dry-run
+       d'abord). Le statut ici est déclaratif : coche « appliqué » quand le script a tourné.</p>
+    <div id="plan-history"></div>
+
+  </div>
+
+  <footer><span id="generated"></span></footer>
+</main>
+
+<script src="data/manifest.js" onerror="window.PORTAL6_MISSING = true"></script>
+<script src="data/dedup.js" onerror="window.PORTAL6_DEDUP_MISSING = true"></script>
+<script src="assets/plan.js"></script>
+<script src="assets/dedup.js"></script>
+
+</body>
+</html>

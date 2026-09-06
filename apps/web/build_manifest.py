@@ -191,12 +191,10 @@ def db_stats(rel: str) -> dict | None:
 
 
 # --------------------------------------------------------------------------- xlsx
-def spotify_dupes(rel: str) -> dict | None:
-    """Onglet « doublons » de l'export Spotify, lu sans openpyxl (zip + regex).
-
-    intra = même titre plusieurs fois dans une playlist ; inter = présent dans
-    plusieurs playlists. C'est la matière première du nettoyage côté Spotify.
-    """
+def xlsx_rows(rel: str, sheet: str) -> list[list[str]] | None:
+    """Lit un onglet d'un .xlsx sans openpyxl (zip + regex) — le venv Windows n'a
+    pas openpyxl et le portail ne doit dépendre de rien. Retourne les lignes comme
+    listes de chaînes ; les cellules vides sont ''."""
     import re
     import zipfile
 
@@ -208,28 +206,138 @@ def spotify_dupes(rel: str) -> dict | None:
         wb = z.read("xl/workbook.xml").decode("utf-8")
         rels = dict(re.findall(r'Id="([^"]+)"[^>]*Target="([^"]+)"',
                                z.read("xl/_rels/workbook.xml.rels").decode("utf-8")))
-        sheet = next((rid for name, rid in re.findall(r'<sheet [^>]*name="([^"]+)"[^>]*r:id="([^"]+)"', wb)
-                      if name == "doublons"), None)
-        if not sheet:
+        rid = next((r for name, r in re.findall(r'<sheet [^>]*name="([^"]+)"[^>]*r:id="([^"]+)"', wb)
+                    if name == sheet), None)
+        if not rid:
             return None
         strs = [re.sub(r"<[^>]+>", "", m) for m in
                 re.findall(r"<si>(.*?)</si>", z.read("xl/sharedStrings.xml").decode("utf-8"), re.S)]
-        xml = z.read("xl/" + rels[sheet].lstrip("/").removeprefix("xl/")).decode("utf-8")
+        xml = z.read("xl/" + rels[rid].lstrip("/").removeprefix("xl/")).decode("utf-8")
     except (KeyError, zipfile.BadZipFile, UnicodeDecodeError):
         return None
 
-    counts: collections.Counter = collections.Counter()
-    for row in re.findall(r"<row [^>]*>(.*?)</row>", xml, re.S)[1:]:
-        first = re.search(r"<c([^>]*)>(.*?)</c>", row, re.S)
-        if not first:
-            continue
-        attrs, inner = first.groups()
-        v = re.search(r"<v>([^<]*)</v>", inner)
-        val = v.group(1) if v else ""
-        if re.search(r'\bt="s"', attrs) and val:
-            val = strs[int(val)]
-        counts[val] += 1
+    def unescape(t: str) -> str:
+        return t.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"')
+
+    out = []
+    for row in re.findall(r"<row [^>]*>(.*?)</row>", xml, re.S):
+        cells = []
+        for attrs, inner in re.findall(r"<c([^>]*?)(?:/>|>(.*?)</c>)", row, re.S):
+            v = re.search(r"<v>([^<]*)</v>", inner or "")
+            val = v.group(1) if v else ""
+            if re.search(r'\bt="s"', attrs) and val:
+                val = strs[int(val)]
+            cells.append(unescape(val))
+        out.append(cells)
+    return out
+
+
+def spotify_dupes(rel: str) -> dict | None:
+    """Comptes de l'onglet « doublons » : intra (même titre plusieurs fois dans une
+    playlist) et inter (présent dans plusieurs playlists)."""
+    rows = xlsx_rows(rel, "doublons")
+    if rows is None:
+        return None
+    counts = collections.Counter(r[0] for r in rows[1:] if r)
     return {"intra": counts.get("intra", 0), "inter": counts.get("inter", 0)}
+
+
+# --------------------------------------------------------------------------- dédup (détail)
+def build_dedup() -> dict:
+    """Détail des doublons pour la vue de résolution (façon dupeGuru).
+
+    Contient des chemins de fichiers → écrit dans `data/dedup.js`, NON versionné.
+    Local : le rapport courant s'il a des lignes, sinon le rapport daté (déjà
+    appliqué le 2026-08-20) pour que la vue ait de la matière — flag `applied`.
+    """
+    local: dict = {"source": None, "applied": False, "groups": []}
+    for rel, applied in (("data/music/local_duplicates_report.csv", False),
+                         ("data/music/local_duplicates_report.2026-08-20-0028.csv", True)):
+        p = ROOT / rel
+        if not p.exists():
+            continue
+        with p.open(encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.DictReader(f))
+        if not rows:
+            continue
+        groups: dict[str, dict] = {}
+        for r in rows:
+            path = r["path"].replace("\\", "/")
+            folder, _, name = path.rpartition("/")
+            g = groups.setdefault(r["group_id"], {
+                "id": r["group_id"], "artist": r["artist"], "title": r["title"], "items": []})
+            g["items"].append({
+                "id": f'{r["group_id"]}:{r["rank"]}',
+                "rank": int(r["rank"] or 0),
+                "ref": r["action"] == "keep",
+                "file": name,
+                "folder": folder.removeprefix("/mnt/m/"),
+                "path": path,
+                "bitrate": int(r["bitrate_kbps"]) if r.get("bitrate_kbps") else None,
+                "size": int(r["size_bytes"] or 0),
+                "ext": r["extension"],
+            })
+        local = {"source": rel, "applied": applied,
+                 "mtime": (stat_file(rel) or {}).get("mtime"),
+                 "groups": list(groups.values())}
+        break
+
+    spotify: dict = {"intra": [], "inter": []}
+    rows = xlsx_rows("data/music/extract_spotify.xlsx", "doublons") or []
+    for i, r in enumerate(rows[1:]):
+        if len(r) < 5:
+            continue
+        kind, artist, track, occ, playlists = r[:5]
+        entry = {"id": f"{kind}:{i}", "artist": artist, "track": track,
+                 "occurrences": int(float(occ or 0)),
+                 "playlists": [x.strip() for x in playlists.split("|") if x.strip()]}
+        if kind in spotify:
+            spotify[kind].append(entry)
+
+    return {"generated": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "local": local, "spotify": spotify}
+
+
+# --------------------------------------------------------------------------- propositions
+def build_proposals() -> dict:
+    """Propositions issues des analyses Spotify (onglets du Sheet) :
+    - Monolithes : découpe des grosses playlists en sous-playlists gravables ;
+    - Cohérence : titres hors profil avec une playlist recommandée.
+    Titres nominatifs → `data/proposals.js`, NON versionné."""
+    plan = xlsx_rows("data/music/extract_spotify.xlsx", "Monolithes") or []
+    detail = xlsx_rows("data/music/extract_spotify.xlsx", "Monolithes détail") or []
+    coherence = xlsx_rows("data/music/extract_spotify.xlsx", "Cohérence") or []
+
+    tracks_by_sub: dict[str, list] = collections.defaultdict(list)
+    for r in detail[1:]:
+        if len(r) < 6:
+            continue
+        origin, sub, artist, track, album, energy = r[:6]
+        tracks_by_sub[sub].append({
+            "artist": artist, "track": track, "album": album,
+            "energy": float(energy) if energy else None})
+
+    splits: dict[str, dict] = {}
+    for i, r in enumerate(plan[1:]):
+        if len(r) < 7:
+            continue
+        origin, n, sub, theme, per_cd, minutes, stars = r[:7]
+        s = splits.setdefault(origin, {"origin": origin, "tracks": int(float(n or 0)), "subs": []})
+        s["subs"].append({
+            "id": f"split:{i}", "name": sub, "theme": theme,
+            "count": int(float(per_cd or 0)), "minutes": int(float(minutes or 0)),
+            "stars": stars, "tracks": tracks_by_sub.get(sub, [])})
+
+    moves = []
+    for i, r in enumerate(coherence[1:]):
+        if len(r) < 6:
+            continue
+        playlist, artist, track, gap, why, reco = r[:6]
+        moves.append({"id": f"move:{i}", "playlist": playlist, "artist": artist,
+                      "track": track, "gap": gap, "why": why, "to": reco})
+
+    return {"generated": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "splits": list(splits.values()), "moves": moves}
 
 
 # --------------------------------------------------------------------------- main
@@ -285,6 +393,12 @@ def build() -> dict:
             # Dédup locale : la liste datée = les fichiers effectivement déplacés.
             "local_quarantined": count_lines("data/music/quarantine_paths.2026-08-20-0028.txt"),
             "local_dupes_pending": max((count_lines("data/music/quarantine_paths.txt") or 0), 0),
+            # Propositions : seulement des comptes ici, le détail va dans proposals.js.
+            "proposals": (lambda pr: {
+                "monoliths": len(pr["splits"]),
+                "splits": sum(len(s["subs"]) for s in pr["splits"]),
+                "moves": len(pr["moves"]),
+            })(build_proposals()),
         },
     }
 
@@ -299,6 +413,17 @@ def main() -> int:
     )
     # Console Windows en cp1252 : pas d'accent ni de flèche dans le print.
     print(f"OK {OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1024:.1f} Ko)")
+
+    # Fichiers de détail (chemins, titres) : générés à côté, jamais versionnés.
+    for name, var, payload in (("dedup.js", "PORTAL6_DEDUP", build_dedup()),
+                               ("proposals.js", "PORTAL6_PROPOSALS", build_proposals())):
+        out = OUT.parent / name
+        out.write_text(
+            "// Généré par apps/web/build_manifest.py — non versionné (données nominatives).\n"
+            f"window.{var} = " + json.dumps(payload, ensure_ascii=False) + ";\n",
+            encoding="utf-8",
+        )
+        print(f"OK {out.relative_to(ROOT)} ({out.stat().st_size / 1024:.1f} Ko)")
     return 0
 
 

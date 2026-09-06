@@ -1,6 +1,6 @@
 // Généré par apps/web/build_manifest.py — ne pas éditer à la main.
 window.PORTAL6 = {
-  "generated": "2026-09-06 19:02",
+  "generated": "2026-09-06 20:20",
   "music": {
     "vault": [
       {
@@ -1674,6 +1674,11 @@ window.PORTAL6 = {
       "inter": 2972
     },
     "local_quarantined": 2464,
-    "local_dupes_pending": 0
+    "local_dupes_pending": 0,
+    "proposals": {
+      "monoliths": 26,
+      "splits": 215,
+      "moves": 366
+    }
   }
 };
