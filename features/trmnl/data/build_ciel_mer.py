@@ -172,6 +172,30 @@ def tide_coefficients(tz: ZoneInfo) -> list[tuple[datetime, int]]:
     return out
 
 
+JOURS_COURTS = ["L", "M", "M", "J", "V", "S", "D"]
+
+
+def moon_week(now: datetime) -> list[dict]:
+    """Phase de la Lune sur 7 jours, échantillonnée à midi.
+
+    Midi et pas minuit : c'est l'instant qui représente le mieux « la lune de ce
+    jour-là », et ça évite qu'un même croissant paraisse changer deux fois entre
+    deux cases voisines.
+    """
+    out = []
+    for offset in range(7):
+        day = (now + timedelta(days=offset)).replace(hour=12, minute=0,
+                                                     second=0, microsecond=0)
+        jd = astro.julian_day(day)
+        fraction, waxing = astro.moon_illumination(jd)
+        out.append({
+            "label": JOURS_COURTS[day.weekday()],
+            "today": offset == 0,
+            "svg_path": astro.moon_svg_path(fraction, waxing, 12, 12, 10),
+        })
+    return out
+
+
 def tide_regime(tides: list[dict]) -> str:
     """Régime en cours, d'après le coefficient de la **prochaine** marée.
 
@@ -279,6 +303,7 @@ def build(cfg: dict) -> dict:
             "noon": hhmm(sun["noon"]),
         },
         "moon": {
+            "week": moon_week(now),
             "phase": astro.phase_name(fraction, waxing),
             "illumination": round(fraction * 100),
             "age": round(astro.moon_age_days(jd), 1),
