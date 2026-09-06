@@ -219,8 +219,8 @@
             <div class="ag__day {% if day.today %}ag__day--today{% endif %}">
               <span class="ag__label">{{ day.label }}</span>
               {% for event in day.events limit: 3 %}
-                <div class="ag__ev"><b>{{ event.time }}</b>
-                  <span class="ag__tag">{{ event.cal }}</span> {{ event.title }}</div>
+                <div class="ag__ev"><span class="ag__tag">{{ event.cal }}</span>
+                  <b>{{ event.time }}</b> {{ event.title }}</div>
               {% endfor %}
             </div>
           {% endif %}{% endfor %}
