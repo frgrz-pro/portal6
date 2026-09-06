@@ -35,9 +35,13 @@
   .ag__days { flex: 1 1 auto; display: flex; flex-direction: column;
               gap: 9px; overflow: hidden; }
   .ag__day { min-width: 0; }
-  .ag__label { font-size: 11px; letter-spacing: 0.04em; }
+  /* Un filet entre les journées : sans lui, deux jours d'affilée à trois événements
+     forment un pavé de texte où l'oeil ne trouve plus la coupure. */
+  .ag__day + .ag__day { border-top: 2px solid black; padding-top: 7px; }
+  .ag__label { font-size: 13px; font-weight: 700; letter-spacing: 0.03em;
+               display: inline-block; margin-bottom: 1px; }
   /* Le jour courant est le seul repère visuel possible en 1-bit : inverse vidéo. */
-  .ag__day--today .ag__label { background: black; color: white; padding: 1px 5px; }
+  .ag__day--today .ag__label { background: black; color: white; padding: 1px 6px; }
   .ag__ev { font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; padding-left: 2px; }
   .ag__ev b { font-weight: normal; }
   /* Le tag remplace le mot retire du titre : il porte la meme information pour
