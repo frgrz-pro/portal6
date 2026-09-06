@@ -26,4 +26,7 @@ sujet, enrichi au fil des sessions (pas un fichier par date — les fichiers dat
 - [zigbee-multiprises.md](zigbee-multiprises.md) — les 2 multiprises Zigbee : comment ça marche, comment les piloter
 - [tv-mute.md](tv-mute.md) — couper le son de la TV : Shield / TCL soundbar / télé (phase 2)
 - [infra-reseau.md](infra-reseau.md) — réseau domestique : Mercusys, OpenVPN/NordVPN, IPs
+- [trmnl.md](trmnl.md) — setup du premier TRMNL : comptes `.sport` / `.case`, plugin Google Calendar, ordre de mise en route
+- [lieux.md](lieux.md) — espace Lieux : état du vault My Maps, clôture du Lot A, todo (design figé dans `docs/`)
+- [musique.md](musique.md) — relance du domaine musique : référentiel `music.db`, Plex/Symfonium, AzuraCast Phase 3
 - [bom.md](bom.md) — **BOM central** : tout le hardware de tous les projets (statuts, prix, déblocages)

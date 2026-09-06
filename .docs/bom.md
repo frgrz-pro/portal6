@@ -21,8 +21,8 @@ Statuts : ✅ possédé · 🛒 à acheter · ⏸ bloqué (voir « Débloqué pa
 
 | Article | Statut | Prix | Débloqué par |
 |---|---|---|---|
-| TRMNL OG (premier device généraliste) | ❓ possédé ou à commander ? | ~140 $ | — |
-| **Developer Edition** (addon, une fois, par device — 1 seul suffit pour créer les plugins) | 🛒 | 20 $ | Avoir le device |
+| TRMNL (premier device généraliste) | ✅ possédé — setup en cours ([trmnl.md](trmnl.md)) ; OG ou X à confirmer | — | — |
+| **Developer Edition** (addon, une fois, par device — 1 seul suffit pour créer les plugins) | 🛒 | 20 $ | Device en main ✅ ; inutile pour le plugin Google Calendar, à prendre au premier private plugin (marées) |
 | TRMNL X 10.3" / devices spécialisés | ⏸ plus tard | — | Use cases validés sur le premier device |
 
 ## Radio Brandt RK 711S
@@ -39,7 +39,7 @@ commandé, achats par vagues avec conditions de déblocage. Résumé :
 ## Synthèse — ce qui est achetable maintenant
 
 1. **Outillage radio** (~200 €) — non bloqué, sert aussi à tout le reste du bricolage.
-2. **Dev Edition TRMNL** (20 $) — dès que le device est là.
+2. **Dev Edition TRMNL** (20 $) — device en main, débloqué ; à acheter au premier private plugin.
 3. **Clé Zigbee** (~25–40 €) — dès que la tour tourne (sinon elle dort dans un tiroir).
 
 ## Journal
@@ -48,3 +48,6 @@ commandé, achats par vagues avec conditions de déblocage. Résumé :
 Création du BOM central : agrégation domotique (clé Zigbee à acheter), TRMNL
 (Dev Edition 20 $), et résumé du BOM radio existant. À clarifier : TRMNL déjà
 possédé ?, la tour Docker = machine AzuraCast ?
+
+### 2026-09-06
+TRMNL passé en ✅ possédé (setup en cours). Dev Edition débloquée, différée au premier private plugin.
