@@ -7,7 +7,8 @@
     "           Laisser à null pour réutiliser les coordonnées du spot.",
     "agendas  : agendas PUBLICS uniquement (leur URL n'est pas un secret). Les agendas",
     "           privés passent par la variable d'environnement AGENDA_ICS_URLS, jamais ici.",
-    "           `code` est l'abréviation affichée à côté de l'heure sur l'écran."
+    "           `code` est l'abréviation affichée à côté de l'heure sur l'écran.",
+    "           `tag` est le libellé affiché devant l'événement ; il est aussi retiré du titre quand il s'y répète (« Liverpool vs Man. City » -> tag Liverpool + « vs Man. City »)."
   ],
   "spot": {
     "label": "Saint-Jacut",
@@ -24,52 +25,62 @@
     {
       "code": "EDF",
       "label": "Équipe de France (foot)",
-      "url": "https://calendar.google.com/calendar/ical/72u5uv0evelnvskdj5jbug3j8o%40group.calendar.google.com/public/basic.ics"
+      "url": "https://calendar.google.com/calendar/ical/72u5uv0evelnvskdj5jbug3j8o%40group.calendar.google.com/public/basic.ics",
+      "tag": "France"
     },
     {
       "code": "LFC",
       "label": "Liverpool",
-      "url": "https://calendar.google.com/calendar/ical/dpqj0f4137m5brcrar1jn1vs64%40group.calendar.google.com/public/basic.ics"
+      "url": "https://calendar.google.com/calendar/ical/dpqj0f4137m5brcrar1jn1vs64%40group.calendar.google.com/public/basic.ics",
+      "tag": "Liverpool"
     },
     {
       "code": "RUG",
       "label": "Rugby",
-      "url": "https://calendar.google.com/calendar/ical/ct240d39oc9kq21cq3bn70jii8%40group.calendar.google.com/public/basic.ics"
+      "url": "https://calendar.google.com/calendar/ical/ct240d39oc9kq21cq3bn70jii8%40group.calendar.google.com/public/basic.ics",
+      "tag": "Rugby"
     },
     {
       "code": "F1",
       "label": "Formule 1",
-      "url": "https://calendar.google.com/calendar/ical/5c6kurobuih79gk0ucvselv1j0%40group.calendar.google.com/public/basic.ics"
+      "url": "https://calendar.google.com/calendar/ical/5c6kurobuih79gk0ucvselv1j0%40group.calendar.google.com/public/basic.ics",
+      "tag": "F1"
     },
     {
       "code": "WRC",
       "label": "Rallye WRC",
-      "url": "https://calendar.google.com/calendar/ical/fei68gpe16c85ed3jjdtvrn8ns%40group.calendar.google.com/public/basic.ics"
+      "url": "https://calendar.google.com/calendar/ical/fei68gpe16c85ed3jjdtvrn8ns%40group.calendar.google.com/public/basic.ics",
+      "tag": "WRC"
     },
     {
       "code": "ESC",
       "label": "Escalade IFSC",
-      "url": "https://calendar.google.com/calendar/ical/0le016oqmeq3hs36gtjk147lgkdqah8d%40import.calendar.google.com/public/basic.ics"
+      "url": "https://calendar.google.com/calendar/ical/0le016oqmeq3hs36gtjk147lgkdqah8d%40import.calendar.google.com/public/basic.ics",
+      "tag": "IFSC"
     },
     {
       "code": "LEC",
       "label": "LEC (LoL)",
-      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/lec.ics"
+      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/lec.ics",
+      "tag": "LEC"
     },
     {
       "code": "LCK",
       "label": "LCK (LoL)",
-      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/lck.ics"
+      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/lck.ics",
+      "tag": "LCK"
     },
     {
       "code": "LOL",
       "label": "LoL international",
-      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/international.ics"
+      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/international.ics",
+      "tag": "LoL"
     },
     {
       "code": "CS2",
       "label": "CS2",
-      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/cs2/main.ics"
+      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/cs2/main.ics",
+      "tag": "CS2"
     }
   ]
 }

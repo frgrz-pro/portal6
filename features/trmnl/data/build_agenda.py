@@ -27,6 +27,7 @@ Usage :
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -46,6 +47,29 @@ HTTP_TIMEOUT = 30
 JOURS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
 
 
+def am_pm(moment: datetime) -> str:
+    """Heure au format court : 9pm, 1:30pm, 12am. Les minutes nulles sont omises."""
+    hour = moment.hour % 12 or 12
+    suffix = "am" if moment.hour < 12 else "pm"
+    return f"{hour}:{moment.minute:02d}{suffix}" if moment.minute else f"{hour}{suffix}"
+
+
+def lighten(title: str, tag: str) -> str:
+    """Retire du titre le mot que le tag porte déjà, puis nettoie les séparateurs.
+
+    « Liverpool vs Man. City - PL » avec le tag « Liverpool » devient « vs Man. City
+    - PL » puis « Man. City - PL ». Sur une colonne de 200 px, cette répétition coûte
+    une ligne entière par événement.
+    """
+    if not tag:
+        return title
+    out = re.sub(rf"\b{re.escape(tag)}\b", "", title, flags=re.IGNORECASE)
+    out = re.sub(r"\s+", " ", out).strip()
+    out = re.sub(r"^(?:vs\.?|[-—|:·])\s*", "", out, flags=re.IGNORECASE).strip()
+    out = re.sub(r"\s*[-—|:·]\s*$", "", out).strip()
+    return out or title
+
+
 def read_sources(cfg: dict | None = None) -> list[tuple[str, str]]:
     """Agendas à lire : ceux de `config.json`, puis ceux de AGENDA_ICS_URLS.
 
@@ -54,7 +78,7 @@ def read_sources(cfg: dict | None = None) -> list[tuple[str, str]]:
     relisible. Un agenda **privé** est adressé par une URL secrète, qui n'a rien à
     faire dans un repo public — il passe par l'environnement.
     """
-    sources = [(a["code"], a["url"]) for a in (cfg or {}).get("agendas", [])]
+    sources = [(a.get("tag") or a["code"], a["url"]) for a in (cfg or {}).get("agendas", [])]
     raw = os.environ.get("AGENDA_ICS_URLS", "").strip()
     if not raw:
         if not sources:
@@ -89,13 +113,13 @@ def normalize(component, code: str, tz: ZoneInfo) -> dict | None:
         day, label = value, "journée"
     else:
         local = value.astimezone(tz) if value.tzinfo else value.replace(tzinfo=tz)
-        day, label = local.date(), local.strftime("%Hh%M")
+        day, label = local.date(), am_pm(local)
     return {
         "day": day,
         # Minutes depuis minuit ; -1 place les événements « journée » en tête.
         "sort": -1 if all_day else local.hour * 60 + local.minute,
         "time": label,
-        "title": str(component.get("SUMMARY", "(sans titre)")),
+        "title": lighten(str(component.get("SUMMARY", "(sans titre)")), code),
         "cal": code,
     }
 

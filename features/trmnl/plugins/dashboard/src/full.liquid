@@ -40,6 +40,9 @@
   .ag__day--today .ag__label { background: black; color: white; padding: 1px 5px; }
   .ag__ev { font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; padding-left: 2px; }
   .ag__ev b { font-weight: normal; }
+  /* Le tag remplace le mot retire du titre : il porte la meme information pour
+     moins de place, et il est le seul repere de categorie sur un ecran 1-bit. */
+  .ag__tag { font-size: 10px; letter-spacing: 0.03em; border-bottom: 1px solid black; }
   .ag__none { font-size: 11px; padding-left: 2px; }
 
   /* --- bloc principal ---------------------------------------------------- */
@@ -200,7 +203,8 @@
             <div class="ag__day {% if day.today %}ag__day--today{% endif %}">
               <span class="ag__label">{{ day.label }}</span>
               {% for event in day.events limit: 3 %}
-                <div class="ag__ev"><b>{{ event.time }}</b> {{ event.title }}</div>
+                <div class="ag__ev"><b>{{ event.time }}</b>
+                  <span class="ag__tag">{{ event.cal }}</span> {{ event.title }}</div>
               {% endfor %}
             </div>
           {% endif %}{% endfor %}
