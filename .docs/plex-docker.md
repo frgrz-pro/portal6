@@ -44,8 +44,12 @@ Outillage et runbook : [`features/media/plex/`](../features/media/plex/README.md
       EPG `xmltv.xml` (8 Mo) ; le dossier Dropbox monté en `/m3u` contient deux jeux
       m3u4u dont un obsolète (playlist de sept. 2025).
 
-**Phases 0 à 3 exécutées et validées le 2026-09-06** (voir Journal). Seul point en attente :
-le **go pour la phase 4**.
+- [ ] **Phase 7 devenue prioritaire** : `PlexUpdateService` (*Running/Automatic*) et la clé
+      `Run` du registre sont **toujours armés**. À chaque reboot, le Plex natif redémarre et
+      dispute 32400 au conteneur. À désarmer en PowerShell **administrateur**.
+
+**Phases 0 à 4 exécutées et validées le 2026-09-06** (voir Journal). Point en attente :
+la **phase 5**, validation d'usage — elle demande tes yeux, pas une commande.
 
 ---
 
