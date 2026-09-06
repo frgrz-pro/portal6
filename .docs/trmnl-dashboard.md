@@ -121,8 +121,22 @@ donc on n'ajoute pas d'hypothèse nouvelle. Si un vrai contrôle d'accès devien
 nécessaire, le repli est un dépôt privé lu via `polling_headers` (en-tête
 `Authorization`), qui gate réellement l'accès au lieu de miser sur l'obscurité de l'URL.
 
-⚠️ Conséquence : **l'URL de polling ne doit pas être commitée**. `settings.yml` laisse
-le champ vide et l'URL se renseigne directement dans l'interface TRMNL.
+⚠️ Conséquence : **l'URL de polling ne doit pas être commitée**. Elle passe par un
+champ personnalisé (`polling_url: "##{{ payload_url }}"`), dont la valeur vit dans
+l'instance TRMNL — un `trmnlp push` ne l'écrase donc pas.
+
+⚠️ **Piège de l'URL du gist.** Le `raw_url` que renvoie l'API GitHub contient un SHA de
+version : `.../raw/d275acb…/dashboard.json`. Collée telle quelle, elle **fige l'écran sur
+la version du jour**, définitivement. C'est l'URL **sans SHA** qu'il faut —
+`.../raw/dashboard.json` — qui sert toujours la dernière révision.
+
+### Agendas publics dans le repo, agendas privés dans l'environnement
+
+Les agendas sport de François (foot, rugby, F1, WRC, escalade) sont des agendas Google
+**publics** : leur URL n'est pas un secret. Ils vivent donc dans `config.json`, clé
+`agendas`, versionnés et relisibles — avec le `code` court affiché à l'écran. Seuls les
+agendas *privés* passent par `AGENDA_ICS_URLS`. La distinction est portée par
+`read_sources()`, pas laissée à la discipline de l'utilisateur.
 
 Règle générale, toujours valable pour le reste du repo : **donnée publiable → payload
 commité ; donnée privée → jamais dans le repo.**

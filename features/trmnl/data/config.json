@@ -4,10 +4,13 @@
     "N'y mettre qu'un lieu public (plage, port, spot) — jamais les coordonnées du domicile.",
     "spot     : point à terre, sert au soleil (lever/coucher, golden hour), à la lune et à la météo.",
     "marine   : point EN MER le plus proche (Open-Meteo renvoie des nulls sur une maille terrestre).",
-    "           Laisser à null pour réutiliser les coordonnées du spot."
+    "           Laisser à null pour réutiliser les coordonnées du spot.",
+    "agendas  : agendas PUBLICS uniquement (leur URL n'est pas un secret). Les agendas",
+    "           privés passent par la variable d'environnement AGENDA_ICS_URLS, jamais ici.",
+    "           `code` est l'abréviation affichée à côté de l'heure sur l'écran."
   ],
   "spot": {
-    "label": "À nommer",
+    "label": "Saint-Jacut",
     "latitude": 48.6081925840433,
     "longitude": -2.193719883572932,
     "timezone": "Europe/Paris"
@@ -16,5 +19,57 @@
     "latitude": null,
     "longitude": null
   },
-  "special_moons_days": 120
+  "special_moons_days": 120,
+  "agendas": [
+    {
+      "code": "EDF",
+      "label": "Équipe de France (foot)",
+      "url": "https://calendar.google.com/calendar/ical/72u5uv0evelnvskdj5jbug3j8o%40group.calendar.google.com/public/basic.ics"
+    },
+    {
+      "code": "LFC",
+      "label": "Liverpool",
+      "url": "https://calendar.google.com/calendar/ical/dpqj0f4137m5brcrar1jn1vs64%40group.calendar.google.com/public/basic.ics"
+    },
+    {
+      "code": "RUG",
+      "label": "Rugby",
+      "url": "https://calendar.google.com/calendar/ical/ct240d39oc9kq21cq3bn70jii8%40group.calendar.google.com/public/basic.ics"
+    },
+    {
+      "code": "F1",
+      "label": "Formule 1",
+      "url": "https://calendar.google.com/calendar/ical/5c6kurobuih79gk0ucvselv1j0%40group.calendar.google.com/public/basic.ics"
+    },
+    {
+      "code": "WRC",
+      "label": "Rallye WRC",
+      "url": "https://calendar.google.com/calendar/ical/fei68gpe16c85ed3jjdtvrn8ns%40group.calendar.google.com/public/basic.ics"
+    },
+    {
+      "code": "ESC",
+      "label": "Escalade IFSC",
+      "url": "https://calendar.google.com/calendar/ical/0le016oqmeq3hs36gtjk147lgkdqah8d%40import.calendar.google.com/public/basic.ics"
+    },
+    {
+      "code": "LEC",
+      "label": "LEC (LoL)",
+      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/lec.ics"
+    },
+    {
+      "code": "LCK",
+      "label": "LCK (LoL)",
+      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/lck.ics"
+    },
+    {
+      "code": "LOL",
+      "label": "LoL international",
+      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/international.ics"
+    },
+    {
+      "code": "CS2",
+      "label": "CS2",
+      "url": "https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/cs2/main.ics"
+    }
+  ]
 }

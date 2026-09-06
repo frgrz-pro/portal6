@@ -1,12 +1,16 @@
 name: trmnl-dashboard
 
-# Régénère le payload unique du dashboard TRMNL et le publie dans un gist secret.
-# Rien n'est écrit dans le repo : le payload contient l'agenda perso, et portal6 est public.
+# Régénère le payload du dashboard TRMNL et le publie dans un gist secret.
+# Rien n'est écrit dans le repo : le payload peut contenir des agendas privés,
+# et portal6 est public.
+#
+# Les agendas PUBLICS sont dans features/trmnl/data/config.json (clé `agendas`) —
+# aucun secret nécessaire pour eux.
 #
 # Secrets à créer dans Settings → Secrets and variables → Actions :
-#   AGENDA_ICS_URLS  une ligne `CODE|URL` par agenda (adresse secrète iCal Google)
 #   GIST_ID          identifiant du gist secret qui porte dashboard.json
-#   GIST_TOKEN       jeton personnel avec la seule portée `gist`
+#   GIST_TOKEN       PAT avec la seule portée `gist`
+#   AGENDA_ICS_URLS  (optionnel) agendas PRIVÉS, une ligne `CODE|URL` par agenda
 
 on:
   schedule:
@@ -29,6 +33,6 @@ jobs:
       - name: Publier le payload
         run: python features/trmnl/data/build_dashboard.py
         env:
-          AGENDA_ICS_URLS: ${{ secrets.AGENDA_ICS_URLS }}
           GIST_ID: ${{ secrets.GIST_ID }}
-          GITHUB_TOKEN: ${{ secrets.GIST_TOKEN }}
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          AGENDA_ICS_URLS: ${{ secrets.AGENDA_ICS_URLS }}

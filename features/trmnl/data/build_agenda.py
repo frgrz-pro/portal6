@@ -11,8 +11,9 @@ Contrepartie : **TRMNL plafonne le payload webhook à 2 Ko**. `fit_payload()` ro
 progressivement (longueur des titres, nombre de jours, nombre d'événements par jour)
 jusqu'à passer sous la limite, et signale ce qui a été coupé.
 
-Configuration (variables d'environnement, jamais de fichier commité) :
-    AGENDA_ICS_URLS      un agenda par ligne, au format `CODE|URL`. L'URL est
+Configuration :
+    config.json          clé `agendas` — les agendas PUBLICS (URL non secrète).
+    AGENDA_ICS_URLS      les agendas PRIVÉS, un par ligne, au format `CODE|URL`. L'URL est
                          l'« adresse secrète au format iCal » de Google Calendar
                          (Paramètres de l'agenda → Intégrer l'agenda). CODE est une
                          abréviation de 1-3 lettres affichée à côté de l'événement.
@@ -45,12 +46,20 @@ HTTP_TIMEOUT = 30
 JOURS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
 
 
-def read_sources() -> list[tuple[str, str]]:
-    """Parse AGENDA_ICS_URLS : une ligne `CODE|URL` par agenda."""
+def read_sources(cfg: dict | None = None) -> list[tuple[str, str]]:
+    """Agendas à lire : ceux de `config.json`, puis ceux de AGENDA_ICS_URLS.
+
+    Les deux origines ne se valent pas, et c'est délibéré : un agenda **public** a une
+    URL qui n'est pas un secret, elle vit donc dans `config.json`, versionnée et
+    relisible. Un agenda **privé** est adressé par une URL secrète, qui n'a rien à
+    faire dans un repo public — il passe par l'environnement.
+    """
+    sources = [(a["code"], a["url"]) for a in (cfg or {}).get("agendas", [])]
     raw = os.environ.get("AGENDA_ICS_URLS", "").strip()
     if not raw:
-        sys.exit("AGENDA_ICS_URLS est vide — voir la docstring du script.")
-    sources = []
+        if not sources:
+            sys.exit("Aucun agenda : ni `agendas` dans config.json, ni AGENDA_ICS_URLS.")
+        return sources
     for line in raw.replace(";", "\n").splitlines():
         line = line.strip()
         if not line:
@@ -186,7 +195,7 @@ def main() -> None:
     window_end = window_start + timedelta(days=args.days)
 
     events = []
-    for code, url in read_sources():
+    for code, url in read_sources(cfg):
         for component in fetch_events(url, window_start, window_end):
             normalized = normalize(component, code, tz)
             if normalized:

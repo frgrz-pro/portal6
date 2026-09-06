@@ -15,9 +15,10 @@ déjà utilisée en entrée. Pour un vrai contrôle d'accès, l'alternative est 
 lu via `polling_headers` (cf. `.docs/trmnl-dashboard.md`).
 
 Configuration (variables d'environnement) :
-    AGENDA_ICS_URLS   un agenda par ligne, `CODE|URL` (adresse secrète iCal Google)
+    AGENDA_ICS_URLS   agendas PRIVÉS, un par ligne, `CODE|URL` (adresse secrète iCal).
+                      Les agendas publics, eux, sont dans config.json.
     GIST_ID           identifiant du gist secret à mettre à jour
-    GITHUB_TOKEN      jeton avec la portée `gist`
+    GIST_TOKEN        jeton avec la seule portée `gist`
 
 Usage :
     python features/trmnl/data/build_dashboard.py --print      # rien n'est publié
@@ -56,7 +57,7 @@ def build_agenda_block(cfg: dict, days: int) -> dict:
     start = datetime.combine(now.date(), time.min, tzinfo=tz)
 
     events = []
-    for code, url in build_agenda.read_sources():
+    for code, url in build_agenda.read_sources(cfg):
         for component in build_agenda.fetch_events(url, start, start + timedelta(days=days)):
             normalized = build_agenda.normalize(component, code, tz)
             if normalized:
@@ -124,9 +125,11 @@ def main() -> None:
         print(f"{args.out} — {len(text)} octets")
         return
 
-    gist_id, token = os.environ.get("GIST_ID"), os.environ.get("GITHUB_TOKEN")
+    gist_id = os.environ.get("GIST_ID")
+    # GITHUB_TOKEN est accepté en second : c'est le nom qu'impose GitHub Actions.
+    token = os.environ.get("GIST_TOKEN") or os.environ.get("GITHUB_TOKEN")
     if not gist_id or not token:
-        sys.exit("GIST_ID et GITHUB_TOKEN sont requis pour publier (ou utiliser --out / --print).")
+        sys.exit("GIST_ID et GIST_TOKEN sont requis pour publier (ou utiliser --out / --print).")
     publish_gist(gist_id, token, payload)
 
 
