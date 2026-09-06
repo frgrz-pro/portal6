@@ -86,8 +86,14 @@ services:
 # `name:` explicite volontaire : sans lui, Compose prefixe du nom de projet et
 # creerait `media_plex_config`. Les commandes d'import et de sauvegarde du
 # runbook designent le volume par son nom nu — il doit donc etre fige ici.
+# `external: true` : les volumes sont crees a la main en phase 3, avant le premier
+# `up`. Compose les reutilise sans les revendiquer — ce qui supprime son warning
+# "volume already exists but was not created by Docker Compose" et, surtout,
+# **les met hors de portee de `docker compose down -v`** (le garde-fou du §6).
 volumes:
   plex_config:
+    external: true
     name: plex_config
   plex_transcode:
+    external: true
     name: plex_transcode

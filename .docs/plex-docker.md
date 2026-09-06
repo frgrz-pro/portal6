@@ -1,10 +1,10 @@
 # Plex — migration de l'install native Windows vers Docker
 
-**Statut :** **PHASES 0 À 3 EXÉCUTÉES ET VALIDÉES (2026-09-06)** — la copie de travail est
-réécrite et importée dans le volume `plex_config`. **L'install native n'a pas été touchée**,
-seulement arrêtée : le rollback (§7) est toujours à une commande. **Phase 4 (démarrage du
-conteneur) en attente de go** — c'est le point d'engagement, là où se joue « serveur
-d'origine » vs « serveur neuf ».
+**Statut :** **PHASE 4 FRANCHIE (2026-09-06)** — le conteneur tourne, **sous l'identité
+d'origine**, avec les 6 bibliothèques et des chemins qui résolvent. **L'install native n'a
+toujours pas été touchée**, seulement arrêtée : le rollback (§7) reste à une commande.
+**Reste la phase 5** (validation d'usage : lecture, historique, client LAN, compte
+partagé) — c'est toi qui la fais, elle ne s'automatise pas.
 Outillage et runbook : [`features/media/plex/`](../features/media/plex/README.md).
 **Date :** 2026-09-06
 **Voisins :** [musique.md](musique.md) (axe B : `M:\music\library` dans Plex),
@@ -382,3 +382,30 @@ mort, donc c'est bien un socket orphelin, et il fera échouer le bind du contene
 redémarrage de Windows le purge ; c'est le geste à faire en premier.
 Décidé aussi : le **nouveau m3u xTeVe part en session dédiée**, jamais entre les phases 4
 et 6 (voir Questions ouvertes).
+
+### 2026-09-06 (sexies) — phase 4 franchie
+Le reboot a bien purgé le socket fantôme, mais le **démarrage auto (phase 7, pas faite) a
+relancé Plex natif** qui a repris 32400 — François l'a tué, port libéré. Bloc `plex`
+fusionné dans le compose du stack (sauvegarde `docker-compose.yml.avant-plex`), image
+`1.43.3.10896-cb3ebc72d` tirée, conteneur `plex` **Up (healthy)**.
+
+**Validations passées :**
+- **Identité conservée** — `/identity` renvoie exactement le `ProcessedMachineIdentifier`
+  du registre. ⚠️ Piège de vérification : `/identity` expose le **Processed** (SHA1,
+  40 car.), pas le `MachineIdentifier` brut (UUID, 36 car.) — comparer les deux mène à un
+  faux « serveur neuf ».
+- **6 bibliothèques présentes**, toutes racines en `/data/*` : Films 745, Series 235 shows,
+  Animes 111 shows, TV Programs 20 shows, YouTube 889, TV Recordings 0. (Les compteurs
+  `metadata_items` du §1 agrègent séries + saisons + épisodes : pas le même objet, ce n'est
+  pas un écart.)
+- **Résolution des fichiers : 11/11** sur `D`/`G`/`H`/`I` depuis le conteneur. La chaîne
+  réécriture + bind mounts fonctionne de bout en bout.
+
+**Correction appliquée** : volumes passés en `external: true`. Créés à la main en phase 3,
+Compose les signalait comme non-gérés par lui ; les déclarer externes supprime le warning
+et surtout **les met hors de portée de `docker compose down -v`** — le garde-fou du §6
+devient structurel au lieu d'être une simple consigne.
+
+**Reste armé, à désactiver** : `PlexUpdateService` (*Running/Automatic*) et la clé `Run`
+du registre. Tant qu'ils le sont, chaque reboot relance le Plex natif qui vient disputer
+32400 au conteneur. C'est la phase 7, qui devient de fait prioritaire.
