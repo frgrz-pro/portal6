@@ -241,3 +241,13 @@ Dev Edition active : `trmnlp list` répond (plus de 401) et `trmnlp push` a cré
 hors du repo. Appris : `trmnlp push` **réécrit `settings.yml`** (commentaires perdus),
 et y inscrit lui-même l'`id`. Reste à brancher : gist + champ « URL du payload », spot,
 et ajout à la playlist.
+
+### 2026-09-06 (quinquies) — la chaîne est bouclée
+Le dashboard tourne de bout en bout : `build_dashboard.py` → gist secret → polling TRMNL
+→ écran du device. Vérifié depuis l'API device (`filename` renouvelé, image passée de
+2041 à 7046 octets, toutes les valeurs présentes) et pas seulement en rendu local.
+Spot **Saint-Jacut**, 10 agendas publics, 13 événements sur 7 jours.
+Deux erreurs corrigées en route, toutes deux issues d'une lecture trop littérale de la
+doc : le `##` de `##{{ champ }}` n'est pas de la syntaxe, et `past_days: 1` décale les
+tableaux journaliers d'Open-Meteo (les min/max affichaient la veille).
+Reste à valider : le workflow GitHub Actions n'a pas encore tourné pour de vrai.
