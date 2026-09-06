@@ -23,9 +23,9 @@ pénibles et les apps constructeur.
   Zigbee) : elle parle à un backend sur le LAN qui, lui, tient la radio.
   Backend pressenti : Home Assistant sur la tour Docker (déjà planifié dans
   `features/home/README.md`). Détail dans [zigbee-multiprises.md](zigbee-multiprises.md).
-- Emplacement du code : `apps/remote/` (le dossier `apps/` du monorepo existe pour ça).
+- Emplacement du code : `apps/ha-remote/` (le dossier `apps/` du monorepo existe pour ça).
 - **Scaffold créé le 2026-08-30** : projet Gradle single-module, package
-  `com.portal6.remote`, minSdk 26 / target 35, Compose BOM + Material 3.
+  `com.portal6.haremote`, minSdk 26 / target 35, Compose BOM + Material 3.
   L'UI est branchée sur un **`MockLightsRepository`** (état en mémoire) derrière
   l'interface `LightsRepository` — contrat : `lights: StateFlow<List<Light>>`,
   `toggle(entityId)`, `setAll(on)`. Le futur client HA implémentera la même
@@ -78,3 +78,9 @@ sdkmanager ([setup-dev-windows.md](setup-dev-windows.md)) ; `gradlew` + jar comm
 Un Home Assistant de dev tourne en Docker Desktop (`features/home/ha/`) pour brancher le
 vrai client HA sur l'intégration Demo en attendant le coordinateur Zigbee.
 **Premier build réussi** : `gradlew assembleDebug` → `app-debug.apk` (15,6 Mo, 4 min à froid). HA de dev démarré (`portal6-ha`, http://localhost:8123), onboarding à faire.
+
+**Renommage `remote` → `ha-remote`** : dossier `apps/ha-remote/`, projet Gradle
+`Portal6HaRemote`, package et `applicationId` `com.portal6.haremote`, label de l'appli
+`Portal6 HA Remote`. Motif : lever l'ambiguïté avec la télécommande TV/Shield — cette app
+est le client Home Assistant du foyer. Le doc garde son nom (`app-remote.md`) : le sujet,
+lui, n'a pas changé.

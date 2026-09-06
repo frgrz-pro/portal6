@@ -62,7 +62,7 @@ PATH utilisateur enrichi de `platform-tools`, `cmdline-tools\latest\bin`,
 adb --version
 java -version
 sdkmanager --list_installed
-cd apps\remote ; .\gradlew.bat assembleDebug
+cd apps\ha-remote ; .\gradlew.bat assembleDebug
 cd home\ha ; docker compose up -d      # puis http://localhost:8123
 ```
 

@@ -7,7 +7,7 @@ simplifier la vie. Domaines actuels :
 - **music** (`plugin/`, `data/`) — bibliothèque musicale unifiée (ETL, SQLite)
 - **home** (`features/home/`) — domotique (Home Assistant `ha/`, Shield `tv/`), affichage TRMNL, calendriers sport/eSport
 - **hardware** (`.docs/hardware/`) — web-radio Brandt RK 711S (notes de design uniquement)
-- **apps** (`apps/`) — applications (`apps/remote/`, télécommande Kotlin/Compose)
+- **apps** (`apps/`) — applications (`apps/ha-remote/`, télécommande Kotlin/Compose)
 
 ## Méthodo de travail — .docs/ (IMPORTANT)
 

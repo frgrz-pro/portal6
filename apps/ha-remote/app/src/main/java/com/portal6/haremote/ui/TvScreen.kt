@@ -1,4 +1,4 @@
-package com.portal6.remote.ui
+package com.portal6.haremote.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

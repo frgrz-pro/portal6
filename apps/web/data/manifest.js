@@ -1,6 +1,6 @@
 // Généré par apps/web/build_manifest.py — ne pas éditer à la main.
 window.PORTAL6 = {
-  "generated": "2026-09-06 18:00",
+  "generated": "2026-09-06 19:02",
   "music": {
     "vault": [
       {
@@ -123,21 +123,21 @@ window.PORTAL6 = {
     ],
     "db": {
       "path": "plugin/db/music.db",
-      "size": 63070208,
-      "size_h": "60.1 Mo",
-      "mtime": "2026-08-20 00:29",
+      "size": 61202432,
+      "size_h": "58.4 Mo",
+      "mtime": "2026-09-06 18:58",
       "tables": {
         "enrichment": 13917,
-        "files": 88223,
+        "files": 85040,
         "platform_refs": 0,
         "playlist_tracks": 13968,
         "playlists": 110,
-        "tracks": 90758
+        "tracks": 90080
       },
       "cross": {
         "both": 4408,
         "spotify_only": 9509,
-        "local_only": 76841
+        "local_only": 76163
       },
       "enrichment": [
         [
@@ -1546,7 +1546,7 @@ window.PORTAL6 = {
           "local": 16
         }
       ],
-      "files_matched": 87316
+      "files_matched": 84133
     },
     "scan": {
       "files": 85040,

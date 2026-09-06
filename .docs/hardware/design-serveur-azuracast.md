@@ -352,6 +352,52 @@ Monter `M:\music` **sans que les stations n'y imposent leur arborescence**, et s
 > **STOP / VÉRIFIER (Phase 4) :** deux stations différentes lisent le **même fichier
 > physique** · aucun MP3 dupliqué dans les répertoires d'AzuraCast · `M:\music` inchangé.
 
+**🟡 Phase 4 — partie infrastructure FAITE le 2026-09-06 ; partie applicative à finir.**
+
+**Méthode retenue, et elle est officielle : `docker-compose.override.yml`.** Le compose
+généré par `docker.sh` ne doit jamais être édité ; le fichier d'échantillon du projet
+indique explicitement de créer un `docker-compose.override.yml` pour toute
+personnalisation. C'est donc la seule voie compatible avec la règle §3.
+
+Fichier posé en `/var/azuracast/docker-compose.override.yml` :
+
+```yaml
+services:
+  web:
+    volumes:
+      - /mnt/m/music:/media/music:ro
+```
+
+- **Fusion vérifiée** avant application : `docker compose config` valide, et le bind
+  apparaît **en plus** des 10 volumes nommés (aucun n'est remplacé — Compose concatène les
+  listes de volumes).
+- Conteneur recréé par `docker compose up -d` (**jamais** de `down`) : les volumes nommés,
+  donc la base et le compte super-admin, sont intacts.
+- **Vérifié dans le conteneur** : `/media/music` → `M:\` 864 Go, et `touch` répond
+  `Read-only file system`. ✅
+
+**Choix du chemin `/media/music`** — délibérément **hors** de `/var/azuracast/stations`,
+qui appartient au volume `station_data` (le stockage interne d'AzuraCast). Y poser la
+bibliothèque violerait l'interdit n°5 et appellerait la duplication. Plusieurs stations
+pointeront sur **ce même montage**.
+
+**`:ro` délibéré** : les radios lisent la bibliothèque, elles ne la réorganisent pas
+(§4). À rediscuter seulement si une fonction réellement voulue d'AzuraCast exige
+l'écriture.
+
+**Ce qui reste à faire pour clore la Phase 4 :**
+
+1. Déclarer une **storage location** dans AzuraCast (Administration → Storage Locations),
+   type *Station Media*, chemin **`/media/music`**.
+2. Lancer le scan de médiathèque — **c'est lui qui répondra à Q3** : le débit du pont 9p
+   sur ~85 000 fichiers. Le point de mesure est le **scan**, pas la lecture en diffusion.
+3. Le STOP formel (deux stations sur le même fichier physique) ne pourra être coché qu'en
+   Phase 5, quand deux stations existeront.
+
+> Note de méthode : la vérification du montage a été faite avec `df` et `stat`
+> **volontairement, sans aucun `ls`/`find` sur la bibliothèque** — le scan de `M:\music`
+> appartient aux scripts du repo et à AzuraCast, pas à des commandes lancées à la main.
+
 ### PHASE 5 — Recréer Midnight Club
 
 Station de test et de référence (slug probable `midnight_club`), avec sa grille

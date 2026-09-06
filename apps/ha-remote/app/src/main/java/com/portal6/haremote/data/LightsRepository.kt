@@ -1,4 +1,4 @@
-package com.portal6.remote.data
+package com.portal6.haremote.data
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,7 +1,11 @@
 # Plex — migration de l'install native Windows vers Docker
 
-**Statut :** **PRÊT À EXÉCUTER — rien n'a encore basculé.** Inventaire fait et vérifié,
-plan écrit, outillage rédigé dans [`features/media/plex/`](../features/media/plex/README.md).
+**Statut :** **PHASES 0 À 3 EXÉCUTÉES ET VALIDÉES (2026-09-06)** — la copie de travail est
+réécrite et importée dans le volume `plex_config`. **L'install native n'a pas été touchée**,
+seulement arrêtée : le rollback (§7) est toujours à une commande. **Phase 4 (démarrage du
+conteneur) en attente de go** — c'est le point d'engagement, là où se joue « serveur
+d'origine » vs « serveur neuf ».
+Outillage et runbook : [`features/media/plex/`](../features/media/plex/README.md).
 **Date :** 2026-09-06
 **Voisins :** [musique.md](musique.md) (axe B : `M:\music\library` dans Plex),
 [infra-reseau.md](infra-reseau.md) (IP fixe, accès distant),
@@ -28,7 +32,8 @@ plan écrit, outillage rédigé dans [`features/media/plex/`](../features/media/
       `R2D2` ↔ `EC-3A-56-BD-04-5A` → `192.168.0.5` **existait déjà** sur le Mercusys
       (bail *Permanent*), vérifiée des deux côtés. `ADVERTISE_IP` est donc sûr.
 
-**Plus aucun prérequis : la phase 0 peut être lancée.**
+**Phases 0 à 3 exécutées et validées le 2026-09-06** (voir Journal). Seul point en attente :
+le **go pour la phase 4**.
 
 ---
 
@@ -334,3 +339,22 @@ Le tableau de mapping §2.4 gagne la ligne `M:\` → `/data/m` (ro).
 La réservation DHCP `192.168.0.5` ↔ `EC-3A-56-BD-04-5A` **existait déjà** sur le Mercusys
 (bail *Permanent*, nom routeur `R2D2`) : rien à poser. `ADVERTISE_IP=http://192.168.0.5:32400/`
 est donc stable. **La phase 0 (arrêt du Plex natif + copie de travail) est lançable.**
+
+### 2026-09-06 (quater) — phases 0 à 3 exécutées
+Séquence déroulée sans écart au runbook, l'install native jamais modifiée.
+**Phase 0** : 63 361 fichiers / 48 206 dossiers / **10,87 Go** copiés en **3 min 21**
+(~84 Mo/s), 0 échec, code robocopy `1` ; base à **138,3 Mo** — l'attendu exact.
+**Phase 1** : `Preferences.xml` produit, 35 attributs, `MachineIdentifier : present`.
+**Phase 2** : `10947 / 0` avant, `PRAGMA integrity_check = ok`, `0 / 10947` après, encodage
+`%20` des `media_streams.url` préservé — la répétition à blanc s'est révélée fidèle au réel.
+**Phase 3** : volumes `plex_config` / `plex_transcode` créés, **11,0 Go** importés,
+`Preferences.xml` + `Metadata/` + `Media/` + `Plug-in Support/` présents dans le volume.
+Cinq pièges d'exécution consignés dans le runbook, dont deux qui auraient bloqué une
+reprise à froid : `export_preferences.ps1` était **en UTF-8 sans BOM** (donc impossible à
+parser sous PowerShell 5.1, corrigé), et **Python n'est pas dans le PATH** (le venv vit
+dans WSL, inutilisable pour une base côté Windows).
+Deux points à surveiller : un **socket fantôme sur 32400** appartenant à un PID mort
+(à revérifier avant le bind du conteneur), et la **lenteur du 9p sur les petits fichiers**
+(11 Go importés en ~25 min) — même phénomène que celui redouté pour le scan AzuraCast.
+**Arrêt volontaire avant la phase 4**, qui est le point d'engagement vis-à-vis de plex.tv
+et des deux comptes partagés.

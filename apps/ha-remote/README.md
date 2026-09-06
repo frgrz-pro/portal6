@@ -1,4 +1,4 @@
-# Portal6 Remote
+# Portal6 HA Remote
 
 Télécommande Android du foyer — design dans [`.docs/app-remote.md`](../../.docs/app-remote.md).
 
@@ -14,11 +14,11 @@ Outillage installé sur le PC Windows le 2026-09-06 (détail et dépannage dans
 [`.docs/setup-dev-windows.md`](../../.docs/setup-dev-windows.md)) : Android Studio,
 SDK 35 dans `%LOCALAPPDATA%\Android\Sdk` (`ANDROID_HOME`), JDK Temurin 21.
 
-- **Android Studio** : *Open* → `apps/remote/` ; le SDK est détecté via `local.properties`.
+- **Android Studio** : *Open* → `apps/ha-remote/` ; le SDK est détecté via `local.properties`.
 - **Ligne de commande** (le wrapper Gradle 8.10.2 est commité) :
 
 ```powershell
-cd apps\remote
+cd apps\ha-remote
 .\gradlew.bat assembleDebug
 ```
 

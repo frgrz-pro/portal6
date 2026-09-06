@@ -153,3 +153,43 @@ L'install native n'a pas été touchée.
 ```powershell
 docker run --rm -v plex_config:/c -v M:/backup:/b alpine tar czf "/b/plex_config-$(Get-Date -f yyyy-MM-dd).tgz" -C /c .
 ```
+
+---
+
+## Pièges rencontrés à l'exécution (2026-09-06)
+
+**1. `export_preferences.ps1` était en UTF-8 sans BOM → erreur de parsing.**
+Windows PowerShell 5.1 lit un `.ps1` sans BOM en **ANSI** : le tiret cadratin `—` d'un
+message devenait `â€"`, dont le `"` fermait la chaîne prématurément
+(`Unexpected token 'Plex'`). Corrigé en ajoutant le **BOM UTF-8** au fichier, contenu
+inchangé. **Tout `.ps1` de ce dossier contenant un caractère non-ASCII doit être enregistré
+avec BOM** — ou rester en ASCII pur, comme `plex.service.yml`.
+
+**2. Python n'est pas dans le PATH.** Le venv `portal6` vit dans **WSL**
+(`~/.venvs/portal6`), inutilisable ici puisque la base à inspecter est côté Windows. Le
+launcher `py` est absent. Interpréteur à utiliser :
+
+```powershell
+C:\Users\Franc\AppData\Local\Programs\Python\Python312\python.exe check_paths.py $db
+```
+
+`check_paths.py` n'utilise que la stdlib (`sqlite3`) : aucun venv nécessaire.
+
+**3. La copie embarque un `-wal` de 141 Mo** (plus un `-shm`), et les 4 sauvegardes
+automatiques de Plex (`…library.db-AAAA-MM-JJ`, ~137 Mo chacune). C'est **normal et sain** :
+la copie suit l'arrêt propre de PMS, donc le WAL est cohérent et `Plex SQLite.exe` le
+checkpointe à l'ouverture. Ne pas supprimer le `-wal` à la main avant la réécriture.
+
+**4. Socket fantôme sur 32400.** Après l'arrêt de PMS, `Get-NetTCPConnection -LocalPort
+32400 -State Listen` montrait encore un listener appartenant à un **PID mort**. Sans effet
+sur les phases 0 à 3 ; **à revérifier avant la phase 4**, car il pourrait gêner le bind du
+conteneur. Un redémarrage de Windows le purge.
+
+**5. `Stop-Service PlexUpdateService` exige une élévation.** À lancer dans un PowerShell
+**administrateur** — les trois processus (`Plex Media Server`, `Plex Tuner Service`,
+`PlexScriptHost`) se tuent sans élévation, le service non.
+
+### Chiffres réels de la phase 0
+
+`63 361` fichiers · `48 206` dossiers · **10,87 Go** en **3 min 21** (~84 Mo/s),
+0 échec, code robocopy `1` (< 8). Base à `138,3 Mo`, conforme à l'attendu.

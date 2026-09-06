@@ -48,6 +48,21 @@ Deux contraintes structurantes :
 - **Webhook plafonné à 2 Ko** par envoi (12 envois/h). Le **polling** n'a pas cette
   limite — c'est lui qu'on privilégie dès que la donnée est publiable.
 
+### Les deux clés TRMNL — ne pas les confondre
+
+Piège rencontré le 2026-09-06 : `trmnlp list` répondait `401 Invalid API key` avec une
+clé pourtant valide. TRMNL expose **deux clés de nature différente** :
+
+| Clé | Où | Sert à |
+|---|---|---|
+| **Clé de device** (avec le MAC) | `trmnl.com/devices/<id>/developer/edit` | lire/servir l'écran (`GET /api/display`), BYOS |
+| **Clé de compte**, préfixe `user_` | `trmnl.com/account` | gérer les private plugins — c'est celle de `trmnlp` |
+
+La clé de compte **n'apparaît qu'une fois la Developer Edition active**. Dans `.env`
+(local, jamais commité) les identifiants du device sont donc nommés explicitement
+`TRMNL_DEVICE_MAC` et `TRMNL_DEVICE_KEY`, pour que `TRMNL_API_KEY` reste réservé à la
+clé de compte attendue par `trmnlp`.
+
 ### Outillage : `trmnlp`
 
 [`usetrmnl/trmnlp`](https://github.com/usetrmnl/trmnlp) est le serveur de dev officiel :
@@ -65,6 +80,11 @@ plugins/<nom>/
     ├── settings.yml   définition du plugin (nom, stratégie, URL, refresh) — envoyée
     └── *.liquid       un fichier par taille : full, half_horizontal, half_vertical, quadrant
 ```
+
+⚠️ `settings.yml` doit porter l'**`id`** du plugin côté TRMNL. Sans lui, chaque
+`trmnlp push` crée un *nouveau* plugin au lieu de mettre à jour le sien — on se retrouve
+vite avec dix doublons. L'id se récupère avec `trmnlp list` après la première création,
+puis se commite. Les deux `settings.yml` du repo ont la ligne prête, commentée.
 
 ## Décisions
 
@@ -147,3 +167,12 @@ calculées dans le repo, marées dérivées d'Open-Meteo sans clé) et **Agenda 
 (7 jours, tous agendas, poussé en webhook depuis des secrets Actions). Géométrie du
 disque lunaire validée visuellement sur les 8 phases. Reste bloquant : le spot
 (lat/lon) et les URLs iCal.
+
+### 2026-09-06 (bis) — les clés, et un piège évité
+Device joignable et identifié : appel `GET /api/display` réussi (HTTP 200, firmware
+`trmnl_og/FW1.8.16.bin` — l'OG est reconfirmé côté serveur). Mais `trmnlp list` renvoie
+**401** : les identifiants disponibles sont ceux du **device**, pas ceux du **compte**.
+D'où la section « Les deux clés TRMNL » et le renommage en `TRMNL_DEVICE_*` dans `.env`.
+La clé de compte (`user_…`, sur `trmnl.com/account`) n'existera qu'après achat de la
+Developer Edition — toujours le seul verrou. Découvert aussi : `settings.yml` doit porter
+un `id`, sinon chaque push duplique le plugin ; la ligne est en place, commentée.

@@ -1,4 +1,4 @@
-package com.portal6.remote
+package com.portal6.haremote
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,9 +24,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.portal6.remote.ui.LightsScreen
-import com.portal6.remote.ui.LightsViewModel
-import com.portal6.remote.ui.TvScreen
+import com.portal6.haremote.ui.LightsScreen
+import com.portal6.haremote.ui.LightsViewModel
+import com.portal6.haremote.ui.TvScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

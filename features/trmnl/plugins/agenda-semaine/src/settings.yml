@@ -3,6 +3,10 @@
 # Stratégie webhook : c'est build_agenda.py qui POSTe le payload (données privées,
 # jamais commitées — cf. la docstring du script). TRMNL plafonne à 2 Ko par envoi.
 name: Agenda semaine
+# id : identifiant du plugin côté TRMNL, renseigné après la première création.
+# ⚠️ Sans lui, chaque `trmnlp push` crée un NOUVEAU plugin au lieu de mettre à
+#    jour le sien. À récupérer avec `trmnlp list`, puis coller ici et commiter.
+# id:
 strategy: webhook
 refresh_interval: 60
 dark_mode: no

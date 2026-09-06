@@ -1,0 +1,35 @@
+{
+  "folders": [
+    { "path": "." }
+  ],
+  "settings": {
+    // Terminal par défaut = équivalent de `p6` : WSL Ubuntu, cwd portal6, venv activé.
+    "terminal.integrated.profiles.windows": {
+      "p6 (WSL portal6)": {
+        "path": "wsl.exe",
+        "args": [
+          "-d", "Ubuntu",
+          "--cd", "/mnt/c/DevLab/portal6",
+          "-e", "zsh", "-c",
+          "source ~/.venvs/portal6/bin/activate; exec zsh -i"
+        ],
+        "icon": "terminal-ubuntu"
+      },
+      "PowerShell": {
+        "source": "PowerShell",
+        "icon": "terminal-powershell"
+      }
+    },
+    "terminal.integrated.defaultProfile.windows": "p6 (WSL portal6)",
+    "files.eol": "\n",
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.pytest_cache": true
+    },
+    "search.exclude": {
+      "data/**": true,
+      "exports/**": true,
+      "plugin/db/**": true
+    }
+  }
+}

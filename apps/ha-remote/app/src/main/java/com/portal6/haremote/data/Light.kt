@@ -1,4 +1,4 @@
-package com.portal6.remote.data
+package com.portal6.haremote.data
 
 /**
  * Une prise pilotable. [entityId] correspondra à l'entité Home Assistant

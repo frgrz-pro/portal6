@@ -1,4 +1,4 @@
-package com.portal6.remote.ui
+package com.portal6.haremote.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.portal6.remote.data.Light
+import com.portal6.haremote.data.Light
 
 @Composable
 fun LightsScreen(

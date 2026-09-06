@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.portal6.remote"
+    namespace = "com.portal6.haremote"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.portal6.remote"
+        applicationId = "com.portal6.haremote"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

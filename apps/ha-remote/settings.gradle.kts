@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Portal6Remote"
+rootProject.name = "Portal6HaRemote"
 include(":app")

@@ -1,6 +1,10 @@
 ---
 # Définition du plugin, poussée telle quelle vers TRMNL par `trmnlp push`.
 name: Ciel & Mer
+# id : identifiant du plugin côté TRMNL, renseigné après la première création.
+# ⚠️ Sans lui, chaque `trmnlp push` crée un NOUVEAU plugin au lieu de mettre à
+#    jour le sien. À récupérer avec `trmnlp list`, puis coller ici et commiter.
+# id:
 strategy: polling
 polling_verb: get
 # Le payload est régénéré 4x/jour par .github/workflows/trmnl-ciel-mer.yml

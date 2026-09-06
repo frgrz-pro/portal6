@@ -17,7 +17,7 @@ poste Brandt RK 711S en web-radio cliente d'un serveur AzuraCast — cf. [.docs/
 ```
 Portal6/
 ├── .docs/                     # notes de design vivantes (un doc par sujet) + archives datées + hardware/ (radio)
-├── apps/remote/               # télécommande Android (Kotlin/Compose)
+├── apps/ha-remote/            # télécommande Android (Kotlin/Compose)
 ├── plugin/
 │   ├── db/                    # music.db (SQLite, artefact construit — gitignoré)
 │   └── etl/

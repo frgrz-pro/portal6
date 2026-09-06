@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Convertit les preferences Plex du registre Windows en Preferences.xml Linux.
 

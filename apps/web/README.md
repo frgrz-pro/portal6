@@ -17,13 +17,15 @@ apps/web/
 
 ## Lancer
 
+Depuis le terminal `p6` (WSL, venv activé) :
+
 ```bash
-python -m http.server 8712 --directory apps/web
+npm run web
 ```
 
-(Sur ce poste, `python` du PATH est le stub Microsoft Store : utiliser
-`%LOCALAPPDATA%\Programs\Python\Python312\python.exe`, ou `~/.venvs/portal6/bin/python`
-dans WSL. Node/npm ne sont pas installés → pas de `npm run web`.)
+(équivalent : `python -m http.server 8712 --directory apps/web` avec le python du
+venv. Sur Windows natif, `python` du PATH est le stub Microsoft Store : utiliser
+`%LOCALAPPDATA%\Programs\Python\Python312\python.exe`.)
 
 Puis <http://localhost:8712>. Un simple double-clic sur `index.html` marche aussi :
 le manifeste est un `.js` (et non un `.json`) précisément pour que `file://`
@@ -32,7 +34,7 @@ n'ait pas besoin de `fetch`.
 ## Régénérer les chiffres
 
 ```bash
-python apps/web/build_manifest.py
+npm run web:manifest   # = python apps/web/build_manifest.py
 ```
 
 Le script lit **uniquement** `plugin/db/music.db` et `data/music/` — jamais `M:`

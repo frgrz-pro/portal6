@@ -26,6 +26,18 @@ Tranché le 2026-09-06 : on la prend maintenant, puisque les deux premiers écra
 maison sont conçus (cf. [trmnl-dashboard.md](trmnl-dashboard.md)). Sans l'addon,
 l'onglet Private Plugins n'existe pas côté TRMNL.
 
+**Où l'activer** — impérativement connecté avec le compte **`.case`** (celui qui possède
+le device ; c'est sur ce compte que vivront les plugins) :
+
+1. Dans l'app TRMNL : *menu déroulant du device → icône engrenage → descendre jusqu'à
+   « Developer perks » → upgrade*. C'est un achat unique qui débloque l'API et les
+   private plugins **définitivement sur le compte**.
+2. Ou directement : <https://trmnl.com/upgrade>.
+
+À noter : l'addon se compte **par device**, mais un seul device en Dev Edition suffit
+pour *créer* des plugins utilisables ensuite sur tous les devices du compte — donc 20 $
+une fois, pas 20 $ par écran futur.
+
 ### Comptes — `.sport` (données) et `.case` (device)
 
 Deux comptes Google distincts :

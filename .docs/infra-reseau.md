@@ -51,9 +51,14 @@ routeur lui-même.
   et **8008/8009** (Google Cast). ⚠️ **ADB 5555 est fermé** : le débogage réseau n'est pas
   activé sur la Shield — à faire avant tout test de l'app remote
   ([app-remote.md](app-remote.md)).
-- Autres clients vus au passage, en bail dynamique (pas de réservation nécessaire) :
-  `TRMNL-OG-RT97Q4` → `.117` (le TRMNL sort vers le cloud, cf. [trmnl.md](trmnl.md)),
-  plus un Mac, un iPhone et un `R2D2s-Air` en MAC randomisées.
+- **TRMNL** : `TRMNL-OG-RT97Q4` → `192.168.0.117`, MAC `A4-CB-8F-2B-34-BC`, bail dynamique
+  de 120 min. **Aucune réservation nécessaire** : le device est *pull-only*, il ouvre les
+  connexions vers le cloud TRMNL et n'écoute rien en entrant — son IP n'est jamais
+  composée par personne. Une réservation ne deviendrait utile qu'en passant en **BYOS**
+  (le device pointant vers un serveur de la tour). Le nom du client confirme au passage
+  le modèle : **OG**, cf. [trmnl-dashboard.md](trmnl-dashboard.md).
+- Autres clients vus au passage, en bail dynamique : un Mac, un iPhone et un
+  `R2D2s-Air` en MAC randomisées.
 
 > ⚠️ La tour a **plusieurs interfaces** (Ethernet en APIPA car débranché, NordLynx,
 > OpenVPN, vEthernet WSL). La seule MAC qui compte pour la réservation est celle de
@@ -114,3 +119,9 @@ réservations » est donc close sans rien avoir à modifier, et le dernier prér
 migration Plex tombe. Plage DHCP relevée : `.2`–`.253`, bail 120 min.
 Découverte annexe : **ADB 5555 est fermé sur la Shield** → nouvelle question ouverte,
 prérequis de l'app remote.
+
+### 2026-09-06 (ter) — TRMNL sur le LAN
+Device relevé : `TRMNL-OG-RT97Q4` → `192.168.0.117`, MAC `A4-CB-8F-2B-34-BC`, bail
+dynamique. Le nom du client **confirme le modèle OG** (indépendamment de la fiche
+produit). Décidé : **pas de réservation DHCP** — le TRMNL est pull-only, son IP n'est
+jamais composée. À rouvrir seulement le jour où on passera en BYOS.
