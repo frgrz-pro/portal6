@@ -1,22 +1,20 @@
 ---
-# Définition du plugin, poussée telle quelle vers TRMNL par `trmnlp push`.
-name: portal6 — Dashboard
-# id : identifiant du plugin côté TRMNL, à renseigner après la première création.
-# ⚠️ Sans lui, chaque `trmnlp push` crée un NOUVEAU plugin au lieu de mettre à
-#    jour le sien. À récupérer avec `trmnlp list`, puis coller ici et commiter.
-# id:
 strategy: polling
+no_screen_padding: false
+dark_mode: false
+static_data:
 polling_verb: get
-# L'URL réelle est celle d'un GIST SECRET : la commiter dans un repo public
-# annulerait tout l'intérêt du secret. On passe donc par un champ personnalisé —
-# sa valeur vit dans l'instance du plugin côté TRMNL, jamais dans le repo, et un
-# `trmnlp push` ne l'écrase pas.
+framework_version:
+serverless_language:
 polling_url: "##{{ payload_url }}"
-refresh_interval: 60
-dark_mode: no
-no_screen_padding: no
+polling_headers:
+polling_body:
+id: 470032
 custom_fields:
-  - keyname: payload_url
-    field_type: string
-    name: URL du payload
-    description: URL brute du gist secret contenant dashboard.json.
+- keyname: payload_url
+  field_type: string
+  name: URL du payload
+  description: URL brute du gist secret contenant dashboard.json.
+name: portal6 — Dashboard
+description:
+refresh_interval: 60
