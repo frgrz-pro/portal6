@@ -12,6 +12,6 @@
     "web:manifest": "$HOME/.venvs/portal6/bin/python apps/web/build_manifest.py",
     "web": "$HOME/.venvs/portal6/bin/python -m http.server 8712 --directory apps/web",
     "trmnl:dashboard": "$HOME/.venvs/portal6/bin/python features/trmnl/data/build_dashboard.py",
-    "trmnl:push": "echo y | docker run --rm -i -e TRMNL_API_KEY -v \"$PWD/features/trmnl/plugins/dashboard:/plugin\" trmnl/trmnlp push"
+    "trmnl:push": "echo y | docker run --rm -i --env-file .env -v \"$PWD/features/trmnl/plugins/dashboard:/plugin\" trmnl/trmnlp push"
   }
 }

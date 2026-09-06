@@ -54,6 +54,24 @@ GIST_FILENAME = "dashboard.json"
 HTTP_TIMEOUT = 30
 
 
+def load_env() -> None:
+    """Charge le `.env` de la racine du repo dans l'environnement, sans l'ecraser.
+
+    Parseur maison plutot que `source .env` : le fichier contient des valeurs que le
+    shell interprete (crochets, espaces), et le sourcer echoue. Les variables deja
+    definies gagnent, pour qu'un appel CI reste maitre.
+    """
+    env = ROOT.parents[2] / ".env"
+    if not env.exists():
+        return
+    for line in env.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
+
+
 def build_agenda_block(cfg: dict, days: int) -> dict:
     """Agenda de la semaine, au format attendu par la colonne de gauche du template.
 
@@ -129,6 +147,7 @@ def main() -> None:
     parser.add_argument("--no-agenda", action="store_true",
                         help="partie publique seulement (aucune dépendance icalendar)")
     args = parser.parse_args()
+    load_env()
 
     cfg = json.loads(Path(args.config).read_text(encoding="utf-8"))
     if not cfg["spot"]["latitude"] and not cfg["spot"]["longitude"]:
