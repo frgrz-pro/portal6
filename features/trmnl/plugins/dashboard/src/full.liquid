@@ -1,0 +1,285 @@
+{% comment %}
+  Dashboard portal6 — écran unique (800 x 480, 1-bit).
+  Colonne de gauche : l'agenda de la semaine. Reste de l'écran : soleil, lune,
+  marées, mer et météo.
+
+  Pas de `title_bar` : l'écran est plus lisible sans, et la place gagnée profite au
+  contenu. L'heure de génération est reléguée en petit à droite de la date — sur un
+  e-ink, un écran figé est indiscernable d'un écran à jour sans ce repère.
+
+  Les tailles de texte sont posées explicitement plutôt que via les classes `value--*`
+  du framework : celles-ci sont dimensionnées pour un ou deux chiffres plein écran et
+  font déborder une grille dense comme celle-ci.
+
+  Les icônes sont dessinées ici, pas importées : en 1-bit sans niveaux de gris, un jeu
+  d'icônes classique se transforme en bouillie à 16 px. Traits épais (2,5), aucun
+  remplissage, aucun détail sous 2 px.
+{% endcomment %}
+<style>
+  .dash { display: flex; width: 100%; height: 100%; gap: 10px;
+          font-variant-numeric: tabular-nums; }
+  .dash__h { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+             border-bottom: 2px solid black; padding-bottom: 2px; margin-bottom: 5px;
+             display: flex; justify-content: space-between; align-items: baseline; }
+  .dash__stamp { font-size: 9px; letter-spacing: 0; text-transform: none; }
+  .ico { width: 26px; height: 26px; flex: 0 0 auto; }
+  .ico--sm { width: 15px; height: 15px; }
+
+  /* --- colonne agenda ---------------------------------------------------- */
+  .ag { flex: 0 0 212px; min-width: 0; border-right: 2px solid black; padding-right: 10px;
+        display: flex; flex-direction: column; }
+  /* flex-start + gap : les journées vides étant sautées, le nombre de blocs varie
+     d'un jour à l'autre — space-between les écarterait de façon absurde à 3 jours. */
+  .ag__days { flex: 1 1 auto; display: flex; flex-direction: column;
+              gap: 9px; overflow: hidden; }
+  .ag__day { min-width: 0; }
+  .ag__label { font-size: 11px; letter-spacing: 0.04em; }
+  /* Le jour courant est le seul repère visuel possible en 1-bit : inverse vidéo. */
+  .ag__day--today .ag__label { background: black; color: white; padding: 1px 5px; }
+  .ag__ev { font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; padding-left: 2px; }
+  .ag__ev b { font-weight: normal; }
+  .ag__none { font-size: 11px; padding-left: 2px; }
+
+  /* --- bloc principal ---------------------------------------------------- */
+  .main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column;
+          justify-content: space-between; gap: 8px; }
+
+  .sun { display: flex; gap: 12px; min-width: 0; }
+  .sun__left { flex: 1 1 auto; min-width: 0; }
+  .sun__times { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+  .sun__big { font-size: 34px; line-height: 1; }
+  .sun__gap { width: 30px; }
+  .sun__row { display: flex; align-items: center; gap: 8px; font-size: 15px;
+              line-height: 1.7; }
+  .sun__row span:first-of-type { font-size: 12px; flex: 1 1 auto; }
+
+  .moon { flex: 0 0 148px; display: flex; gap: 8px; align-items: center; }
+  .moon__pct { font-size: 23px; line-height: 1.1; }
+  .moon__name { font-size: 11px; line-height: 1.2; }
+  .moon__next { font-size: 10px; line-height: 1.35; margin-top: 3px; }
+
+  .tides { display: flex; gap: 5px; }
+  .tide { flex: 1 1 0; text-align: center; padding: 7px 1px; border: 2px solid black; }
+  .tide--pm { background: black; color: white; }
+  .tide__time { font-size: 24px; line-height: 1.1; }
+  .tide__label { font-size: 10px; display: flex; align-items: center;
+                 justify-content: center; gap: 3px; }
+
+  .sea { display: flex; gap: 7px; }
+  .sea > div { flex: 1 1 0; min-width: 0; }
+  .sea__label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em;
+                display: flex; align-items: center; gap: 4px; }
+  .sea__value { font-size: 21px; line-height: 1.2; }
+  .sea__sub { font-size: 10px; line-height: 1.3; }
+
+  .flag { border: 2px double black; padding: 4px 6px; text-align: center; font-size: 11px;
+          display: flex; align-items: center; justify-content: center; gap: 6px; }
+</style>
+
+{% comment %}
+  Bibliothèque d'icônes. Tracés seuls (pas de <svg> imbriqué) : chaque symbole est
+  instancié plus bas par <use>, ce qui évite de répéter les chemins.
+{% endcomment %}
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="i-base" fill="none" stroke="black" stroke-width="2.5"
+     stroke-linecap="round" stroke-linejoin="round"></g>
+  <symbol id="i-sunrise" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 20h18"/><path d="M7 16a5 5 0 0 1 10 0"/>
+      <path d="M12 2v6"/><path d="M9 5l3-3 3 3"/>
+    </g>
+  </symbol>
+  <symbol id="i-sunset" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 20h18"/><path d="M7 16a5 5 0 0 1 10 0"/>
+      <path d="M12 2v6"/><path d="M9 5l3 3 3-3"/>
+    </g>
+  </symbol>
+  <symbol id="i-golden" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 19h20"/><circle cx="12" cy="13" r="4"/>
+      <path d="M12 4v2"/><path d="M4.5 7.5l1.5 1.5"/><path d="M19.5 7.5L18 9"/>
+    </g>
+  </symbol>
+  <symbol id="i-blue" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 19h20"/><path d="M7 15a5 5 0 0 1 10 0"/>
+      <path d="M12 11V5"/><path d="M9 8l3 3 3-3"/>
+    </g>
+  </symbol>
+  <symbol id="i-up" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20V5"/><path d="M6 11l6-6 6 6"/>
+    </g>
+  </symbol>
+  <symbol id="i-down" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4v15"/><path d="M6 13l6 6 6-6"/>
+    </g>
+  </symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 9c2.5 0 2.5 3 5 3s2.5-3 5-3 2.5 3 5 3 2.5-3 5-3"/>
+      <path d="M2 16c2.5 0 2.5 3 5 3s2.5-3 5-3 2.5 3 5 3 2.5-3 5-3"/>
+    </g>
+  </symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3c0 0-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11z"/>
+    </g>
+  </symbol>
+  <symbol id="i-temp" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 14V5a2.5 2.5 0 0 0-5 0v9a4.5 4.5 0 1 0 5 0z"/>
+    </g>
+  </symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 7h11a3 3 0 1 0-3-3"/>
+      <path d="M2 12h15a3 3 0 1 1-3 3"/>
+      <path d="M2 17h8"/>
+    </g>
+  </symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2A3.5 3.5 0 0 0 7 18z"/>
+    </g>
+  </symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 14a8.5 8.5 0 0 1-10.8-11A9 9 0 1 0 20 14z"/>
+    </g>
+  </symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24">
+    <g fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="5" width="18" height="16" rx="2"/>
+      <path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/>
+    </g>
+  </symbol>
+</defs></svg>
+
+<div class="view view--full">
+  <div class="layout">
+    <div class="dash">
+
+      {% comment %} --- Agenda de la semaine ----------------------------- {% endcomment %}
+      <div class="ag">
+        <div class="dash__h">
+          <span><svg class="ico ico--sm" style="vertical-align:-2px"><use href="#i-cal"/></svg> Semaine</span>
+        </div>
+        <div class="ag__days">
+          {% comment %} Les journées sans événement sont sautées : sur une colonne
+             étroite, une ligne « — » coûte autant qu'un vrai événement. {% endcomment %}
+          {% for day in agenda.days %}{% if day.events.size > 0 %}
+            <div class="ag__day {% if day.today %}ag__day--today{% endif %}">
+              <span class="ag__label">{{ day.label }}</span>
+              {% for event in day.events limit: 3 %}
+                <div class="ag__ev"><b>{{ event.time }}</b> {{ event.title }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}{% endfor %}
+        </div>
+      </div>
+
+      {% comment %} --- Soleil, lune, marées, mer -------------------------- {% endcomment %}
+      <div class="main">
+
+        <div class="sun">
+          <div class="sun__left">
+            <div class="dash__h">
+              <span>{{ date }}</span>
+              <span class="dash__stamp">maj {{ generated_at }}</span>
+            </div>
+            <div class="sun__times">
+              <svg class="ico"><use href="#i-sunrise"/></svg>
+              <span class="sun__big">{{ sun.sunrise }}</span>
+              <span class="sun__gap"></span>
+              <svg class="ico"><use href="#i-sunset"/></svg>
+              <span class="sun__big">{{ sun.sunset }}</span>
+            </div>
+            <div class="sun__row">
+              <svg class="ico ico--sm"><use href="#i-golden"/></svg>
+              <span>Golden hour matin</span><span>{{ sun.golden_am }}</span>
+            </div>
+            <div class="sun__row">
+              <svg class="ico ico--sm"><use href="#i-golden"/></svg>
+              <span>Golden hour soir</span><span>{{ sun.golden_pm }}</span>
+            </div>
+            <div class="sun__row">
+              <svg class="ico ico--sm"><use href="#i-blue"/></svg>
+              <span>Blue hour</span><span>{{ sun.blue_pm }}</span>
+            </div>
+          </div>
+          <div class="moon">
+            <svg width="78" height="78" viewBox="0 0 92 92" aria-hidden="true">
+              <circle cx="46" cy="46" r="40" fill="none" stroke="black" stroke-width="2"></circle>
+              <path d="{{ moon.svg_path }}" fill="black"></path>
+            </svg>
+            <div>
+              <div class="moon__pct">{{ moon.illumination }}%</div>
+              <div class="moon__name">{{ moon.phase }}</div>
+              <div class="moon__next">PL {{ moon.next_full }}<br>NL {{ moon.next_new }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="dash__h"><span>
+            <svg class="ico ico--sm" style="vertical-align:-2px"><use href="#i-wave"/></svg>
+            Marées — {{ spot }}</span></div>
+          <div class="tides">
+            {% for tide in tides %}
+              <div class="tide {% if tide.kind == 'PM' %}tide--pm{% endif %}">
+                <div class="tide__time">{{ tide.time }}</div>
+                <div class="tide__label">
+                  <svg class="ico" style="width:11px;height:11px">
+                    <use href="{% if tide.kind == 'PM' %}#i-up{% else %}#i-down{% endif %}"/>
+                  </svg>
+                  {{ tide.label }} {{ tide.day }}
+                </div>
+              </div>
+            {% else %}
+              <div class="tide__label">Pas de données de marée pour ce point.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="sea">
+          <div>
+            <div class="sea__label"><svg class="ico ico--sm"><use href="#i-wave"/></svg> Houle</div>
+            <div class="sea__value">{{ sea.wave_height | default: '—' }} m</div>
+            <div class="sea__sub">{{ sea.wave_period | round }} s · {{ sea.wave_direction }}</div>
+          </div>
+          <div>
+            <div class="sea__label"><svg class="ico ico--sm"><use href="#i-drop"/></svg> Eau</div>
+            <div class="sea__value">{{ sea.water_temp | round }}°</div>
+          </div>
+          <div>
+            <div class="sea__label"><svg class="ico ico--sm"><use href="#i-temp"/></svg> Air</div>
+            <div class="sea__value">{{ weather.temp }}°</div>
+            <div class="sea__sub">{{ weather.temp_min }}° / {{ weather.temp_max }}°</div>
+          </div>
+          <div>
+            <div class="sea__label"><svg class="ico ico--sm"><use href="#i-wind"/></svg> Vent</div>
+            <div class="sea__value">{{ weather.wind }} km/h</div>
+            <div class="sea__sub">{{ weather.wind_direction }} · raf. {{ weather.gusts }}</div>
+          </div>
+          <div style="flex: 1.5 1 0;">
+            <div class="sea__label"><svg class="ico ico--sm"><use href="#i-cloud"/></svg> Ciel</div>
+            <div class="sea__value" style="font-size: 17px;">{{ weather.label }}</div>
+            <div class="sea__sub">pluie {{ weather.rain_probability }} %</div>
+          </div>
+        </div>
+
+        {% assign next_special = moon.specials | first %}
+        {% if next_special %}
+          <div class="flag">
+            <svg class="ico ico--sm"><use href="#i-moon"/></svg>
+            {{ next_special.tags }} — {{ next_special.when }}{% if next_special.estimated %} (estimation){% endif %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>

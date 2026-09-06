@@ -188,9 +188,9 @@ def build(cfg: dict) -> dict:
             "age": round(astro.moon_age_days(jd), 1),
             "distance_km": round(astro.moon_ecliptic(jd)[2]),
             "svg_path": astro.moon_svg_path(fraction, waxing, 46, 46, 40),
-            "next_full": astro.from_julian(next_full).astimezone(tz).strftime("%d/%m à %Hh%M")
+            "next_full": astro.from_julian(next_full).astimezone(tz).strftime("%d/%m %Hh%M")
                          if next_full else "—",
-            "next_new": astro.from_julian(next_new).astimezone(tz).strftime("%d/%m à %Hh%M")
+            "next_new": astro.from_julian(next_new).astimezone(tz).strftime("%d/%m %Hh%M")
                         if next_new else "—",
             "specials": [{
                 "when": ev["when"].strftime("%d/%m"),

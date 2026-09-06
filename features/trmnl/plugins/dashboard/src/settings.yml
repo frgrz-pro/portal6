@@ -1,13 +1,16 @@
 ---
 # Définition du plugin, poussée telle quelle vers TRMNL par `trmnlp push`.
-# Stratégie webhook : c'est build_agenda.py qui POSTe le payload (données privées,
-# jamais commitées — cf. la docstring du script). TRMNL plafonne à 2 Ko par envoi.
-name: Agenda semaine
+name: portal6 — Dashboard
 # id : identifiant du plugin côté TRMNL, renseigné après la première création.
 # ⚠️ Sans lui, chaque `trmnlp push` crée un NOUVEAU plugin au lieu de mettre à
 #    jour le sien. À récupérer avec `trmnlp list`, puis coller ici et commiter.
 # id:
-strategy: webhook
+strategy: polling
+polling_verb: get
+# ⚠️ URL du GIST SECRET, à coller après création (cf. .docs/trmnl-dashboard.md).
+# Elle n'est PAS publique : ne pas la commiter en clair si le gist doit rester privé —
+# la renseigner directement dans l'interface TRMNL, et laisser ce champ vide ici.
+polling_url:
 refresh_interval: 60
 dark_mode: no
 no_screen_padding: no

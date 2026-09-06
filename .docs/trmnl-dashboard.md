@@ -88,24 +88,39 @@ puis se commite. Les deux `settings.yml` du repo ont la ligne prête, commentée
 
 ## Décisions
 
-### Le pattern de données : GitHub sert les payloads, comme il sert les .ics
+### Un payload unique, publié dans un gist secret
 
-Pour toute donnée publiable, on **réutilise le pattern déjà en place pour les .ics
-eSport** : un script Python génère un JSON, GitHub Actions le regénère par cron et ne
-commite qu'en cas de vrai changement, et le consommateur va le chercher sur
-`raw.githubusercontent.com`. Zéro serveur à héberger, zéro secret côté TRMNL,
-historique des payloads en cadeau.
+Le premier réflexe était de réutiliser le pattern des .ics eSport : générer un JSON,
+le commiter, le laisser servir par `raw.githubusercontent.com`. **Le choix d'un
+dashboard unique l'interdit**, et le raisonnement mérite d'être tracé — un plugin TRMNL
+n'a qu'**une seule stratégie de données**, or l'écran mélange du public (soleil, lune,
+marées, météo) et du privé (agenda perso) :
 
-**Pour les données privées, ce pattern est interdit** : portal6 est public. L'agenda
-perso passe donc en webhook — le payload va de GitHub Actions directement à TRMNL, sans
-transiter par le repo, et les adresses iCal secrètes restent des secrets Actions.
+| Piste | Verdict |
+|---|---|
+| Webhook (push vers TRMNL, rien ne transite par le repo) | ❌ payload fusionné **mesuré à ~3,2 Ko**, limite 2 Ko |
+| Polling sur un payload commité | ❌ portal6 est public, l'agenda perso n'y a pas sa place |
+| Polling sur un **gist secret** | ✅ retenu |
+| Polling sur un dépôt privé + `polling_headers` | 🔒 plus sûr, plus lourd — repli si besoin |
 
-Règle générale : **donnée publiable → polling sur un payload commité ; donnée privée →
-webhook, en tenant dans 2 Ko.**
+**Retenu : gist secret.** Le workflow y publie `dashboard.json` ; TRMNL le poll à une
+URL non listée, connue de lui seul. C'est le même modèle de confiance que l'« adresse
+secrète au format iCal » de Google Calendar — déjà utilisée en *entrée* de la chaîne,
+donc on n'ajoute pas d'hypothèse nouvelle. Si un vrai contrôle d'accès devient
+nécessaire, le repli est un dépôt privé lu via `polling_headers` (en-tête
+`Authorization`), qui gate réellement l'accès au lieu de miser sur l'obscurité de l'URL.
 
-### Écran 1 — « Ciel & Mer » (polling)
+⚠️ Conséquence : **l'URL de polling ne doit pas être commitée**. `settings.yml` laisse
+le champ vide et l'URL se renseigne directement dans l'interface TRMNL.
 
-Un seul écran qui répond à « qu'est-ce que le ciel et la mer font aujourd'hui » :
+Règle générale, toujours valable pour le reste du repo : **donnée publiable → payload
+commité ; donnée privée → jamais dans le repo.**
+
+### L'écran unique — agenda à gauche, ciel et mer à droite
+
+**Décision du 2026-09-06 (François) : un seul dashboard, pas deux écrans.** L'agenda
+de la semaine occupe une colonne à gauche (~212 px), le reste de l'écran porte le ciel
+et la mer :
 
 | Bloc | Contenu |
 |---|---|
@@ -140,20 +155,19 @@ partie éclairée est **précalculé en Python** et transmis dans le payload. Le
 se projette en demi-ellipse de demi-axe `r·(2f−1)`, signé — positif en phase gibbeuse,
 négatif en croissant. Rendu vérifié sur les 8 phases avant commit.
 
-### Écran 2 — « Agenda semaine » (webhook)
+### La colonne agenda
 
-Une colonne par jour sur 7 jours, tous agendas confondus, le jour courant en inverse
-vidéo, un code court par agenda à côté de l'heure. Le plugin Google Calendar du
-catalogue sait afficher *un* agenda proprement ; il ne sait pas fabriquer cette vue-là.
+Sept jours empilés verticalement, tous agendas confondus, trois événements maximum par
+jour, le jour courant en inverse vidéo — seul repère visuel possible en 1-bit. Le plugin
+Google Calendar du catalogue sait afficher *un* agenda proprement ; il ne sait pas
+fabriquer cette vue-là, ni la juxtaposer au reste.
 
 Les .ics sont lus avec `icalendar` + `recurring-ical-events` plutôt qu'avec un parseur
 maison : les agendas réels sont pleins de règles de récurrence, et les développer à la
 main est le genre de code qui a l'air de marcher jusqu'au premier événement mensuel.
 
-Le rognage progressif imposé par la limite de 2 Ko sacrifie, dans l'ordre : la longueur
-des titres, puis le nombre d'événements par jour, puis les derniers jours de la fenêtre.
-Ce qui est coupé est compté et affiché dans la barre de titre (`+n masqués`) — un écran
-qui ment sur ce qu'il montre serait pire qu'un écran incomplet.
+Ce qui dépasse les trois événements par jour est **compté**, pas silencieusement perdu :
+un écran qui ment sur ce qu'il montre serait pire qu'un écran incomplet.
 
 ## Journal
 
@@ -176,3 +190,14 @@ D'où la section « Les deux clés TRMNL » et le renommage en `TRMNL_DEVICE_*` 
 La clé de compte (`user_…`, sur `trmnl.com/account`) n'existera qu'après achat de la
 Developer Edition — toujours le seul verrou. Découvert aussi : `settings.yml` doit porter
 un `id`, sinon chaque push duplique le plugin ; la ligne est en place, commentée.
+
+### 2026-09-06 (ter) — un seul dashboard
+**Décision (François) : un écran unique, pas deux.** Les plugins `ciel-mer` et
+`agenda-semaine` fusionnent en un seul plugin `dashboard`, agenda en colonne de gauche.
+Conséquence non évidente : un plugin n'ayant **qu'une stratégie de données**, et le
+payload fusionné pesant **~3,2 Ko** (mesuré) contre 2 Ko de limite webhook, le webhook
+devient impossible — donc polling, donc une URL récupérable, donc **pas** le repo public
+puisque l'agenda est privé. D'où le **gist secret**, et l'URL de polling qui ne doit pas
+être commitée. Rendu validé en PNG via `trmnlp build` : mise en page corrigée trois fois
+(débordements hors écran, texte noir sur fond noir dans les blocs inversés, largeur du
+conteneur flex non contrainte).

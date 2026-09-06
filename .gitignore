@@ -41,3 +41,6 @@ desktop.ini
 # --- IDE ---------------------------------------------------------------------
 .vscode/
 .idea/
+
+# Rendus locaux trmnlp
+_build/

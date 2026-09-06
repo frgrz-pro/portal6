@@ -1,0 +1,9 @@
+---
+# Config du serveur de dev local (`trmnlp serve`). N'est jamais envoyée à TRMNL.
+watch:
+  - src
+
+# Le payload réel vit dans un gist secret : on ne le référence pas ici. Pour
+# prévisualiser, générer un jeu de données local (aucune publication) avec
+#   python features/trmnl/data/build_dashboard.py --out preview.json
+# puis coller son contenu sous `variables:`.
