@@ -72,6 +72,12 @@ clé de compte attendue par `trmnlp`.
 
 ### Outillage : `trmnlp`
 
+⚠️ **`trmnlp build --png` rend en 1-bit par défaut.** Depuis le passage du device en
+4 niveaux de gris, il faut `--color-depth 2`, sinon la preview dithère les gris en
+damier : un fond gris avec du texte par-dessus y paraît illisible alors qu'il est net
+sur l'écran. Constaté le 2026-09-06 — plusieurs itérations de mise en page ont été
+jugées sur un rendu qui ne correspondait plus au device.
+
 [`usetrmnl/trmnlp`](https://github.com/usetrmnl/trmnlp) est le serveur de dev officiel :
 il rend les templates Liquid avec le design system TRMNL, en HTML et en PNG, avec
 rechargement à la sauvegarde. Disponible en image Docker (aucune dépendance Ruby à

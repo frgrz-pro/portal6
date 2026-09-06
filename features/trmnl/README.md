@@ -5,7 +5,7 @@ le générateur du payload qui l'alimente. Le design et les décisions sont dans
 [.docs/trmnl-dashboard.md](../../.docs/trmnl-dashboard.md) ; le setup du device (comptes
 `.sport` / `.case`) dans [.docs/trmnl.md](../../.docs/trmnl.md).
 
-Device cible : **TRMNL OG, 800 × 480, 1-bit** (noir et blanc pur, pas de gris).
+Device cible : **TRMNL OG, 800 × 480, 4 niveaux de gris** (2 bits).
 
 ## Ce qui est codable, et ce qui ne l'est pas
 
@@ -55,8 +55,15 @@ installer grâce à l'image Docker :
 docker run --pull always --rm -p 4567:4567 -v "$(pwd)/features/trmnl/plugins/dashboard:/plugin" trmnl/trmnlp serve --bind 0.0.0.0
 ```
 
-Puis http://localhost:4567 — rechargement à chaque sauvegarde d'un `.liquid`. `trmnlp
-build --png` rend directement l'image 800 × 480 telle que le device l'affichera.
+Puis http://localhost:4567 — rechargement à chaque sauvegarde d'un `.liquid`.
+
+Pour un PNG fidèle, **`--color-depth 2` est obligatoire** : sans lui trmnlp rend en
+1-bit et dithère les gris en damier, ce qui rend un fond gris avec du texte dessus
+illisible alors qu'il passe très bien sur le device.
+
+```bash
+docker run --rm -v "$(pwd)/features/trmnl/plugins/dashboard:/plugin" trmnl/trmnlp build --png --color-depth 2
+```
 
 Pousser vers TRMNL (`TRMNL_API_KEY` = la clé **de compte**, préfixe `user_`, sur
 `trmnl.com/account` — pas la clé de device) :

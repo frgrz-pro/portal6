@@ -48,9 +48,11 @@
      d'un cran chacun. La hierarchie remplace le gras, qui epaissit sans hierarchiser. */
   .ag__ev b { font-weight: normal; color: #555; }
   /* Le tag remplace le mot retire du titre : il porte la meme information pour
-     moins de place, et c'est le seul repere de categorie de la colonne. */
-  .ag__tag { font-size: 10px; letter-spacing: 0.03em; color: #999;
-             border-bottom: 1px solid #999; }
+     moins de place, et c'est le seul repere de categorie de la colonne. Pastille a
+     fond gris plutot que texte gris : le fond isole le tag du titre sans lui faire
+     perdre en lisibilite, ce qu'un texte clair a 10 px ne permettait pas. */
+  .ag__tag { font-size: 9px; letter-spacing: 0.03em; color: #000; background: #aaa;
+             padding: 1px 5px; border-radius: 2px; white-space: nowrap; }
   .ag__none { font-size: 11px; padding-left: 2px; }
   /* Ce qui ne rentre pas est annonce : un ecran qui ment sur ce qu'il montre est
      pire qu'un ecran incomplet. */
