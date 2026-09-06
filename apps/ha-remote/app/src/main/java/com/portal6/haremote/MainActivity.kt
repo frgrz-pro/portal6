@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.portal6.haremote.ui.LightsScreen
 import com.portal6.haremote.ui.LightsViewModel
 import com.portal6.haremote.ui.TvScreen
+import com.portal6.haremote.ui.TvViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +48,8 @@ private enum class Tab(val label: String) { Lights("Lights"), Tv("TV") }
 @Composable
 private fun RemoteApp() {
     var currentTab by rememberSaveable { mutableStateOf(Tab.Lights) }
-    val lightsViewModel: LightsViewModel = viewModel()
+    val lightsViewModel: LightsViewModel = viewModel(factory = LightsViewModel.Factory)
+    val tvViewModel: TvViewModel = viewModel(factory = TvViewModel.Factory)
 
     Scaffold(
         bottomBar = {
@@ -72,7 +74,10 @@ private fun RemoteApp() {
                 viewModel = lightsViewModel,
                 modifier = Modifier.padding(innerPadding),
             )
-            Tab.Tv -> TvScreen(modifier = Modifier.padding(innerPadding))
+            Tab.Tv -> TvScreen(
+                viewModel = tvViewModel,
+                modifier = Modifier.padding(innerPadding),
+            )
         }
     }
 }

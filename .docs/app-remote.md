@@ -13,6 +13,10 @@ pénibles et les apps constructeur.
 - [ ] Noms des boutons : par lampe ("Salon", "Biblio"…) ou par prise physique ?
 - [ ] Backend lights : Home Assistant (cf. [zigbee-multiprises.md](zigbee-multiprises.md))
   — dépend de l'identification des multiprises.
+- [ ] Plusieurs pièces ou une seule ? Aujourd'hui « Salon » = les 8 prises. Le
+  découpage réel dépend du mapping des multiprises (question ci-dessus).
+- [ ] Tuile Salon : un appui fait défiler les configs en boucle. Alternative si
+  les configs se multiplient — une tuile par config, ou un menu au long-press.
 
 ## Décisions
 
@@ -32,6 +36,24 @@ pénibles et les apps constructeur.
   interface (les `entityId` sont déjà au format HA `switch.multiprise_a_prise_1`).
 - Labels des 8 boutons : placeholders A1-A4 / B1-B4 dans `data/Light.kt`
   (`DefaultLights`) — à renommer quand le mapping réel sera connu.
+- **Configs de pièce (2026-09-06)** : une « config » est un instantané nommé de
+  l'état on/off des prises d'une pièce — une scène. C'est une notion applicative
+  qui survit au passage du mock au vrai client HA (les clés sont des `entityId`).
+  Persistées en `SharedPreferences` + JSON `org.json` : volume minuscule, lecture
+  synchrone (ce dont les tuiles ont besoin), **zéro dépendance ajoutée** — DataStore
+  aurait imposé de l'asynchrone pour 8 booléens.
+- **Les dépôts sont des singletons de process** (`Portal6App` + `AppContainer`,
+  injection manuelle, pas de Hilt) : les tuiles des réglages rapides tournent hors
+  Activity et doivent voir le même état que l'UI.
+- **Deux tuiles dans le volet des réglages rapides** (`TileService`) :
+  « Salon » (un appui applique la config suivante, en boucle ; sous-titre = config
+  active) et « Mute TV ». Un bouton de l'app les ajoute au volet en un tap
+  (`requestAddTileService`, Android 13+) ; en dessous l'ajout reste manuel.
+- **`TvRepository` mocké**, calqué sur `LightsRepository` : la tuile Mute et
+  l'onglet TV partagent un état persisté, donc tout est câblé et testable. Seul
+  l'envoi réel de `KEYCODE_VOLUME_MUTE` manque (phase 2, [tv-mute.md](tv-mute.md)).
+- L'état courant des prises est lui aussi persisté, mais c'est une **béquille du
+  mock** : avec HA branché, l'état de vérité vient du backend, pas du disque.
 - ~~Le Mac de dev n'a ni JDK ni Android Studio ni SDK~~ → **poste de dev = PC Windows depuis le 2026-09-06**, outillage complet et wrapper Gradle commité, cf. [setup-dev-windows.md](setup-dev-windows.md). (Ancienne note : build à faire après
   installation d'Android Studio (le wrapper Gradle jar n'est pas commité,
   `gradle wrapper` le génère.)
@@ -40,6 +62,8 @@ pénibles et les apps constructeur.
 
 - **Bottom bar, 2 tabs : Lights / TV.**
 - **Tab Lights** :
+  - une rangée de **configs du salon** (chips) + « Gérer » pour enregistrer
+    l'état courant sous un nom ou supprimer une config ;
   - grille **2 colonnes × 4 boutons** (toggle par prise/lampe, état on/off visible) ;
   - un **switch "All"** (tout allumer) ;
   - un bouton **"Turn off"** (tout éteindre d'un coup — le geste du soir).
@@ -84,3 +108,8 @@ vrai client HA sur l'intégration Demo en attendant le coordinateur Zigbee.
 `Portal6 HA Remote`. Motif : lever l'ambiguïté avec la télécommande TV/Shield — cette app
 est le client Home Assistant du foyer. Le doc garde son nom (`app-remote.md`) : le sujet,
 lui, n'a pas changé.
+
+**Configs de pièce + tuiles des réglages rapides** : persistance locale
+(`ConfigStore`), dépôts en singletons de process, tuiles « Salon » (défilement des
+configs) et « Mute TV », `TvRepository` mocké, onglet TV rendu vivant. Build OK,
+non encore testé sur device.

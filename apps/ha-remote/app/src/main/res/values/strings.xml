@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Portal6 HA Remote</string>
+    <string name="tile_salon">Salon</string>
+    <string name="tile_tv_mute">Mute TV</string>
+</resources>

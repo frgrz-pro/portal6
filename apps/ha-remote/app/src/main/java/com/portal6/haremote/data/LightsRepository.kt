@@ -13,22 +13,40 @@ interface LightsRepository {
     val lights: StateFlow<List<Light>>
     suspend fun toggle(entityId: String)
     suspend fun setAll(on: Boolean)
+
+    /** Pousse un jeu d'états d'un coup — c'est ce que fait « appliquer une config ». */
+    suspend fun apply(states: Map<String, Boolean>)
 }
 
+/**
+ * Mock en mémoire, adossé à [ConfigStore] pour que l'état survive à la
+ * fermeture de l'app (et soit partagé avec les tuiles des réglages rapides,
+ * qui tournent dans le même process). Cette persistance est une béquille du
+ * mock : avec HA branché, l'état de vérité est celui du backend.
+ */
 class MockLightsRepository(
-    initial: List<Light> = DefaultLights,
+    private val store: ConfigStore,
+    defaults: List<Light> = DefaultLights,
 ) : LightsRepository {
 
-    private val _lights = MutableStateFlow(initial)
+    private val _lights = MutableStateFlow(store.loadLights(defaults))
     override val lights: StateFlow<List<Light>> = _lights
 
     override suspend fun toggle(entityId: String) {
-        _lights.value = _lights.value.map {
-            if (it.entityId == entityId) it.copy(isOn = !it.isOn) else it
-        }
+        update { list -> list.map { if (it.entityId == entityId) it.copy(isOn = !it.isOn) else it } }
     }
 
     override suspend fun setAll(on: Boolean) {
-        _lights.value = _lights.value.map { it.copy(isOn = on) }
+        update { list -> list.map { it.copy(isOn = on) } }
+    }
+
+    override suspend fun apply(states: Map<String, Boolean>) {
+        update { list ->
+            list.map { light -> states[light.entityId]?.let { light.copy(isOn = it) } ?: light }
+        }
+    }
+
+    private fun update(transform: (List<Light>) -> List<Light>) {
+        _lights.value = transform(_lights.value).also(store::saveLights)
     }
 }

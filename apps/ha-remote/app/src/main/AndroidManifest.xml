@@ -5,7 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="Portal6 HA Remote"
+        android:name=".Portal6App"
+        android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity
@@ -16,6 +17,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Tuiles du volet des réglages rapides (la topbar déroulante). -->
+        <service
+            android:name=".qs.SalonConfigTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_qs_salon"
+            android:label="@string/tile_salon"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".qs.TvMuteTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_qs_mute"
+            android:label="@string/tile_tv_mute"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
