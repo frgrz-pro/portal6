@@ -1,8 +1,8 @@
 # Design — Serveur de web-radios (AzuraCast)
 
 **Owner :** François Grzybowski
-**Statut :** **BLOQUÉ** — aucun déploiement fonctionnel sur l'installation Windows actuelle
-**Date :** 2026-08-12
+**Statut :** **EN REPRISE** — Phases 1 et 2 validées le 2026-08-20 ; prochaine étape : Phase 3 (déploiement)
+**Date :** 2026-08-12, mise à jour 2026-08-20
 **Piste :** SERVEUR — le poste qui consomme ces flux est décrit dans
 [design-brandt-rk711s.md](design-brandt-rk711s.md)
 
@@ -38,8 +38,10 @@ traite que **l'infrastructure**.
 | Racine Docker | `C:\docker\media` |
 | Dépôt AzuraCast cloné | `C:\docker\media\azuracast` ✅ |
 | `docker.sh` téléchargé | ✅ dans le dépôt |
-| Compose global | `C:\docker\media\docker-compose.yml` — **contient probablement encore des images inexistantes** |
+| Compose global | `C:\docker\media\docker-compose.yml` — **vérifié sain le 2026-08-20** : xteve + samba + dozzle uniquement, aucune image AzuraCast, `docker compose config` valide |
 | Déploiement AzuraCast | ❌ **aucun déploiement fonctionnel ne doit être considéré comme établi** |
+| WSL2 | ✅ Ubuntu installé, distribution par défaut, version 2 |
+| Docker Desktop | ✅ 4.75.0, moteur 29.5.2, backend WSL2, opérationnel |
 
 **Historique.** Une installation antérieure tournait dans un **LXC Proxmox** (`LXC-Radio`,
 `/media/music`, `/srv/services/azuracast`) et avait validé le fonctionnement d'AzuraCast et de
@@ -178,6 +180,37 @@ réellement publiées**, et support officiel — ou non — de Windows.
 > note**, avec le nom exact des images et le chemin du compose fourni. Aucun YAML n'a été
 > rédigé.
 
+**✅ VALIDÉ le 2026-08-20.** Sources : `azuracast.com/docs/getting-started/installation/windows/`
+et `/docker/`, plus lecture directe de `docker.sh` et `docker-compose.sample.yml` sur le dépôt
+`AzuraCast/AzuraCast` (branche `main`).
+
+- **Windows est officiellement supporté, via WSL2** : Docker Desktop + une distribution Linux
+  (Ubuntu LTS recommandé, définie comme distribution par défaut), puis on suit **la procédure
+  Linux standard à l'intérieur du shell WSL**, sans aucune adaptation. Ceci répond à Q1 :
+  pas besoin de retourner sur Proxmox.
+- **Méthode d'installation officielle** (dans le shell Ubuntu WSL, en sudo) :
+  ```bash
+  mkdir -p /var/azuracast && cd /var/azuracast
+  curl -fsSL https://raw.githubusercontent.com/AzuraCast/AzuraCast/main/docker.sh > docker.sh
+  chmod a+x docker.sh
+  ./docker.sh install
+  ```
+  Le répertoire de base vit **dans le disque de la VM WSL** (`/var/azuracast`), pas sous
+  `/mnt/c` — cohérent avec la leçon venv du repo. L'ancien clone `C:\docker\media\azuracast`
+  ne sert pas à cette procédure.
+- **Le compose n'est jamais écrit à la main** : `docker.sh` télécharge
+  `docker-compose.sample.yml` depuis le dépôt (branche `stable` ou `main` selon le canal
+  choisi via `setup-release`), l'installeur génère `docker-compose.new.yml` puis le script le
+  promeut en `/var/azuracast/docker-compose.yml`.
+- **Images réellement publiées** (architecture consolidée, 2 services) :
+  `ghcr.io/azuracast/azuracast:${AZURACAST_VERSION:-latest}` (service `web`, tout-en-un) et
+  `ghcr.io/azuracast/updater:latest`. Les images `azuracast/azuracast_web` /
+  `azuracast_stations` sont bien mortes (§2.1 confirmé).
+- **Ports du compose officiel** : 80, 443, 2022, plus la plage stations **8000–8496**.
+- **Explication du blocage §2.2 confirmée** : `docker.sh` n'accepte que `uname` = `Linux` ou
+  `Darwin` ; MINGW64 (Git Bash) est rejeté, Ubuntu WSL passe.
+- Accès final depuis Windows : `http://localhost` une fois l'installation terminée.
+
 ### PHASE 2 — Nettoyer l'existant
 
 Inventorier ce qui traîne avant de lancer quoi que ce soit :
@@ -199,6 +232,17 @@ Corriger ou remplacer le compose global fautif (§2.1).
 
 > **STOP / VÉRIFIER (Phase 2) :** `docker compose config` sort une configuration valide, sans
 > aucune image inexistante · l'inventaire des volumes est écrit (§6) · **aucun `down -v`**.
+
+**✅ VALIDÉ le 2026-08-20** (inventaire en lecture seule, aucun `down`, aucun volume touché) :
+
+- Conteneurs actifs : `dozzle` (8080:8080 — la cible §7 disait 8888, la réalité est 8080),
+  `samba` (139, 1445:445), `xteve` (34400). Réseau `media_default`.
+- `docker compose config` sur `C:\docker\media` : **valide**, aucune image AzuraCast — le
+  compose global fautif a déjà été purgé, rien à corriger.
+- Volumes : uniquement des volumes anonymes (hash), **aucun volume nommé `azuracast_*`** sur ce
+  Docker Desktop. Réponse à Q2 : rien de l'ancienne installation LXC n'est récupérable ici —
+  Midnight Club sera recréée de zéro en Phase 5.
+- Ports 80, 443, 2022, 8000 : **tous libres** (aucun listener Windows).
 
 ### PHASE 3 — Déployer AzuraCast
 
@@ -289,13 +333,17 @@ teste sur des flux publics.
 
 ## 9. Questions ouvertes
 
-1. **Q1 — Windows est-il le bon hôte ?** AzuraCast est un projet pensé pour Linux. Le retour
-   sur un hôte Linux (LXC Proxmox, comme avant, ou une VM/WSL2 dédiée) est peut-être moins
-   coûteux que de faire entrer un outil Linux dans Windows. **À trancher en Phase 1, avec la
-   doc officielle en main** — c'est la question qui décide de tout le reste de ce chantier.
-2. **Q2 — Que faire des données de l'ancienne installation LXC ?** Récupérer la station
-   Midnight Club configurée, ou repartir propre ?
+1. ~~**Q1 — Windows est-il le bon hôte ?**~~ **Tranché (Phase 1, 2026-08-20)** : oui, via
+   WSL2 — chemin officiellement documenté par AzuraCast (Docker Desktop + Ubuntu + procédure
+   Linux standard dans le shell WSL). Pas de retour Proxmox.
+2. ~~**Q2 — Données de l'ancienne installation LXC ?**~~ **Tranché (Phase 2, 2026-08-20)** :
+   aucun volume `azuracast_*` sur ce Docker Desktop — repartir propre, Midnight Club recréée
+   en Phase 5.
 3. **Q3 — Montage partagé de `M:\music`** entre plusieurs stations, sans duplication (§4).
+   Piste identifiée : depuis WSL, `M:` est visible en `/mnt/m` ; AzuraCast permet des
+   storage locations « local filesystem » par station pointant sur un même montage. ⚠️ À
+   vérifier en Phase 4, y compris la **performance du pont 9P** (`/mnt/m` traverse
+   Windows→WSL) sur une bibliothèque de ~88 000 fichiers.
 4. **Q4 — Exposition Internet** : nom de domaine, TLS, reverse proxy déjà présent dans le
    DevLab ?
 5. **Q5 — Sauvegardes** : que sauvegarde-t-on, et où ? (la bibliothèque, la configuration
