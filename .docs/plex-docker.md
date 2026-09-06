@@ -32,6 +32,18 @@ Outillage et runbook : [`features/media/plex/`](../features/media/plex/README.md
       `R2D2` ↔ `EC-3A-56-BD-04-5A` → `192.168.0.5` **existait déjà** sur le Mercusys
       (bail *Permanent*), vérifiée des deux côtés. `ADVERTISE_IP` est donc sûr.
 
+- [ ] **Nouveau m3u xTeVe — reporté à une session ultérieure** (décidé le 2026-09-06).
+      François a une nouvelle playlist à intégrer ; il reste à dire **d'où elle vient**
+      (URL fournisseur, lien m3u4u, fichier déjà téléchargé) et si elle **remplace**
+      `iptv.m3u` ou s'**ajoute** en seconde source.
+      ⚠️ **Ne pas la traiter entre les phases 4 et 6** : la phase 6 reconfigure le tuner
+      Plex à partir de la playlist active — changer les deux en même temps rendrait tout
+      diagnostic impossible. Donc soit après la phase 6, soit en tout début de session
+      dédiée, Plex déjà stabilisé.
+      État xTeVe au 2026-09-06 : `iptv.m3u`, **2 079 chaînes**, fournisseur `gotivi.sbs`,
+      EPG `xmltv.xml` (8 Mo) ; le dossier Dropbox monté en `/m3u` contient deux jeux
+      m3u4u dont un obsolète (playlist de sept. 2025).
+
 **Phases 0 à 3 exécutées et validées le 2026-09-06** (voir Journal). Seul point en attente :
 le **go pour la phase 4**.
 
@@ -358,3 +370,15 @@ Deux points à surveiller : un **socket fantôme sur 32400** appartenant à un P
 (11 Go importés en ~25 min) — même phénomène que celui redouté pour le scan AzuraCast.
 **Arrêt volontaire avant la phase 4**, qui est le point d'engagement vis-à-vis de plex.tv
 et des deux comptes partagés.
+
+### 2026-09-06 (quinquies) — contrôle avant phase 4
+Relevé de l'état réel : Plex natif arrêté (`PlexUpdateService` *Stopped*, aucun processus),
+staging présent sur `M:`, base staging revérifiée à **0 / 10 947** (réécriture toujours
+saine), volume `plex_config` peuplé avec `Preferences.xml` (35 attributs, identité présente).
+**Deux choses restent à faire avant de lancer la phase 4**, et aucune n'est un imprévu :
+le **bloc `plex` n'est pas encore fusionné** dans `C:\docker\media\docker-compose.yml`, et
+le **socket fantôme sur 32400 est toujours là** — le PID 19540 qui le détient est confirmé
+mort, donc c'est bien un socket orphelin, et il fera échouer le bind du conteneur. Un
+redémarrage de Windows le purge ; c'est le geste à faire en premier.
+Décidé aussi : le **nouveau m3u xTeVe part en session dédiée**, jamais entre les phases 4
+et 6 (voir Questions ouvertes).

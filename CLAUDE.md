@@ -30,7 +30,11 @@ plus du code.
 - **Langue : français** pour les docs, README, messages de commit.
 - **Git : ne jamais push depuis le shell.** Les pushes se font via **GitHub Desktop**
   (compte perso frgrz-pro) — GitKraken n'est plus installé sur ce poste.
-  Committer localement est OK quand demandé.
+- **Commit local : autorisé sans demander** (acté le 2026-09-06). Claude committe de
+  lui-même le travail qu'il vient de produire, message en français préfixé du domaine.
+  Deux règles : **ne committer que son propre périmètre** (`git commit -- <chemins>`,
+  jamais un `git add -A` — d'autres sessions travaillent en parallèle et laissent des
+  fichiers stagés), et **jamais de push**.
 - Secrets : `.env` et `service-account.json` existent à la racine — ne jamais les
   committer ni les afficher.
 - Task runner : npm ; les scripts restent en Python (venv hors repo, cf. `setup/`).
