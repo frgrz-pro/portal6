@@ -1,8 +1,9 @@
 # Design — Serveur de web-radios (AzuraCast)
 
 **Owner :** François Grzybowski
-**Statut :** **EN REPRISE** — Phases 1 et 2 validées le 2026-08-20 ; prochaine étape : Phase 3 (déploiement)
-**Date :** 2026-08-12, mise à jour 2026-08-20
+**Statut :** **EN REPRISE** — Phases 1 et 2 validées le 2026-08-20, re-vérifiées le 2026-09-06 ;
+Phase 3 (déploiement) **prête à lancer**, bloquée par une seule action utilisateur (§5, Phase 3)
+**Date :** 2026-08-12, mises à jour 2026-08-20 et 2026-09-06
 **Piste :** SERVEUR — le poste qui consomme ces flux est décrit dans
 [design-brandt-rk711s.md](design-brandt-rk711s.md)
 
