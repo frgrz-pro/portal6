@@ -290,30 +290,6 @@
           </div>
         </div>
 
-        <div>
-          <div class="dash__h">
-            <span>
-              <svg class="ico ico--sm" style="vertical-align:-2px"><use href="#i-wave"/></svg>
-              Marées — {{ spot }}</span>
-            {% if tide_regime != blank %}<span class="badge">{{ tide_regime }}</span>{% endif %}
-          </div>
-          <div class="tides">
-            {% for tide in tides %}
-              <div class="tide {% if tide.kind == 'BM' %}tide--bm{% endif %}">
-                <div class="tide__time">{{ tide.time }}</div>
-                <div class="tide__label">
-                  <svg class="ico" style="width:11px;height:11px">
-                    <use href="{% if tide.kind == 'PM' %}#i-up{% else %}#i-down{% endif %}"/>
-                  </svg>
-                  coef. {{ tide.coef | default: '—' }}{% if tide.day != blank %} · dem.{% endif %}
-                </div>
-              </div>
-            {% else %}
-              <div class="tide__label">Pas de données de marée pour ce point.</div>
-            {% endfor %}
-          </div>
-        </div>
-
         <div class="sea">
           <div style="flex: 1.15 1 0;">
             <div class="sea__label"><svg class="ico ico--sm"><use href="#i-wave"/></svg> Houle</div>
@@ -348,6 +324,30 @@
             <div class="sea__label"><svg class="ico ico--sm"><use href="#i-cloud"/></svg> Ciel</div>
             <div class="sea__value" style="font-size: 19px;">{{ weather.label }}</div>
             <div class="sea__sub">pluie {{ weather.rain_probability }} %</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="dash__h">
+            <span>
+              <svg class="ico ico--sm" style="vertical-align:-2px"><use href="#i-wave"/></svg>
+              Marées — {{ spot }}</span>
+            {% if tide_regime != blank %}<span class="badge">{{ tide_regime }}</span>{% endif %}
+          </div>
+          <div class="tides">
+            {% for tide in tides %}
+              <div class="tide {% if tide.kind == 'BM' %}tide--bm{% endif %}">
+                <div class="tide__time">{{ tide.time }}</div>
+                <div class="tide__label">
+                  <svg class="ico" style="width:11px;height:11px">
+                    <use href="{% if tide.kind == 'PM' %}#i-up{% else %}#i-down{% endif %}"/>
+                  </svg>
+                  coef. {{ tide.coef | default: '—' }}
+                </div>
+              </div>
+            {% else %}
+              <div class="tide__label">Pas de données de marée pour ce point.</div>
+            {% endfor %}
           </div>
         </div>
 
