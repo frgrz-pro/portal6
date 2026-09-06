@@ -38,11 +38,11 @@
   /* Un filet entre les journées : sans lui, deux jours d'affilée à trois événements
      forment un pavé de texte où l'oeil ne trouve plus la coupure. */
   .ag__day + .ag__day { border-top: 1px solid #999; padding-top: 7px; }
-  .ag__label { font-size: 13px; font-weight: 700; letter-spacing: 0.03em;
+  .ag__label { font-size: 14px; font-weight: 700; letter-spacing: 0.03em;
                display: inline-block; margin-bottom: 1px; }
   /* Le jour courant est le seul repère visuel possible en 1-bit : inverse vidéo. */
   .ag__day--today .ag__label { background: black; color: white; padding: 1px 6px; }
-  .ag__ev { font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; padding-left: 2px; }
+  .ag__ev { font-size: 13px; line-height: 1.25; overflow-wrap: anywhere; padding-left: 2px; }
   .ag__ev + .ag__ev { margin-top: 5px; }
   /* Ecran en 4 niveaux de gris : le titre garde le noir, l'heure et le tag reculent
      d'un cran chacun. La hierarchie remplace le gras, qui epaissit sans hierarchiser. */
@@ -51,9 +51,9 @@
      moins de place, et c'est le seul repere de categorie de la colonne. Pastille a
      fond gris plutot que texte gris : le fond isole le tag du titre sans lui faire
      perdre en lisibilite, ce qu'un texte clair a 10 px ne permettait pas. */
-  .ag__tag { font-size: 9px; letter-spacing: 0.03em; color: #fff; background: #aaa;
+  .ag__tag { font-size: 10px; letter-spacing: 0.03em; color: #fff; background: #aaa;
              padding: 1px 5px; border-radius: 2px; white-space: nowrap; }
-  .ag__none { font-size: 11px; padding-left: 2px; }
+  .ag__none { font-size: 13px; padding-left: 2px; }
   /* Ce qui ne rentre pas est annonce : un ecran qui ment sur ce qu'il montre est
      pire qu'un ecran incomplet. */
   .ag__more { font-size: 10px; color: #555; border-top: 1px solid #999; padding-top: 3px;
