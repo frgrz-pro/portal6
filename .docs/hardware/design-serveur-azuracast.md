@@ -2,8 +2,9 @@
 
 **Owner :** François Grzybowski
 **Statut :** **EN MARCHE** — Phases 1, 2 et **3 validées** (déploiement réussi le 2026-09-06,
-canal stable). Prochaine étape : **Phase 4**, brancher `M:\music` sans duplication (Q3).
-⚠️ Créer le compte super-admin si ce n'est pas encore fait.
+canal stable). **Phase 4 : montages en place** (`/media/music`, `/media/radio`,
+`/media/downloads`, tous en lecture seule) — reste à déclarer les 3 storage locations dans
+l'UI et à lancer le scan, qui tranchera Q3.
 **Date :** 2026-08-12, mises à jour 2026-08-20 et 2026-09-06
 **Piste :** SERVEUR — le poste qui consomme ces flux est décrit dans
 [design-brandt-rk711s.md](design-brandt-rk711s.md)
