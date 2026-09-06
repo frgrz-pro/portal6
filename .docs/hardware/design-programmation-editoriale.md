@@ -392,3 +392,92 @@ pour mémoire, à sortir de ces notes s'il prend forme.
 6. **Ne pas** faire confiance au BPM seul pour attribuer une énergie (§6.1).
 7. **Ne pas** enfermer l'éditorial dans AzuraCast : les grilles doivent survivre à un
    changement de moteur.
+
+---
+
+## 9. Stations candidates 4→8 — analyse de `music.db` (2026-09-06)
+
+Analyse en lecture seule de `plugin/db/music.db` (85 040 fichiers, 110 playlists Spotify
+portant `thematique`, `genres_dominants`, `energy`, `valence`) pour répondre à **Q6**
+(« Stations 4+ : y en a-t-il en tête ? »).
+
+### 9.1 Le contenu long existe — mais pas là où on le croyait
+
+**Il n'existe aucun dossier `Mixtapes` sur `M:`.** L'arborescence réelle, mesurée sur le
+scan qui couvrait tout `M:` :
+
+| Emplacement | Fichiers | dont ≥ 20 min |
+|---|---|---|
+| `M:\music\workspace` | 67 763 | 181 |
+| `M:\music\library` | 17 252 | 13 |
+| `M:\radio\Radio-Library` | 575 | **558** |
+| `M:\downloads\Book Club Radio` | 125 | 124 |
+| `M:\downloads\Big Business HQ` | 21 | 19 |
+| `M:\music\playlists` / `tracks` | 25 | 0 |
+
+**895 fichiers de plus de 20 minutes, 1 109 heures cumulées.** La « colonne vertébrale »
+posée en §0 est donc réelle — mais elle vit dans **`M:\radio\`**, que le scan courant ne
+couvrait plus. Conséquence : elle était **absente de `music.db`**, ce qui rendait toute
+mesure de faisabilité fausse par construction. Corrigé côté référentiel
+([../musique.md](../musique.md), `npm run scan`).
+
+> **Le critère utile n'est pas le nom du dossier, c'est la durée.** Un fichier de plus de
+> 20 min est un mix ou un set ; en dessous de 10 min, c'est un track. C'est cette mesure
+> qu'il faut porter dans le référentiel, pas une convention de rangement.
+> Réserve : **24 019 fichiers (27 %) n'ont pas de durée lue** — le classement track /
+> contenu long est donc incomplet tant que ce trou n'est pas comblé.
+
+### 9.2 Volumes par famille
+
+⚠️ **Ce sont des planchers, pas des mesures.** Les genres ne sont connus que pour les
+~13 900 tracks enrichis via Spotify ; la majorité de la bibliothèque locale est sans genre
+(52 % des fichiers n'ont même pas d'artiste). Les volumes réels ne sortiront qu'après le
+tagging.
+
+| Famille | Tracks locaux | Playlists sources |
+|---|---|---|
+| Soul / Funk / Disco | 727 | Baltimore 421 · My Playlist #155 357 · Jukebox · Cat Walk · Boogie Nights · Smoothy |
+| Downtempo / Trip-hop | 539 | Reading 211 · Space Lullaby 108 · Trippy Abstraction 102 · Orbiting Souls 84 |
+| Latin / Tropical | 483 | Orishas 255 · Rainforest Rhapsody 201 · Collectivo 130 · Heat Flow · Onda Cubana |
+| Jazz / Lounge | 435 | Blue Moon · Roaring Twenties · Firefly · Strutopia |
+| Reggae / Dub / Ska | 422 | Rockers Serenade 314 · Dub Odyssey 62 · Skinhead Symphony |
+| Folk / Songwriter | 319 | Driftwood Dreams · Motocicleta · Esperanza · Shamanic |
+| House / Techno | 308 | *(territoire de Stage 303)* |
+| Afrique / Desert blues | 279 | Creodelic 161 · Rush Hour 129 · Afro Fusion 68 · Wandering Dunes · Baobab |
+| Rock / Psyché 60s-70s | 243 | Pirate Radio 128 · Flower Power 50 · Cafe Racer · Anatol |
+| Bass UK | 171 | UK Culture 157 *(recoupe Stage 303)* |
+| Rap FR | 165 | Nostalgie Urbaine 292 · Arha *(→ station 3)* |
+| Chanson française | 158 | Guinguette · Idoles des Jeunes · Starmania 2.0 · La Zad |
+
+### 9.3 Les cinq retenues — **propositions, non figées**
+
+| # | Famille | Socle | Ce qui la justifie |
+|---|---|---|---|
+| 4 | Soul / Funk / Disco | 727 | Plus gros gisement non couvert. Courbe interne naturelle : soul le jour → disco/boogie le soir (Boogie Nights E=0.83) |
+| 5 | Downtempo / Lofi | 539 | **La seule station basse énergie du parc** (Downtempo mesure E=0.17). Tout le reste est E3+ : elle comble un trou de la courbe globale |
+| 6 | Latin / Tropical | 483 | Déjà structurée par pays : Brésil, Colombie, Cuba, Argentine, Pérou |
+| 7 | Reggae / Dub / Ska | 422 | Identité la plus forte du lot, et vraie courbe : ska/rocksteady le jour → roots → dub la nuit (Dub Odyssey E=0.27) |
+| 8 | Afrique / Desert blues | 279 | Socle plus mince mais cohérent, déjà validé par l'usage (Rush Hour et Afro Fusion sont des playlists de rotation) |
+
+**En réserve** : Rock/Psyché 60s (243 — meilleur taux de couverture locale du lot, 54 % sur
+le tag `60s`), Chanson française (158), Jazz/Lounge (435 mais recoupe fortement Soul/Funk).
+
+**Écartées** : House/Techno et Bass UK (territoire de Stage 303), Rap FR (station 3).
+
+### 9.4 Le point de méthode qui reste à trancher
+
+Ces cinq familles sont construites **par genre** — or les trois stations existantes suivent
+explicitement l'inverse : *univers > genre* (§2), *performance > genre* (§3),
+*culture/époque > genre* (§4). « Soul/Funk/Disco » est un rayon de disquaire, pas un
+univers.
+
+**Aucune de ces cinq n'est une station tant qu'elle n'a pas son identité** : un nom, un
+imaginaire, un créneau signature. Le volume dit seulement laquelle *peut* exister.
+
+### 9.5 Réponse à Q6, et ce que ça change pour le poste
+
+Le cadran du Brandt **manque** d'entrées, il n'en a pas trop :
+[design-brandt-rk711s.md](design-brandt-rk711s.md) §4.1 note qu'à 3-4 stations réparties
+sur toute la course, on obtient « d'immenses zones mortes et un geste sans récompense ».
+Passer à 8 stations sert donc **deux** objectifs à la fois, et allège la Q5 du poste
+(« que met-on sur l'échelle pour qu'elle ne soit pas vide »).

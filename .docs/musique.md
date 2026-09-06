@@ -11,9 +11,23 @@ la partie **hardware/serveur** (Brandt RK 711S, AzuraCast) a ses notes dans
   `export_library.py` jette `track.id`/`track.uri` : l'export n'a que artiste/titre/album,
   d'où `platform_refs` = 0. Sans IDs, ni push ni dédup Spotify. Un run API (Premium,
   quota 24 h) après une modif d'une ligne.
-- [ ] **Périmètre du scan** : le scan courant ne couvre que `/mnt/m/music` ; le scan
-  initial couvrait `/mnt/m` (`radio/Radio-Library` 575 fichiers, `downloads/` 146). Les
-  réintégrer au référentiel ou les acter hors périmètre ?
+- [x] ~~**Périmètre du scan**~~ → **tranché le 2026-09-06 par les données : il faut les
+  réintégrer.** `M:\radio\Radio-Library` contient **558 des 895 fichiers de plus de 20 min**
+  de toute la bibliothèque — c'est-à-dire l'essentiel du **contenu long** (mixtapes, DJ sets)
+  qui sert de colonne vertébrale aux web-radios
+  ([hardware/design-programmation-editoriale.md](hardware/design-programmation-editoriale.md)).
+  L'exclure du référentiel revenait à rendre les radios invisibles à `music.db`.
+  **Cause racine identifiée** : il n'existait aucun script npm de scan, la racine était
+  passée à la main en argument — d'où la dérive silencieuse du périmètre.
+  **Correctif appliqué** : `npm run scan` fige les racines.
+  ⚠️ Les racines sont listées **explicitement** (`/mnt/m/music /mnt/m/radio
+  /mnt/m/downloads`) et **jamais `/mnt/m` tout court** : `_a_trier/` est la quarantaine de
+  la dédup, la scanner réintroduirait les 2 464 fichiers écartés.
+- [ ] **Relancer `npm run scan` puis `npm run build:db`** pour que le contenu long entre
+  dans le référentiel (action François : les scans se lancent depuis le repo, pas à la main).
+- [ ] **24 019 fichiers sans `duration_sec`** dans le scan (27 %) : angle mort qui empêche
+  de classer un fichier en « track » ou en « contenu long ». Cause à identifier (tags
+  illisibles ? formats non gérés ?).
 - [ ] **Étendre `scan_library.py`** aux tags `genre`, `comment`, `grouping`, `bpm`,
   `rating` : c'est là que vivent les playlists automatiques iTunes « faites au tag »
   — aujourd'hui le scan ne les lit pas, on ne peut ni les inventorier ni les migrer.

@@ -163,15 +163,28 @@ C:\docker\media
 
 ### Principe non négociable : la bibliothèque n'appartient pas aux radios
 
+⚠️ **Corrigé le 2026-09-06.** L'arborescence annoncée ici jusqu'alors (`Library`, `Live`,
+`Mixtapes`, `Playlists`, `Radio`, `Workspace`) était une **cible, pas la réalité** : il
+n'existe aucun dossier `Mixtapes` ni `Live`. Voici ce que mesure le scan :
+
 ```
-M:\music
-├── Library
-├── Live
-├── Mixtapes
-├── Playlists
-├── Radio
-└── Workspace
+M:\
+├── music\
+│   ├── workspace\     67 763 fichiers  ← le gros du volume, mais du brouillon
+│   ├── library\       17 252
+│   ├── playlists\         24
+│   └── tracks\             1
+├── radio\
+│   └── Radio-Library\    575  ← 558 fichiers de +20 min : LE contenu long
+├── downloads\
+│   ├── Book Club Radio\  125  (124 sets)
+│   └── Big Business HQ\   21  (19 sets)
+└── _a_trier\               ← quarantaine de la dédup : NE JAMAIS scanner
 ```
+
+**Conséquence directe pour la Phase 4 :** monter `M:\music` seul **priverait les radios de
+leur contenu long** — les mixtapes et DJ sets vivent dans `M:\radio\`. Le montage doit
+couvrir `M:\` (voir §4.1 ci-dessous), pas `M:\music`.
 
 **Les radios ne doivent pas imposer leur organisation au stockage, ni dupliquer les fichiers.**
 Plusieurs stations doivent pouvoir pointer sur les **mêmes fichiers physiques** et n'en
@@ -366,7 +379,19 @@ services:
   web:
     volumes:
       - /mnt/m/music:/media/music:ro
+      - /mnt/m/radio:/media/radio:ro
+      - /mnt/m/downloads:/media/downloads:ro
 ```
+
+⚠️ **Corrigé le 2026-09-06, dans la foulée** : la première version ne montait que
+`/mnt/m/music`. Elle **privait les radios de leur contenu long** — 558 des 895 fichiers de
+plus de 20 min vivent dans `M:\radio`
+([design-programmation-editoriale.md](design-programmation-editoriale.md) §9.1). Les trois
+racines sont désormais montées.
+
+**On ne monte pas `M:\` entier** : `M:\_a_trier` est la quarantaine de la dédup
+(2 464 fichiers écartés), la monter réexposerait des doublons déjà triés. Les racines sont
+listées explicitement — même règle que `npm run scan`.
 
 - **Fusion vérifiée** avant application : `docker compose config` valide, et le bind
   apparaît **en plus** des 10 volumes nommés (aucun n'est remplacé — Compose concatène les
@@ -387,8 +412,17 @@ l'écriture.
 
 **Ce qui reste à faire pour clore la Phase 4 :**
 
-1. Déclarer une **storage location** dans AzuraCast (Administration → Storage Locations),
-   type *Station Media*, chemin **`/media/music`**.
+1. Déclarer **trois storage locations** dans AzuraCast (Administration → Storage Locations),
+   toutes de type *Station Media*, adapter *Local Filesystem* :
+
+   | Chemin | Contenu | Rôle éditorial |
+   |---|---|---|
+   | `/media/radio` | 575 fichiers, dont **558 de +20 min** | **la colonne vertébrale** : mixtapes et sets |
+   | `/media/downloads` | 146 fichiers, dont 143 sets | DJ sets (Book Club Radio, Big Business HQ) → Stage 303 |
+   | `/media/music` | 85 040 fichiers, surtout des tracks | les tracks qui aèrent et font les transitions |
+
+   Les trois sont **partagées par toutes les stations** : c'est ce partage qui satisfait le
+   STOP de cette phase (deux stations lisant le même fichier physique, zéro copie).
 2. Lancer le scan de médiathèque — **c'est lui qui répondra à Q3** : le débit du pont 9p
    sur ~85 000 fichiers. Le point de mesure est le **scan**, pas la lecture en diffusion.
 3. Le STOP formel (deux stations sur le même fichier physique) ne pourra être coché qu'en
@@ -560,3 +594,16 @@ quatre autres conteneurs indemnes. 10 volumes `azuracast_*` existent maintenant 
 n°3 (`down -v`) cesse d'être théorique.
 **Reste à faire immédiatement : créer le compte super-admin** (`/setup` est ouvert).
 Prochaine étape : Phase 4, brancher `M:\music` sans duplication (Q3).
+
+### 2026-09-06 (quater) — le contenu long était hors périmètre
+L'analyse de `music.db` pour constituer de nouvelles stations a révélé une erreur qui aurait
+été coûteuse : **l'arborescence `M:\music` décrite au §4 n'existait pas** (`Mixtapes`, `Live`
+étaient une cible, pas la réalité), et surtout **le contenu long des radios vit dans
+`M:\radio`** — 558 des 895 fichiers de plus de 20 min, sur 1 109 h cumulées.
+Le montage posé plus tôt dans la journée ne couvrait que `/mnt/m/music` : les stations
+auraient été privées de leur colonne vertébrale, sans erreur visible. Override corrigé le
+jour même (3 racines montées, `_a_trier` toujours exclue), §4 réécrit sur les chiffres
+mesurés, Phase 4 passée d'une à **trois storage locations**.
+Enseignement : la cause racine était l'absence de script npm de scan — la racine était
+passée à la main, d'où une dérive silencieuse du périmètre. Corrigé par `npm run scan`
+([../musique.md](../musique.md)).
