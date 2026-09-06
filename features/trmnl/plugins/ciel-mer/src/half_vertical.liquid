@@ -1,0 +1,46 @@
+{% comment %} Ciel & Mer — demi-écran vertical : lune, soleil, marées en colonne. {% endcomment %}
+<style>
+  .cm-v { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+  .cm-v .cm-band { border-top: 2px solid black; padding-top: 6px; }
+  .cm-v .cm-row { display: flex; justify-content: space-between; align-items: baseline; }
+</style>
+
+<div class="view view--half_vertical">
+  <div class="layout">
+    <div class="cm-v">
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <svg width="76" height="76" viewBox="0 0 92 92" aria-hidden="true">
+          <circle cx="46" cy="46" r="40" fill="none" stroke="black" stroke-width="2"></circle>
+          <path d="{{ moon.svg_path }}" fill="black"></path>
+        </svg>
+        <div>
+          <span class="value">{{ moon.illumination }}%</span>
+          <span class="label label--small">{{ moon.phase }}</span>
+          <span class="label label--small">PL {{ moon.next_full }}</span>
+        </div>
+      </div>
+
+      <div class="cm-band">
+        <div class="cm-row"><span class="label">Lever</span><span class="value value--small">{{ sun.sunrise }}</span></div>
+        <div class="cm-row"><span class="label">Coucher</span><span class="value value--small">{{ sun.sunset }}</span></div>
+        <div class="cm-row"><span class="label">Golden</span><span class="value value--small">{{ sun.golden_pm }}</span></div>
+      </div>
+
+      <div class="cm-band">
+        {% for tide in tides limit: 3 %}
+          <div class="cm-row">
+            <span class="label">{{ tide.label }} {{ tide.day }}</span>
+            <span class="value value--small">{{ tide.time }}</span>
+          </div>
+        {% else %}
+          <span class="description">Pas de marée disponible.</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="title_bar">
+    <span class="title">Ciel &amp; Mer</span>
+    <span class="instance">{{ spot }}</span>
+  </div>
+</div>

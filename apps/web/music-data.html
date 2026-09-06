@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal6 — Music · données</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <h1><a href="index.html">Portal6</a></h1>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="music.html">Music</a>
+      <a href="music-data.html" aria-current="page">Données</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="lede">
+    Inventaire de <strong>toute la donnée du domaine musique</strong> présente sur cette
+    machine : ce qu'on a, d'où ça vient, à quelle date, et ce qui est périmé.
+    Rien n'est lu sur <code>M:</code> ici — uniquement le vault <code>data/music/</code>
+    et la base <code>plugin/db/music.db</code>.
+  </p>
+
+  <div id="missing" hidden>
+    <div class="note bad">
+      <p><strong>Manifeste absent.</strong> Générer les données avec :</p>
+      <p><code>python apps/web/build_manifest.py</code></p>
+    </div>
+  </div>
+
+  <div id="content" hidden>
+
+    <h2>Chiffres clés</h2>
+    <div class="stats" id="kpis"></div>
+
+    <h2>Ce qui cloche aujourd'hui</h2>
+    <div id="alerts"></div>
+
+    <h2>1 — Le vault <code>data/music/</code></h2>
+    <p class="hint">
+      La donnée brute, non versionnée, qui hydrate la base. C'est la seule chose
+      irremplaçable : elle n'existe que sur cette machine.
+    </p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Fichier</th><th>Rôle</th><th>Type</th>
+            <th class="num">Taille</th><th class="num">Lignes</th><th>Modifié</th>
+          </tr>
+        </thead>
+        <tbody id="vault"></tbody>
+      </table>
+    </div>
+
+    <h2>2 — La bibliothèque locale</h2>
+    <p class="hint">
+      Dépouillement du scan courant (<code>library_scan.csv</code>). C'est une photo :
+      les tags viennent des fichiers, pas d'un service.
+    </p>
+
+    <h3>Périmètre — où sont les fichiers</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Dossier (2 niveaux)</th><th class="num">Fichiers</th><th class="num">Part</th><th>Répartition</th></tr></thead>
+        <tbody id="folders"></tbody>
+      </table>
+    </div>
+
+    <h3>Qualité des tags</h3>
+    <div class="stats" id="tagq"></div>
+
+    <h3>Formats</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Extension</th><th class="num">Fichiers</th><th class="num">Part</th></tr></thead>
+        <tbody id="exts"></tbody>
+      </table>
+    </div>
+
+    <h3>Scan courant vs scan initial</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Mesure</th><th class="num">Scan 2026-08-19 (initial)</th><th class="num">Scan 2026-08-20 (courant)</th><th class="num">Écart</th></tr></thead>
+        <tbody id="scandiff"></tbody>
+      </table>
+    </div>
+
+    <h2>3 — Le référentiel <code>music.db</code></h2>
+    <p class="hint">
+      Artefact <strong>dérivé</strong> : reconstruit intégralement à chaque
+      <code>build_db.py</code>. Les IDs <code>P6-*</code> sont réattribués à chaque rebuild.
+    </p>
+
+    <h3>Tables</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Table</th><th class="num">Lignes</th><th>Contenu</th></tr></thead>
+        <tbody id="tables"></tbody>
+      </table>
+    </div>
+
+    <h3>Recoupement local ↔ Spotify</h3>
+    <p class="hint">Le cœur du sujet : combien de titres Spotify ont un fichier en face.</p>
+    <div class="stats" id="cross"></div>
+
+    <h3>Enrichissement des titres Spotify</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Champ</th><th class="num">Renseigné</th><th class="num">Taux</th><th>Remplissage</th><th>Source</th></tr></thead>
+        <tbody id="enrich"></tbody>
+      </table>
+    </div>
+
+    <h3>Plus grosses playlists</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Playlist</th><th class="num">Titres</th></tr></thead>
+        <tbody id="playlists"></tbody>
+      </table>
+    </div>
+
+    <h2>4 — Ce qu'on n'a pas</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Donnée</th><th>État</th><th>Conséquence</th></tr></thead>
+        <tbody id="gaps"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <footer><span id="generated"></span></footer>
+</main>
+
+<script src="data/manifest.js" onerror="window.PORTAL6_MISSING = true"></script>
+<script src="assets/inventory.js"></script>
+
+</body>
+</html>

@@ -32,17 +32,33 @@ traite que **l'infrastructure**.
 
 ## 1. État exact aujourd'hui
 
+Relevé du **2026-09-06** (inventaire en lecture seule : aucun conteneur créé, aucun volume
+touché, aucun `down`).
+
 | Élément | État |
 |---|---|
 | Machine | Windows 11 + Docker Desktop + Docker Compose + Git (Git Bash disponible) |
-| Bibliothèque musicale | `M:\music` |
+| Bibliothèque musicale | `M:\music` — vue depuis WSL en `/mnt/m/music` (9p/drvfs, 864 Go, 382 Go libres) |
 | Racine Docker | `C:\docker\media` |
-| Dépôt AzuraCast cloné | `C:\docker\media\azuracast` ✅ |
-| `docker.sh` téléchargé | ✅ dans le dépôt |
-| Compose global | `C:\docker\media\docker-compose.yml` — **vérifié sain le 2026-08-20** : xteve + samba + dozzle uniquement, aucune image AzuraCast, `docker compose config` valide |
-| Déploiement AzuraCast | ❌ **aucun déploiement fonctionnel ne doit être considéré comme établi** |
-| WSL2 | ✅ Ubuntu installé, distribution par défaut, version 2 |
-| Docker Desktop | ✅ 4.75.0, moteur 29.5.2, backend WSL2, opérationnel |
+| Dépôt AzuraCast cloné | `C:\docker\media\azuracast` — **inutile** : la procédure officielle ne s'en sert pas (§5, Phase 1). Vestige à supprimer. |
+| `docker.sh` téléchargé | dans ce clone — **non utilisable** : il doit être retéléchargé dans `/var/azuracast` côté WSL |
+| Compose global | `C:\docker\media\docker-compose.yml` — **re-vérifié sain le 2026-09-06** : xteve + samba + dozzle uniquement, `docker compose config` valide, `--images` ne sort que `alturismo/xteve`, `dperson/samba`, `amir20/dozzle:latest` |
+| Déploiement AzuraCast | ❌ **rien n'existe** : `/var/azuracast` absent côté WSL, aucun conteneur, aucun volume nommé |
+| WSL2 | ✅ **Ubuntu 26.04 LTS**, distribution par défaut, version 2, 953 Go libres sur le disque de la VM |
+| Docker Desktop | ✅ moteur 29.5.2, Compose v5.1.3, backend WSL2, opérationnel côté Windows |
+| **Intégration WSL de Docker Desktop** | ❌ **DÉSACTIVÉE** — c'est le blocage unique. `docker` dans Ubuntu répond *« The command 'docker' could not be found in this WSL 2 distro »* ; `settings-store.json` ne contient aucune clé d'intégration WSL (= valeur par défaut, désactivée). |
+
+**Conteneurs en marche (2026-09-06)** — aucun ne dispute un port à AzuraCast :
+
+| Conteneur | Image | Ports |
+|---|---|---|
+| `portal6-ha` | `ghcr.io/home-assistant/home-assistant:stable` | 8123 |
+| `dozzle` | `amir20/dozzle:latest` | 8080 |
+| `samba` | `dperson/samba` | 139, 1445→445 |
+| `xteve` | `alturismo/xteve` | 34400 |
+
+Ports **80, 443, 2022, 8000, 8005 : tous libres** (aucun listener Windows).
+Volumes : uniquement des volumes anonymes (hashes), **aucun `azuracast_*`**.
 
 **Historique.** Une installation antérieure tournait dans un **LXC Proxmox** (`LXC-Radio`,
 `/media/music`, `/srv/services/azuracast`) et avait validé le fonctionnement d'AzuraCast et de
@@ -212,6 +228,23 @@ et `/docker/`, plus lecture directe de `docker.sh` et `docker-compose.sample.yml
   `Darwin` ; MINGW64 (Git Bash) est rejeté, Ubuntu WSL passe.
 - Accès final depuis Windows : `http://localhost` une fois l'installation terminée.
 
+**🔁 Re-vérifié le 2026-09-06** sur les sources brutes (`raw.githubusercontent.com`, branche
+`main`) — **rien n'a changé**, les conclusions ci-dessus tiennent :
+
+- `docker-compose.sample.yml` : toujours **2 services** (`web`, `updater`), images
+  `ghcr.io/azuracast/azuracast:${AZURACAST_VERSION:-latest}` et
+  `ghcr.io/azuracast/updater:latest` ; ports 80 / 443 / 2022 paramétrables + 47 ports fixes
+  dans la plage 8000–8496 ; **volumes nommés** : `db_data`, `acme`, `shoutcast2_install`,
+  `stereo_tool_install`, `rsas_install`, `geolite_install`, `sftpgo_data`, `station_data`,
+  `www_uploads`, `backups`.
+- `docker.sh` : n'accepte toujours que `uname -s` ∈ {`Linux`, `Darwin`} (arch x86_64 /
+  aarch64), attend toujours `/var/azuracast` comme répertoire de base, et télécharge toujours
+  `docker-compose.sample.yml` depuis la branche du canal choisi. Sous-commandes utiles :
+  `install`, `setup-release`, `setup-ports`, `update`, `backup`, `restore`, `rollback`,
+  `uninstall`, `up` / `down` / `restart`, `cli`, `bash`, `db`.
+- ⚠️ `azuracast.com/docs/...` répond **403** aux fetchs automatisés — la source à interroger
+  est le dépôt brut, pas le site.
+
 ### PHASE 2 — Nettoyer l'existant
 
 Inventorier ce qui traîne avant de lancer quoi que ce soit :
@@ -252,6 +285,38 @@ AzuraCast utilise notamment **80**, **443**, **2022**, plus une plage de ports p
 
 > **STOP / VÉRIFIER (Phase 3) :** interface AzuraCast accessible · aucun conflit de port avec
 > les autres services · Dozzle toujours joignable.
+
+**Pré-vol du 2026-09-06 — tout est vert sauf une case à cocher.**
+
+| Prérequis | État |
+|---|---|
+| Méthode officielle identifiée et re-vérifiée | ✅ (Phase 1) |
+| Compose global sain, sans image AzuraCast | ✅ (`docker compose config` valide) |
+| Aucun volume `azuracast_*` à préserver | ✅ (Phase 2) |
+| Ports 80 / 443 / 2022 / 8000 / 8005 libres | ✅ |
+| Ubuntu WSL2 en place, place disque suffisante | ✅ (26.04 LTS, 953 Go libres) |
+| **`docker` utilisable depuis le shell Ubuntu** | ❌ **BLOQUANT** |
+
+> **🔴 Action utilisateur — la seule qui manque.**
+> Docker Desktop → **Settings → Resources → WSL integration** → activer l'intégration pour la
+> distribution **Ubuntu** (ou cocher *« Enable integration with my default WSL distro »*) →
+> **Apply & Restart**.
+> Vérification attendue, dans un shell Ubuntu : `docker version` doit répondre côté serveur
+> (aujourd'hui : *« The command 'docker' could not be found in this WSL 2 distro »*).
+
+Une fois cette case cochée, la séquence Phase 3 est (dans le shell Ubuntu, en sudo) :
+
+```bash
+sudo mkdir -p /var/azuracast && cd /var/azuracast
+curl -fsSL https://raw.githubusercontent.com/AzuraCast/AzuraCast/main/docker.sh > docker.sh
+chmod a+x docker.sh
+sudo ./docker.sh install      # canal Stable
+```
+
+Puis : `http://localhost` depuis Windows, et création du compte super-admin.
+
+⚠️ Pendant l'installeur, ne **pas** changer les ports par défaut sans raison : 80/443/2022 sont
+libres sur cette machine, et déplacer les ports complique la Phase 6 (exposition).
 
 ### PHASE 4 — Brancher la bibliothèque
 
@@ -310,8 +375,12 @@ Bibliothèque   : M:\music
 Racine Docker  : C:\docker\media
 AzuraCast      : C:\docker\media\azuracast
 Station 1      : Midnight Club  (slug probable : midnight_club)
-Dozzle         : 8888:8080
+Dozzle         : 8080:8080     ← réalité constatée (la cible historique disait 8888, on garde 8080)
 ```
+
+Côté WSL, le répertoire de base d'AzuraCast est **`/var/azuracast`** (disque de la VM), pas
+`C:\docker\media\azuracast` : ce dernier est un clone du dépôt source, sans rôle dans la
+procédure officielle.
 
 ---
 
@@ -344,11 +413,25 @@ teste sur des flux publics.
    Piste identifiée : depuis WSL, `M:` est visible en `/mnt/m` ; AzuraCast permet des
    storage locations « local filesystem » par station pointant sur un même montage. ⚠️ À
    vérifier en Phase 4, y compris la **performance du pont 9P** (`/mnt/m` traverse
-   Windows→WSL) sur une bibliothèque de ~88 000 fichiers.
+   Windows→WSL) sur une bibliothèque de ~85 000 fichiers.
+   **Constaté le 2026-09-06 :** le montage est bien là et vivant —
+   `M:\ on /mnt/m type 9p (rw,noatime,aname=drvfs;path=M:\;uid=1000;gid=1000;msize=65536,…)`,
+   864 Go dont 382 Go libres. Le `msize=65536` (64 Ko par message) est exactement le
+   paramètre qui plombe les gros parcours d'arborescence : **le risque de lenteur est sur le
+   scan de la médiathèque par AzuraCast**, pas sur la lecture d'un MP3 en cours de diffusion.
+   À mesurer en Phase 4 avant de conclure ; repli possible si c'est inutilisable : exposer
+   `M:\music` en SMB et le monter en CIFS dans WSL, ou déplacer la bibliothèque sur le disque
+   de la VM (contraire au principe §4 — dernier recours).
+   Côté AzuraCast, le volume nommé `station_data` reste le propriétaire de
+   `/var/azuracast/stations/<slug>/` : **c'est un chemin d'AzuraCast, pas la bibliothèque** —
+   les storage locations doivent pointer ailleurs (§4, interdit n°5).
 4. **Q4 — Exposition Internet** : nom de domaine, TLS, reverse proxy déjà présent dans le
    DevLab ?
 5. **Q5 — Sauvegardes** : que sauvegarde-t-on, et où ? (la bibliothèque, la configuration
-   AzuraCast, les grilles)
+   AzuraCast, les grilles) — noter que `docker.sh backup` existe et sauvegarde les volumes.
+6. **Q6 — Que fait-on du clone `C:\docker\media\azuracast` ?** Il ne sert à rien dans la
+   procédure officielle et entretient la confusion qui a produit l'impasse initiale.
+   Proposition : le supprimer une fois la Phase 3 passée (pas avant, par prudence).
 
 ---
 
@@ -364,3 +447,25 @@ teste sur des flux publics.
 6. **Ne pas** dupliquer les MP3 par station.
 7. **Ne pas** lancer un déploiement sans avoir vérifié les conflits de ports (Phase 3).
 8. **Ne pas** considérer une étape comme acquise sans sa vérification.
+
+---
+
+## 11. Journal
+
+### 2026-09-06 — point de setup avant Phase 3
+Inventaire complet en lecture seule (aucun conteneur créé, aucun volume touché) et
+re-vérification des sources officielles sur le dépôt brut. **Rien n'a bougé depuis
+le 2026-08-20 côté AzuraCast** : mêmes 2 services, mêmes images `ghcr.io/azuracast/*`,
+même exigence `uname` ∈ {Linux, Darwin}, même `/var/azuracast`.
+
+Constats nouveaux : Ubuntu WSL est en **26.04 LTS** avec 953 Go libres ; un conteneur
+`portal6-ha` (port 8123) s'est ajouté au parc sans gêner AzuraCast ; les ports
+80/443/2022/8000/8005 sont **tous libres** ; `/mnt/m` est monté en 9p `msize=65536`
+(864 Go, 382 libres) — le point de perf à surveiller en Phase 4 est le **scan** de la
+médiathèque, pas la lecture en diffusion.
+
+Conclusion : la Phase 3 est intégralement prête et tient à **une seule case à cocher** —
+l'intégration WSL de Docker Desktop pour Ubuntu (`settings-store.json` ne contient aucune
+clé d'intégration = désactivée par défaut). Séquence d'installation écrite dans la Phase 3.
+Deux points ouverts ajoutés : Q6 (sort du clone inutile `C:\docker\media\azuracast`) et
+la piste de repli SMB/CIFS si le pont 9p s'avère trop lent (Q3).

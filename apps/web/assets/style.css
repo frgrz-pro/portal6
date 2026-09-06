@@ -1,0 +1,187 @@
+/* Portal6 — feuille de style unique du portail. Aucune dépendance externe. */
+
+:root {
+  color-scheme: light dark;
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1e222b;
+  --line: #2a2f3a;
+  --text: #e6e8ec;
+  --muted: #98a0ae;
+  --accent: #6ea8fe;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --radius: 10px;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --panel-2: #f0f2f5;
+    --line: #dfe3ea;
+    --text: #1a1d23;
+    --muted: #5c6675;
+    --accent: #2563eb;
+    --ok: #15803d;
+    --warn: #b45309;
+    --bad: #b91c1c;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a { color: var(--accent); }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* --- en-tête ------------------------------------------------------------- */
+header.top {
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+header.top .wrap { padding: 18px 24px; display: flex; align-items: baseline; gap: 16px; }
+header.top h1 { margin: 0; font-size: 18px; letter-spacing: -0.01em; }
+header.top h1 a { color: inherit; text-decoration: none; }
+header.top nav { margin-left: auto; display: flex; gap: 18px; font-size: 14px; }
+header.top nav a { color: var(--muted); text-decoration: none; }
+header.top nav a:hover, header.top nav a[aria-current] { color: var(--text); }
+
+.lede { color: var(--muted); max-width: 68ch; }
+
+h2 {
+  margin: 40px 0 4px;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+h2 + .hint { margin: 0 0 16px; color: var(--muted); font-size: 13px; max-width: 72ch; }
+h3 { font-size: 15px; margin: 22px 0 8px; }
+
+/* --- cartes de domaine (accueil) ----------------------------------------- */
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+.card {
+  display: block;
+  padding: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: inherit;
+}
+a.card:hover { border-color: var(--accent); }
+.card h3 { margin: 0 0 6px; font-size: 16px; }
+.card p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.card .tag {
+  display: inline-block; margin-bottom: 10px; padding: 2px 8px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  border-radius: 999px; background: var(--panel-2); color: var(--muted);
+}
+.card.disabled { opacity: 0.55; }
+
+/* --- chiffres clés -------------------------------------------------------- */
+.stats { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.stat {
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.stat .n { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .l { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.stat.warn .n { color: var(--warn); }
+.stat.bad .n { color: var(--bad); }
+.stat.ok .n { color: var(--ok); }
+
+/* --- tableaux ------------------------------------------------------------- */
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+
+.pill {
+  display: inline-block; padding: 1px 8px; border-radius: 999px;
+  font-size: 11.5px; background: var(--panel-2); color: var(--muted);
+}
+.pill.source { color: var(--accent); }
+.pill.ok { color: var(--ok); }
+.pill.warn { color: var(--warn); }
+.pill.bad { color: var(--bad); }
+
+/* --- barres de remplissage ------------------------------------------------ */
+.bar { height: 6px; border-radius: 3px; background: var(--panel-2); overflow: hidden; min-width: 90px; }
+.bar > i { display: block; height: 100%; background: var(--accent); }
+
+/* --- encarts -------------------------------------------------------------- */
+.note {
+  padding: 14px 16px; border-radius: var(--radius);
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+}
+.note.warn { border-left-color: var(--warn); }
+.note.bad { border-left-color: var(--bad); }
+.note p { margin: 0 0 8px; }
+.note p:last-child { margin-bottom: 0; }
+
+ol.steps { padding-left: 20px; }
+ol.steps li { margin-bottom: 8px; }
+
+footer { margin-top: 56px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--line); padding-top: 16px; }
+
+/* --- mediacenter ---------------------------------------------------------- */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+.toolbar .spacer { flex: 1; }
+.toolbar input[type="search"], .toolbar select, td select.master {
+  padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--text); font: inherit; font-size: 13.5px;
+}
+.toolbar input[type="search"] { min-width: 220px; }
+td select.master { padding: 3px 6px; font-size: 12.5px; }
+
+.btn {
+  padding: 6px 12px; border-radius: 6px; border: 1px solid var(--accent);
+  background: var(--accent); color: #fff; font: inherit; font-size: 13.5px; cursor: pointer;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.small { padding: 3px 9px; font-size: 12.5px; }
+
+th.plat, td.plat { min-width: 84px; }
+td .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.muted { color: var(--muted); }
+#pl tbody tr:hover { background: var(--panel-2); }
+
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel);
+  color: var(--text); padding: 22px 24px; max-width: 640px; width: calc(100% - 48px);
+}
+dialog::backdrop { background: rgba(0,0,0,0.5); }
+dialog h3 { margin-top: 0; }
+dialog h4 { margin: 16px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+dialog pre {
+  background: var(--panel-2); padding: 10px 12px; border-radius: 6px;
+  font-family: var(--mono); font-size: 12.5px; overflow-x: auto; white-space: pre;
+}
+dialog .actions { margin-top: 16px; text-align: right; }
+ul.checks { list-style: none; padding: 0; margin: 0; }
+ul.checks li { padding: 4px 0 4px 22px; position: relative; }
+ul.checks li::before { position: absolute; left: 0; font-weight: 700; }
+ul.checks li.ok::before { content: '✓'; color: var(--ok); }
+ul.checks li.warn::before { content: '◐'; color: var(--warn); }
+ul.checks li.bad::before { content: '✗'; color: var(--bad); }

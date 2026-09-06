@@ -1,0 +1,125 @@
+{% comment %}
+  Ciel & Mer — layout « full » (800 x 480, 1-bit).
+  Données : payload de features/trmnl/payloads/ciel-mer.json (stratégie polling).
+  Le disque lunaire arrive précalculé en chemin SVG (moon.svg_path) : Liquid ne sait
+  pas faire de trigonométrie.
+{% endcomment %}
+<style>
+  .cm-grid { display: flex; flex-direction: column; height: 100%; gap: 10px; }
+  .cm-top { display: flex; gap: 16px; align-items: stretch; }
+  .cm-sun { flex: 1 1 auto; }
+  .cm-moon { flex: 0 0 210px; display: flex; gap: 12px; align-items: center;
+             border-left: 2px solid black; padding-left: 14px; }
+  .cm-rows { display: flex; flex-direction: column; gap: 4px; }
+  .cm-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .cm-band { border-top: 2px solid black; padding-top: 8px; }
+  .cm-tides { display: flex; gap: 8px; }
+  .cm-tide { flex: 1 1 0; text-align: center; padding: 4px 0; }
+  .cm-tide--pm { background: black; color: white; }
+  .cm-tide--bm { border: 2px solid black; }
+  .cm-sea { display: flex; gap: 18px; align-items: baseline; }
+  .cm-sea > div { flex: 1 1 0; }
+  .cm-flag { border: 3px double black; padding: 3px 10px; text-align: center; }
+</style>
+
+<div class="view view--full">
+  <div class="layout">
+    <div class="cm-grid">
+
+      {% comment %} --- Soleil + Lune ------------------------------------ {% endcomment %}
+      <div class="cm-top">
+        <div class="cm-sun">
+          <span class="label label--underline">Soleil — {{ date }}</span>
+          <div class="cm-rows" style="margin-top: 6px;">
+            <div class="cm-row">
+              <span class="value value--large">{{ sun.sunrise }}</span>
+              <span class="description">lever</span>
+              <span class="value value--large">{{ sun.sunset }}</span>
+              <span class="description">coucher</span>
+              <span class="value">{{ sun.daylight }}</span>
+              <span class="description">de jour</span>
+            </div>
+            <div class="cm-row"><span class="label">Golden hour matin</span>
+              <span class="value value--small">{{ sun.golden_am }}</span></div>
+            <div class="cm-row"><span class="label">Golden hour soir</span>
+              <span class="value value--small">{{ sun.golden_pm }}</span></div>
+            <div class="cm-row"><span class="label">Blue hour</span>
+              <span class="value value--small">{{ sun.blue_pm }}</span></div>
+          </div>
+        </div>
+
+        <div class="cm-moon">
+          <svg width="92" height="92" viewBox="0 0 92 92" aria-hidden="true">
+            <circle cx="46" cy="46" r="40" fill="none" stroke="black" stroke-width="2"></circle>
+            <path d="{{ moon.svg_path }}" fill="black"></path>
+          </svg>
+          <div>
+            <span class="value">{{ moon.illumination }}%</span>
+            <span class="description">{{ moon.phase }}</span>
+            <span class="label label--small">PL {{ moon.next_full }}</span>
+            <span class="label label--small">NL {{ moon.next_new }}</span>
+          </div>
+        </div>
+      </div>
+
+      {% comment %} --- Marées ------------------------------------------- {% endcomment %}
+      <div class="cm-band">
+        <span class="label label--underline">Marées — {{ spot }}</span>
+        <div class="cm-tides" style="margin-top: 6px;">
+          {% for tide in tides %}
+            <div class="cm-tide {% if tide.kind == 'PM' %}cm-tide--pm{% else %}cm-tide--bm{% endif %}">
+              <span class="value value--large">{{ tide.time }}</span>
+              <span class="label label--small">{{ tide.label }} {{ tide.day }}</span>
+            </div>
+          {% else %}
+            <span class="description">Pas de données de marée pour ce point.</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% comment %} --- Mer & météo -------------------------------------- {% endcomment %}
+      <div class="cm-band">
+        <div class="cm-sea">
+          <div>
+            <span class="label">Houle</span>
+            <span class="value">{{ sea.wave_height | default: '—' }} m</span>
+            <span class="label label--small">{{ sea.wave_period | round }} s · {{ sea.wave_direction }}</span>
+          </div>
+          <div>
+            <span class="label">Eau</span>
+            <span class="value">{{ sea.water_temp | round }}°</span>
+          </div>
+          <div>
+            <span class="label">Air</span>
+            <span class="value">{{ weather.temp }}°</span>
+            <span class="label label--small">{{ weather.temp_min }}° / {{ weather.temp_max }}°</span>
+          </div>
+          <div>
+            <span class="label">Vent</span>
+            <span class="value">{{ weather.wind }} km/h</span>
+            <span class="label label--small">{{ weather.wind_direction }} · raf. {{ weather.gusts }}</span>
+          </div>
+          <div>
+            <span class="label">Ciel</span>
+            <span class="value value--small">{{ weather.label }}</span>
+            <span class="label label--small">pluie {{ weather.rain_probability }} %</span>
+          </div>
+        </div>
+      </div>
+
+      {% comment %} --- Lune remarquable à venir -------------------------- {% endcomment %}
+      {% assign next_special = moon.specials | first %}
+      {% if next_special %}
+        <div class="cm-flag">
+          <span class="value value--small">{{ next_special.tags }} — {{ next_special.when }}{% if next_special.estimated %} (estimation){% endif %}</span>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="title_bar">
+    <span class="title">Ciel &amp; Mer</span>
+    <span class="instance">{{ spot }} · {{ generated_at }}</span>
+  </div>
+</div>

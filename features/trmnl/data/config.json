@@ -1,0 +1,20 @@
+{
+  "_lisez_moi": [
+    "Ce fichier est COMMITÉ DANS UN REPO PUBLIC, tout comme le payload qu'il produit.",
+    "N'y mettre qu'un lieu public (plage, port, spot) — jamais les coordonnées du domicile.",
+    "spot     : point à terre, sert au soleil (lever/coucher, golden hour), à la lune et à la météo.",
+    "marine   : point EN MER le plus proche (Open-Meteo renvoie des nulls sur une maille terrestre).",
+    "           Laisser à null pour réutiliser les coordonnées du spot."
+  ],
+  "spot": {
+    "label": "À RENSEIGNER",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "timezone": "Europe/Paris"
+  },
+  "marine": {
+    "latitude": null,
+    "longitude": null
+  },
+  "special_moons_days": 120
+}

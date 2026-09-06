@@ -31,4 +31,6 @@ plus. `hardware/` contient les notes de design de la radio Brandt (BOM détaill�
 - [lieux.md](lieux.md) — espace Lieux : état du vault My Maps, clôture du Lot A, todo (design figé dans les notes datées `2026-08-20-*`)
 - [musique.md](musique.md) — relance du domaine musique : référentiel `music.db`, Plex/Symfonium, AzuraCast Phase 3
 - [setup-dev-windows.md](setup-dev-windows.md) — poste de dev Windows : Android Studio/SDK/JDK, venv outils, HA de dev Docker, pièges d'install
+- [plex-docker.md](plex-docker.md) — migration de Plex de l'install native Windows vers Docker (inventaire, réécriture des chemins, plan en 6 phases)
+- [portail-web.md](portail-web.md) — le portail web statique `apps/web/` : entrée Music (mediacenter + inventaire de la donnée), choix techniques
 - [bom.md](bom.md) — **BOM central** : tout le hardware de tous les projets (statuts, prix, déblocages)

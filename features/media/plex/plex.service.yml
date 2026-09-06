@@ -1,0 +1,93 @@
+# Bloc de service `plex` a fusionner dans C:\docker\media\docker-compose.yml
+# (le stack media vit hors du repo — question ouverte dans .docs/plex-docker.md).
+#
+# Ce fichier n'est PAS un compose autonome : il sert de reference versionnee du
+# bloc, pour que la modification faite sur place reste tracable et rejouable.
+#
+# Source des cles : page officielle de l'image plexinc/pms-docker
+# (volumes /config /transcode /data, ports TCP 32400/3005/8324/32469 et
+# UDP 1900/32410/32412/32413/32414, variables PLEX_CLAIM / ADVERTISE_IP /
+# PLEX_UID / PLEX_GID / TZ / ALLOWED_NETWORKS / CHANGE_CONFIG_DIR_OWNERSHIP).
+
+services:
+
+  # --------------------------
+  # Plex Media Server
+  # --------------------------
+  plex:
+    # Version EPINGLEE sur celle de l'install native (1.43.3.10896) : la migration
+    # ne doit changer qu'une variable a la fois. La mise a jour vient apres.
+    image: plexinc/pms-docker:1.43.3.10896-cb3ebc72d
+    container_name: plex
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+      # Docker Desktop Windows n'a pas de `network_mode: host` : Plex est derriere
+      # un bridge NAT et ne peut pas deviner son adresse joignable.
+      - ADVERTISE_IP=http://192.168.0.5:32400/
+      # Sans ca, Plex voit les clients du LAN arriver par la gateway Docker et les
+      # traite comme des clients DISTANTS (donc transcodes, et soumis aux limites).
+      - ALLOWED_NETWORKS=192.168.0.0/24
+      # /config est un volume nomme (ext4 dans le VHDX WSL2) : pas de chown a faire,
+      # et surtout pas de chown recursif sur 12,6 Go au demarrage.
+      - CHANGE_CONFIG_DIR_OWNERSHIP=false
+      # Pas de PLEX_CLAIM : on apporte un serveur DEJA reclame, via le
+      # PlexOnlineToken repris du registre (cf. export_preferences.ps1).
+    volumes:
+      # Base SQLite en ecriture permanente -> volume nomme, PAS un bind mount
+      # Windows : la couche 9p/virtiofs de WSL2 gere mal ce profil d'acces.
+      - plex_config:/config
+      - plex_transcode:/transcode
+      # Medias : bind mounts, lectures sequentielles de gros fichiers (9p convient).
+      # Syntaxe longue pour lever toute ambiguite sur les `:` des lettres de lecteur.
+      - type: bind
+        source: 'D:/'
+        target: /data/d
+        read_only: true
+      - type: bind
+        source: 'G:/'
+        target: /data/g
+        read_only: true
+      # H: en ECRITURE : le DVR enregistre dans H:\31-TV Recordings.
+      - type: bind
+        source: 'H:/'
+        target: /data/h
+      - type: bind
+        source: 'I:/'
+        target: /data/i
+        read_only: true
+      # M: (Music) — monte DES LA MIGRATION (arbitrage du 2026-09-06 bis) : le
+      # montage est pose maintenant, la BIBLIOTHEQUE Musique n'est creee qu'apres
+      # la phase 5. Monter un volume ne cree aucune bibliotheque et n'ajoute donc
+      # aucune variable a la validation ; en revanche l'ajouter plus tard
+      # imposerait de recreer le conteneur (axe B de .docs/musique.md).
+      # Racine cible de la future bibliotheque : /data/m/music/library
+      - type: bind
+        source: 'M:/'
+        target: /data/m
+        read_only: true
+    ports:
+      - "32400:32400/tcp"   # interface web + API (le seul vraiment indispensable)
+      - "3005:3005/tcp"     # Plex Companion
+      - "8324:8324/tcp"     # controle par Roku
+      - "32469:32469/tcp"   # DLNA
+      # GDM : inutile a travers le NAT (les clients LAN s'ajoutent a la main),
+      # publie quand meme, c'est sans effet de bord.
+      - "32410:32410/udp"
+      - "32412:32412/udp"
+      - "32413:32413/udp"
+      - "32414:32414/udp"
+      # 1900/udp (SSDP) volontairement NON publie : DlnaEnabled=0 sur ce serveur,
+      # et ce port est frequemment deja pris sous Windows.
+
+# A fusionner avec la section `volumes:` du compose cible (elle n'existe pas
+# encore dans C:\docker\media\docker-compose.yml : la creer).
+#
+# `name:` explicite volontaire : sans lui, Compose prefixe du nom de projet et
+# creerait `media_plex_config`. Les commandes d'import et de sauvegarde du
+# runbook designent le volume par son nom nu — il doit donc etre fige ici.
+volumes:
+  plex_config:
+    name: plex_config
+  plex_transcode:
+    name: plex_transcode

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal6 — Music</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <h1><a href="index.html">Portal6</a></h1>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="music.html" aria-current="page">Music</a>
+      <a href="music-data.html">Données</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="missing" hidden>
+    <div class="note bad">
+      <p><strong>Manifeste absent.</strong> Générer les données avec :</p>
+      <p><code>python apps/web/build_manifest.py</code></p>
+    </div>
+  </div>
+
+  <div id="content" hidden>
+
+    <div class="stats" id="kpis"></div>
+
+    <div class="note warn" id="sync-warning" style="margin-top:16px">
+      <p><strong>La sync n'est pas encore câblée.</strong> L'export Spotify ne contient
+      aucun ID de titre (<code>platform_refs</code> = 0) et il n'y a pas encore de
+      bibliothèque iTunes. Les boutons ci-dessous <em>préparent</em> l'action — ils
+      affichent la commande à lancer et l'état des prérequis, ils n'écrivent rien
+      sur Spotify ni sur le disque.</p>
+    </div>
+
+    <h2>Doublons</h2>
+    <p class="hint">Une passe par plateforme. Le local est déjà propre ; Spotify ne l'est pas.</p>
+    <div class="grid" id="dedup"></div>
+
+    <h2>Playlists</h2>
+    <p class="hint">
+      Une ligne par playlist, une colonne par plateforme. <strong>Maître</strong> = la
+      plateforme où tu gères la playlist ; <strong>Push</strong> propage vers les autres.
+      Les groupes et le choix du maître sont mémorisés dans ce navigateur
+      (<em>Exporter</em> pour les sortir en JSON).
+    </p>
+
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Filtrer les playlists…" aria-label="Filtrer">
+      <select id="f-group" aria-label="Groupe"><option value="">Tous les groupes</option></select>
+      <select id="f-status" aria-label="Statut">
+        <option value="">Tous les statuts</option>
+        <option value="sync">✓ synchronisées</option>
+        <option value="partial">◐ partielles</option>
+        <option value="missing">✗ absentes en local</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="btn-group" class="btn">Nouveau groupe</button>
+      <button id="btn-assign" class="btn" disabled>Assigner la sélection…</button>
+      <button id="btn-export" class="btn ghost">Exporter</button>
+      <label class="btn ghost" for="import-file">Importer</label>
+      <input type="file" id="import-file" accept="application/json" hidden>
+    </div>
+
+    <div class="scroll">
+      <table id="pl">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="check-all" aria-label="Tout sélectionner"></th>
+            <th>Playlist</th>
+            <th>Groupe</th>
+            <th class="num plat">Spotify</th>
+            <th class="num plat">Local</th>
+            <th class="num plat">iTunes</th>
+            <th>Statut</th>
+            <th>Maître</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="count"></p>
+
+  </div>
+
+  <footer><span id="generated"></span></footer>
+</main>
+
+<!-- panneau d'action (push / dédup) -->
+<dialog id="panel">
+  <form method="dialog">
+    <h3 id="panel-title"></h3>
+    <div id="panel-body"></div>
+    <div class="actions"><button class="btn">Fermer</button></div>
+  </form>
+</dialog>
+
+<script src="data/manifest.js" onerror="window.PORTAL6_MISSING = true"></script>
+<script src="assets/mediacenter.js"></script>
+
+</body>
+</html>

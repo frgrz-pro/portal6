@@ -69,6 +69,31 @@ cd home\ha ; docker compose up -d      # puis http://localhost:8123
 Outils créés cette session : `features/home/ha/` (compose + `ha_probe.py`),
 `features/home/tv/` (`shield_mute_adb.ps1`, `shield_remote.py`) — READMEs sur place.
 
+## Git — GitHub Desktop (2026-09-06)
+
+État vérifié : GitHub Desktop 3.6.4 installé (`%LOCALAPPDATA%\GitHubDesktop`),
+**connecté au compte `frgrz-pro`** (credential Windows `GitHub - https://api.github.com/frgrz-pro`),
+et le repo `C:\DevLab\portal6` est déjà dans sa liste (comme `spotify-toolkit`).
+GitKraken n'est pas installé — CLAUDE.md mis à jour en conséquence : les pushes se font
+depuis GitHub Desktop, jamais depuis le shell.
+
+- Identité git (globale et repo) : `François Grzybowski <fc.grzybowski.pro@gmail.com>`,
+  cohérente avec `frgrz-pro`. `core.autocrlf=true` vient du gitconfig système de Git for Windows.
+- `.gitattributes` ajouté à la racine : `* text=auto` (tous les blobs indexés étaient
+  déjà en LF, donc aucun re-commit massif), `.sh`/`.py` forcés LF pour WSL, `.ps1`/`.bat`
+  en CRLF, binaires (`kmz`, `xlsx`, `db`, `jar`) exclus de la conversion. Règle la
+  dérive « seules les fins de ligne diffèrent » vue entre portal6 et spotify-toolkit.
+- Reste à faire par François dans GitHub Desktop : *Push origin* (la branche `main`
+  a au moins un commit d'avance sur `origin/main`).
+
+## npm absent
+
+`node`/`npm` ne sont installés **ni sous Windows ni dans WSL** : les scripts
+`npm run …` du `package.json` sont documentaires. Lancer les scripts Python
+directement (Windows : `%LOCALAPPDATA%\Programs\Python\Python312\python.exe`,
+WSL : `~/.venvs/portal6/bin/python`). Le `python` du PATH Windows est le stub
+Microsoft Store, qui ne fait rien.
+
 ## Journal
 
 ### 2026-09-06
@@ -81,3 +106,8 @@ Plus tard dans la journée, François a réorganisé le repo : `home/` → `feat
 Références corrigées (README, CLAUDE.md, skill, workflow eSport, `build_ics.py` qui
 cherche `.env` un niveau plus haut, READMEs outils) ; conteneur HA recréé sur le
 nouveau chemin de `config/`. ⚠️ L'URL raw des .ics change : réabonner Google Calendar.
+
+### 2026-09-06 (bis) — GitHub Desktop, npm
+Vérification GitHub Desktop (installé, connecté frgrz-pro, repo déjà ajouté) ;
+`.gitattributes` ajouté ; CLAUDE.md passe de GitKraken à GitHub Desktop. Constat :
+node/npm absents partout → scripts npm non fonctionnels sur ce poste.

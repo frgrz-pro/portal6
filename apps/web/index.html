@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal6</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <h1><a href="index.html">Portal6</a></h1>
+    <nav>
+      <a href="index.html" aria-current="page">Accueil</a>
+      <a href="music.html">Music</a>
+      <a href="music-data.html">Données</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="lede">
+    Hub des besoins perso : un domaine par besoin de la vie courante. Ce portail
+    est une vue en lecture seule de ce que le repo sait — la source de vérité
+    reste <code>.docs/</code> pour le design et le vault <code>data/</code> pour la donnée.
+  </p>
+
+  <h2>Domaines</h2>
+
+  <div class="grid">
+    <a class="card" href="music.html">
+      <span class="tag">actif</span>
+      <h3>Music</h3>
+      <p>Vue mediacenter : les playlists, leur état par plateforme (Spotify /
+         local / iTunes), les groupes, la sync. L'inventaire brut de la donnée est
+         dans l'onglet <em>Données</em>.</p>
+    </a>
+
+    <div class="card disabled">
+      <span class="tag">à venir</span>
+      <h3>Home</h3>
+      <p>Domotique (Home Assistant, Shield), affichage TRMNL, calendriers
+         sport / eSport. Voir <code>features/home/</code>.</p>
+    </div>
+
+    <div class="card disabled">
+      <span class="tag">à venir</span>
+      <h3>Lieux</h3>
+      <p>Vault My Maps (2 237 points), KMZ, bases <code>places*.db</code>.
+         Voir <code>.docs/lieux.md</code>.</p>
+    </div>
+
+    <div class="card disabled">
+      <span class="tag">à venir</span>
+      <h3>Hardware</h3>
+      <p>Web-radio Brandt RK 711S, serveur AzuraCast. Notes de design dans
+         <code>.docs/hardware/</code>.</p>
+    </div>
+
+    <div class="card disabled">
+      <span class="tag">à venir</span>
+      <h3>Apps</h3>
+      <p>Télécommande Android (Kotlin/Compose) dans <code>apps/remote/</code>.</p>
+    </div>
+  </div>
+
+  <h2>Comment ça marche</h2>
+  <p class="hint">
+    Site statique, zéro dépendance, zéro build JS. Les chiffres viennent de
+    <code>apps/web/data/manifest.js</code>, régénéré par
+    <code>python apps/web/build_manifest.py</code> — qui lit la DB et le vault,
+    jamais <code>M:</code> directement.
+  </p>
+
+  <footer>
+    <span id="generated"></span>
+  </footer>
+</main>
+
+<script src="data/manifest.js" onerror="window.PORTAL6_MISSING = true"></script>
+<script>
+  const g = window.PORTAL6 && window.PORTAL6.generated;
+  document.getElementById('generated').textContent =
+    g ? `Données arrêtées au ${g}.` : 'Manifeste absent — lancer python apps/web/build_manifest.py';
+</script>
+
+</body>
+</html>

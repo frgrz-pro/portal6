@@ -1,0 +1,28 @@
+# Fins de ligne — rendre le comportement indépendant de la machine.
+#
+# Le repo stocke tout en LF (c'est déjà le cas de tous les blobs indexés) ; Git
+# restitue les fins de ligne natives dans la copie de travail. Sans ce fichier,
+# le résultat dépend de `core.autocrlf` de chaque poste — c'est ce qui faisait
+# que portal6 et son ancêtre spotify-toolkit « ne différaient que par les fins
+# de ligne ».
+* text=auto
+
+# Toujours LF : scripts exécutés sous WSL/Linux, où un CRLF casse le shebang.
+*.sh          text eol=lf
+*.py          text eol=lf
+gradlew       text eol=lf
+
+# Toujours CRLF : PowerShell et batch Windows.
+*.ps1         text eol=crlf
+*.bat         text eol=crlf
+*.cmd         text eol=crlf
+
+# Binaires — jamais de conversion, jamais de diff textuel.
+*.kmz         binary
+*.kml         binary
+*.xlsx        binary
+*.db          binary
+*.jar         binary
+*.png         binary
+*.jpg         binary
+*.zip         binary
