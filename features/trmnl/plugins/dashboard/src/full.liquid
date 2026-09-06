@@ -22,6 +22,8 @@
              border-bottom: 2px solid black; padding-bottom: 2px; margin-bottom: 5px;
              display: flex; justify-content: space-between; align-items: baseline; }
   .dash__stamp { font-size: 9px; letter-spacing: 0; text-transform: none; }
+  .badge { background: black; color: white; font-size: 10px; padding: 1px 6px;
+           letter-spacing: 0.06em; }
   .ico { width: 26px; height: 26px; flex: 0 0 auto; }
   .ico--sm { width: 15px; height: 15px; }
 
@@ -67,7 +69,9 @@
 
   .tides { display: flex; gap: 5px; }
   .tide { flex: 1 1 0; text-align: center; padding: 15px 1px; border: 2px solid black; }
-  .tide--pm { background: black; color: white; }
+  /* Basse mer en plein, pleine mer en contour : c'est l'étale basse qui décide si on
+     peut sortir sur l'estran, donc c'est elle qui doit sauter aux yeux. */
+  .tide--bm { background: black; color: white; }
   .tide__time { font-size: 27px; line-height: 1.15; }
   .tide__label { font-size: 11px; display: flex; align-items: center;
                  justify-content: center; gap: 3px; }
@@ -249,18 +253,21 @@
         </div>
 
         <div>
-          <div class="dash__h"><span>
-            <svg class="ico ico--sm" style="vertical-align:-2px"><use href="#i-wave"/></svg>
-            Marées — {{ spot }}</span></div>
+          <div class="dash__h">
+            <span>
+              <svg class="ico ico--sm" style="vertical-align:-2px"><use href="#i-wave"/></svg>
+              Marées — {{ spot }}</span>
+            {% if tide_regime != blank %}<span class="badge">{{ tide_regime }}</span>{% endif %}
+          </div>
           <div class="tides">
             {% for tide in tides %}
-              <div class="tide {% if tide.kind == 'PM' %}tide--pm{% endif %}">
+              <div class="tide {% if tide.kind == 'BM' %}tide--bm{% endif %}">
                 <div class="tide__time">{{ tide.time }}</div>
                 <div class="tide__label">
                   <svg class="ico" style="width:11px;height:11px">
                     <use href="{% if tide.kind == 'PM' %}#i-up{% else %}#i-down{% endif %}"/>
                   </svg>
-                  {{ tide.label }} {{ tide.day }}
+                  coef. {{ tide.coef | default: '—' }}{% if tide.day != blank %} · dem.{% endif %}
                 </div>
               </div>
             {% else %}

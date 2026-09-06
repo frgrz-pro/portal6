@@ -175,6 +175,27 @@ marquée comme telle dans le payload et affichée avec la mention « estimation 
 Validation du 2026-09-06 : l'algorithme sort une éclipse pénombrale au 21/02/2027, qui
 existe bien au catalogue.
 
+**Coefficient de marée : calculé à Brest, pas localement.** Open-Meteo ne fournit
+aucun coefficient. Mais le coefficient français est **défini à Brest et vaut pour toute
+la côte** : `coef = 100 × marnage / (2 × U)`, avec `U = 3,05 m` l'unité de hauteur de
+Brest. On récupère donc une seconde série de niveau d'eau à Brest et on en dérive un
+coefficient par transition PM↔BM, rattaché aux marées locales par proximité temporelle.
+Le calculer sur le marnage de Saint-Jacut aurait donné un nombre faux.
+
+Validé le 2026-09-06 sur la forme de la courbe, qui est le vrai test : 40 le 6 septembre
+(deux jours après le dernier quartier), montée régulière à 90 le 10, nouvelle lune le 11.
+C'est exactement le cycle attendu. Reste **dérivé, pas officiel** : l'échantillonnage
+horaire aplatit les pics, l'écart au SHOM est de l'ordre de 3 à 5 points.
+
+**Régime affiché seulement quand il est notable.** Badge `MORTE-EAU` (coef < 46),
+`VIVE-EAU` (≥ 90), `GRANDE VIVE-EAU` (≥ 100) ; rien entre les deux — un badge permanent
+ne se remarque plus. Il se base sur la **prochaine** marée, pas sur le pic des 30 h
+affichées : annoncer une vive-eau encore à deux jours serait un contresens.
+
+**Basse mer en plein, pleine mer en contour.** C'est l'étale basse qui décide si on peut
+sortir sur l'estran — à Saint-Jacut, l'accès aux Ébihens en dépend. C'est donc elle qui
+doit sauter aux yeux, pas l'inverse.
+
 **Marées sans clé API.** Open-Meteo Marine expose `sea_level_height_msl`, un niveau
 d'eau horaire qui *inclut la marée*. On en extrait les extremums, affinés par la
 parabole passant par les trois points encadrants — précision de l'ordre de ±15 min.

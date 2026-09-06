@@ -32,6 +32,15 @@ import astro
 FORECAST_API = "https://api.open-meteo.com/v1/forecast"
 MARINE_API = "https://marine-api.open-meteo.com/v1/marine"
 TIDE_HORIZON_HOURS = 30   # de quoi toujours avoir 2 pleines mers et 2 basses mers
+# Le coefficient de marée est défini À BREST et vaut pour toute la côte française :
+# coef = 100 x marnage / (2 x U), avec U = 3,05 m l'unité de hauteur de Brest.
+# Le calculer sur le marnage local donnerait un nombre faux — d'où ce point fixe.
+BREST = (48.38, -4.50)
+BREST_UNIT_M = 3.05
+# Seuils français usuels du régime de marée. On n'affiche un badge que pour les deux
+# extrêmes : une marée moyenne n'a rien à signaler, et un badge permanent ne se
+# remarque plus.
+TIDE_REGIMES = [(100, "GRANDE VIVE-EAU"), (90, "VIVE-EAU"), (46, ""), (0, "MORTE-EAU")]
 HTTP_TIMEOUT = 30
 
 ROOT = Path(__file__).resolve().parent
@@ -90,7 +99,7 @@ def parse_hours(block: dict, tz: ZoneInfo) -> list[datetime]:
 
 
 def tide_extremes(times: list[datetime], levels: list[float | None],
-                  now: datetime) -> list[dict]:
+                  now: datetime, coefficients: list[tuple[datetime, int]]) -> list[dict]:
     """Pleines et basses mers à venir, extraites des extremums du niveau de la mer.
 
     L'échantillonnage horaire d'Open-Meteo ne donne l'extremum qu'à l'heure près : on
@@ -113,8 +122,10 @@ def tide_extremes(times: list[datetime], levels: list[float | None],
         moment = times[i] + timedelta(hours=max(-0.5, min(0.5, offset)))
         if moment < now or moment > now + timedelta(hours=TIDE_HORIZON_HOURS):
             continue
+        coef = min(coefficients, key=lambda c: abs(c[0] - moment))[1] if coefficients else None
         out.append({
             "kind": "PM" if is_high else "BM",
+            "coef": coef,
             "label": "Pleine mer" if is_high else "Basse mer",
             "time": moment.strftime("%Hh%M"),
             "day": "demain" if moment.date() > now.date() else "",
@@ -123,6 +134,55 @@ def tide_extremes(times: list[datetime], levels: list[float | None],
                         else round(cur, 2),
         })
     return out[:4]
+
+
+def local_extremes(times: list[datetime], levels: list[float | None]) -> list[tuple]:
+    """Extremums bruts d'une série de niveau : (instant, 'PM'|'BM', hauteur)."""
+    out = []
+    for i in range(1, len(levels) - 1):
+        prev, cur, nxt = levels[i - 1], levels[i], levels[i + 1]
+        if prev is None or cur is None or nxt is None:
+            continue
+        if cur >= prev and cur > nxt:
+            out.append((times[i], "PM", cur))
+        elif cur <= prev and cur < nxt:
+            out.append((times[i], "BM", cur))
+    return out
+
+
+def tide_coefficients(tz: ZoneInfo) -> list[tuple[datetime, int]]:
+    """Coefficients de marée à venir, calculés sur la série de Brest.
+
+    Un coefficient par transition PM<->BM, daté du milieu de la transition. Il est
+    **dérivé**, pas officiel : l'échantillonnage horaire d'Open-Meteo aplatit les pics,
+    l'écart au SHOM est de l'ordre de 3 à 5 points.
+    """
+    data = fetch_json(MARINE_API, {
+        "latitude": BREST[0], "longitude": BREST[1], "timezone": str(tz),
+        "hourly": "sea_level_height_msl", "forecast_days": 3,
+    })
+    times = parse_hours(data["hourly"], tz)
+    extremes = local_extremes(times, data["hourly"].get("sea_level_height_msl") or [])
+    out = []
+    for (t1, k1, v1), (t2, k2, v2) in zip(extremes, extremes[1:]):
+        if k1 == k2:
+            continue
+        coef = round(100 * abs(v1 - v2) / (2 * BREST_UNIT_M))
+        out.append((t1 + (t2 - t1) / 2, max(20, min(120, coef))))
+    return out
+
+
+def tide_regime(tides: list[dict]) -> str:
+    """Régime en cours, d'après le coefficient de la **prochaine** marée.
+
+    Pas le pic de la fenêtre : celle-ci couvre 30 h, pendant lesquelles le coefficient
+    peut monter de 41 à 53. Un dashboard décrit le présent — annoncer une vive-eau
+    encore à deux jours serait un contresens.
+    """
+    coefs = [t["coef"] for t in tides if t.get("coef")]
+    if not coefs:
+        return ""
+    return next(label for threshold, label in TIDE_REGIMES if coefs[0] >= threshold)
 
 
 # ------------------------------------------------------------------------ pression
@@ -192,6 +252,8 @@ def build(cfg: dict) -> dict:
         values = sea.get(key) or []
         return values[idx] if idx < len(values) else None
 
+    tides = tide_extremes(hours, sea.get("sea_level_height_msl") or [], now,
+                          tide_coefficients(tz))
     current = forecast["current"]
     # `past_days: 1` (nécessaire à la tendance de pression) ajoute hier en tête des
     # tableaux journaliers : il faut retrouver l'index d'aujourd'hui, pas prendre [0].
@@ -233,7 +295,8 @@ def build(cfg: dict) -> dict:
                 "estimated": ev["estimated"],
             } for ev in specials[:3]],
         },
-        "tides": tide_extremes(hours, sea.get("sea_level_height_msl") or [], now),
+        "tides": tides,
+        "tide_regime": tide_regime(tides),
         "sea": {
             "wave_height": at_now("wave_height"),
             "wave_period": at_now("wave_period"),
