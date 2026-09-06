@@ -14,7 +14,7 @@ Statuts : ✅ possédé · 🛒 à acheter · ⏸ bloqué (voir « Débloqué pa
 | Multiprises Zigbee ×2 | ✅ possédé | — | ❓ marque/modèle à identifier ([zigbee-multiprises.md](zigbee-multiprises.md)) |
 | **Coordinateur Zigbee** — choix pressenti : **Sonoff Dongle Max (Dongle-M)**, EFR32MG24 + ESP32, Ethernet/PoE/Wi-Fi/USB — l'Ethernet le rend indépendant de l'emplacement de la tour | 🛒 | ~40–50 € | Tour Docker allumée en continu ; l'utiliser en **Zigbee pur** (pas de multipan Zigbee+Thread) ; PoE seulement si switch PoE, sinon USB-C |
 | *(alternatives écartées : Dongle-E ~25 € — USB only, colle le coordinateur à la tour ; SLZB-06 — même idée Ethernet mais le Max est plus récent/complet)* | — | — | — |
-| Tour Docker (Home Assistant + AzuraCast) | ❓ | — | Machine déjà identifiée côté radio ([design-serveur-azuracast.md](../hardware/design-serveur-azuracast.md)) — confirmer que c'est la même |
+| Tour Docker (Home Assistant + AzuraCast) | ❓ | — | Machine déjà identifiée côté radio ([design-serveur-azuracast.md](hardware/design-serveur-azuracast.md)) — confirmer que c'est la même |
 | Shield TV Pro, barre TCL, télé, téléphone | ✅ possédé | — | — |
 
 ## TRMNL (affichage e-ink)
@@ -27,7 +27,7 @@ Statuts : ✅ possédé · 🛒 à acheter · ⏸ bloqué (voir « Débloqué pa
 
 ## Radio Brandt RK 711S
 
-Détail complet et audité dans [hardware/bom.md](../hardware/bom.md) — rien n'est
+Détail complet et audité dans [hardware/bom.md](hardware/bom.md) — rien n'est
 commandé, achats par vagues avec conditions de déblocage. Résumé :
 
 | Poste | Estimation | Note |

@@ -22,7 +22,7 @@ pénibles et les apps constructeur.
 - L'app ne parle **jamais Zigbee directement** (le téléphone n'a pas de radio
   Zigbee) : elle parle à un backend sur le LAN qui, lui, tient la radio.
   Backend pressenti : Home Assistant sur la tour Docker (déjà planifié dans
-  `home/README.md`). Détail dans [zigbee-multiprises.md](zigbee-multiprises.md).
+  `features/home/README.md`). Détail dans [zigbee-multiprises.md](zigbee-multiprises.md).
 - Emplacement du code : `apps/remote/` (le dossier `apps/` du monorepo existe pour ça).
 - **Scaffold créé le 2026-08-30** : projet Gradle single-module, package
   `com.portal6.remote`, minSdk 26 / target 35, Compose BOM + Material 3.
@@ -32,9 +32,9 @@ pénibles et les apps constructeur.
   interface (les `entityId` sont déjà au format HA `switch.multiprise_a_prise_1`).
 - Labels des 8 boutons : placeholders A1-A4 / B1-B4 dans `data/Light.kt`
   (`DefaultLights`) — à renommer quand le mapping réel sera connu.
-- Le Mac de dev n'a ni JDK ni Android Studio ni SDK : build à faire après
+- ~~Le Mac de dev n'a ni JDK ni Android Studio ni SDK~~ → **poste de dev = PC Windows depuis le 2026-09-06**, outillage complet et wrapper Gradle commité, cf. [setup-dev-windows.md](setup-dev-windows.md). (Ancienne note : build à faire après
   installation d'Android Studio (le wrapper Gradle jar n'est pas commité,
-  `gradle wrapper` le génère).
+  `gradle wrapper` le génère.)
 
 ## UI v1
 
@@ -71,3 +71,10 @@ Scaffold complet de l'app dans `apps/remote/` (Compose, bottom bar, grille 2×4,
 All/Turn off, tab TV maquette MUTE, backend mocké derrière `LightsRepository`).
 Non compilé : pas d'outillage Android sur le Mac — première étape de la
 prochaine session dev = installer Android Studio et builder.
+
+### 2026-09-06
+Poste de dev = PC Windows : Android Studio, JDK 21, SDK 35 installés par winget +
+sdkmanager ([setup-dev-windows.md](setup-dev-windows.md)) ; `gradlew` + jar commités.
+Un Home Assistant de dev tourne en Docker Desktop (`features/home/ha/`) pour brancher le
+vrai client HA sur l'intégration Demo en attendant le coordinateur Zigbee.
+**Premier build réussi** : `gradlew assembleDebug` → `app-debug.apk` (15,6 Mo, 4 min à froid). HA de dev démarré (`portal6-ha`, http://localhost:8123), onboarding à faire.

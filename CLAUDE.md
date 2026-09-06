@@ -4,10 +4,10 @@ Portal6 est le **hub des besoins perso** de François : chaque besoin de la vie
 courante est segmenté en domaine dans ce monorepo, avec l'objectif de se
 simplifier la vie. Domaines actuels :
 
-- **music** (`plugin/`, `data/`, `docs/`) — bibliothèque musicale unifiée (ETL, SQLite)
-- **home** (`home/`) — domotique, affichage TRMNL, calendriers sport/eSport
-- **hardware** (`hardware/`) — web-radio Brandt RK 711S
-- **apps** (`apps/`) — applications (à venir : `apps/remote/`, télécommande Kotlin)
+- **music** (`plugin/`, `data/`) — bibliothèque musicale unifiée (ETL, SQLite)
+- **home** (`features/home/`) — domotique (Home Assistant `ha/`, Shield `tv/`), affichage TRMNL, calendriers sport/eSport
+- **hardware** (`.docs/hardware/`) — web-radio Brandt RK 711S (notes de design uniquement)
+- **apps** (`apps/`) — applications (`apps/remote/`, télécommande Kotlin/Compose)
 
 ## Méthodo de travail — .docs/ (IMPORTANT)
 
@@ -22,8 +22,8 @@ plus du code.
 - Nouveau sujet → nouveau doc + ligne dans l'index de `.docs/README.md`.
 - **BOM central dans `.docs/bom.md`** : tout besoin/achat matériel de n'importe
   quel projet y est tracé (statut, prix, condition de déblocage).
-- Ne pas confondre avec `docs/` (sans point) : anciennes notes datées du domaine
-  musique, on n'y touche plus.
+- Les notes datées `AAAA-MM-JJ-*.md` à la racine de `.docs/` sont des archives (ex-`docs/`) :
+  on les lit, on n'y écrit plus.
 
 ## Conventions
 

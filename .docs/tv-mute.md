@@ -66,3 +66,9 @@ mute via Shield ne pilote pas la barre.
 ### 2026-08-30
 Création du doc. Chaîne audio décrite, 3 angles identifiés, stratégie : valider
 CEC via ADB depuis le Mac, puis implémenter Android TV Remote protocol v2.
+
+### 2026-09-06
+Outils de validation prêts dans `features/home/tv/` : `shield_mute_adb.ps1` (angle 2, ADB
+réseau) et `shield_remote.py` (angle 1, lib Python `androidtvremote2` — appairage
+par code + `send_key_command("MUTE")`). Reste à connaître l'IP de la Shield et
+faire le test qui tranche : la barre TCL se coupe-t-elle ?

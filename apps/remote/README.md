@@ -10,6 +10,17 @@ Télécommande Android du foyer — design dans [`.docs/app-remote.md`](../../.d
 
 ## Build
 
-Ouvrir `apps/remote/` dans Android Studio (le Mac n'a ni JDK ni SDK au 2026-08-30 —
-installer Android Studio d'abord). Si le sync réclame le wrapper Gradle manquant :
-`gradle wrapper` à la racine du projet (via `brew install gradle`).
+Outillage installé sur le PC Windows le 2026-09-06 (détail et dépannage dans
+[`.docs/setup-dev-windows.md`](../../.docs/setup-dev-windows.md)) : Android Studio,
+SDK 35 dans `%LOCALAPPDATA%\Android\Sdk` (`ANDROID_HOME`), JDK Temurin 21.
+
+- **Android Studio** : *Open* → `apps/remote/` ; le SDK est détecté via `local.properties`.
+- **Ligne de commande** (le wrapper Gradle 8.10.2 est commité) :
+
+```powershell
+cd apps\remote
+.\gradlew.bat assembleDebug
+```
+
+APK : `app/build/outputs/apk/debug/app-debug.apk`. Installer sur le téléphone
+(débogage USB activé) : `adb install -r app\build\outputs\apk\debug\app-debug.apk`.

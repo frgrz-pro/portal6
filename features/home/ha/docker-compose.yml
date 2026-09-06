@@ -1,0 +1,56 @@
+# Home Assistant — pile domotique portal6
+#
+# Deux usages, même fichier :
+#   - DEV sur le PC Windows (Docker Desktop) : HA seul, entités de démo, pour
+#     développer l'app remote contre une vraie API REST/WebSocket.
+#   - PROD sur la tour Docker (Linux) : décommenter `network_mode: host`
+#     (découverte mDNS/SSDP) et, quand le coordinateur Zigbee est là, les
+#     services mosquitto + zigbee2mqtt (ou rester sur ZHA intégré à HA).
+#
+# Démarrage :  docker compose up -d      → http://localhost:8123
+# Arrêt     :  docker compose down       (la config reste dans ./config)
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: portal6-ha
+    restart: unless-stopped
+    privileged: false
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "8123:8123"
+    # PROD (tour Linux) : remplacer `ports:` par host networking, indispensable
+    # pour la découverte automatique (Shield/Google Cast, Zigbee2MQTT, etc.).
+    # network_mode: host
+
+  # --- Zigbee (à activer avec le coordinateur, cf. .docs/zigbee-multiprises.md)
+  # Option 1 (plan retenu) : ZHA intégré à HA, rien à ajouter ici — le Sonoff
+  # Dongle Max en Ethernet se déclare dans HA par `socket://<ip-dongle>:6638`.
+  # Option 2 : Zigbee2MQTT si un device est mal supporté par ZHA.
+  #
+  # mosquitto:
+  #   image: eclipse-mosquitto:2
+  #   container_name: portal6-mqtt
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./mosquitto/config:/mosquitto/config
+  #     - ./mosquitto/data:/mosquitto/data
+  #   ports:
+  #     - "1883:1883"
+  #
+  # zigbee2mqtt:
+  #   image: koenkk/zigbee2mqtt
+  #   container_name: portal6-z2m
+  #   restart: unless-stopped
+  #   depends_on: [mosquitto]
+  #   volumes:
+  #     - ./zigbee2mqtt:/app/data
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - TZ=Europe/Paris
+  #   # Dongle Max en Ethernet : serial.port = tcp://<ip-dongle>:6638 dans
+  #   # zigbee2mqtt/configuration.yaml (pas de passthrough USB nécessaire).

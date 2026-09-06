@@ -2,7 +2,7 @@
 
 Le premier TRMNL généraliste : compte, plugins, et surtout l'affichage du calendrier
 sport. Les use cases et la fiche technique du TRMNL (pull-only, Dev Edition, BYOS…)
-sont dans [home/README.md](../home/README.md) — ce doc porte le **setup concret** et
+sont dans [features/home/README.md](../features/home/README.md) — ce doc porte le **setup concret** et
 les décisions de comptes.
 
 ## Questions ouvertes
@@ -61,7 +61,7 @@ autre chose.
 ### Ce que ça change côté portal6
 
 Rien à coder pour ce jalon : les .ics eSport sont déjà générés et servis par GitHub
-([home/calendars/esports/](../home/calendars/esports/)). Vérifier seulement que les
+([features/home/calendars/esports/](../features/home/calendars/esports/)). Vérifier seulement que les
 4 abonnements (LEC, LCK, international, CS2) sont bien **dans le compte `.sport`**
 (et pas dans un autre compte) avant de partager.
 

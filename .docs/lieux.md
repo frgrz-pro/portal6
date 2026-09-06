@@ -1,8 +1,8 @@
 # Lieux — le référentiel de points (ex-Mapix)
 
 Doc vivant de l'espace Lieux. Le design complet (5 use cases, lots A–E, architecture
-KMP/MapLibre) est figé dans [docs/2026-08-20-espace-lieux-refinement.md](../docs/2026-08-20-espace-lieux-refinement.md)
-et le Lot A dans [docs/2026-08-20-lot-a-walkthrough.md](../docs/2026-08-20-lot-a-walkthrough.md)
+KMP/MapLibre) est figé dans [2026-08-20-espace-lieux-refinement.md](2026-08-20-espace-lieux-refinement.md)
+et le Lot A dans [2026-08-20-lot-a-walkthrough.md](2026-08-20-lot-a-walkthrough.md)
 (archives, on n'y touche plus). Ici : l'état courant, les décisions nouvelles, la todo.
 
 ## Questions ouvertes

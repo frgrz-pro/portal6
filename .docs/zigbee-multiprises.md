@@ -30,7 +30,7 @@ piloter depuis l'app remote ([app-remote.md](app-remote.md)).
 | Option | Principe | Verdict |
 |---|---|---|
 | A. Hub constructeur + app/cloud | ex. passerelle Tuya + Smart Life | Rapide mais cloud, app fermée, API pénible — contraire à l'esprit du projet |
-| B. **Home Assistant + clé USB Zigbee** | ZHA (intégré) ou Zigbee2MQTT | **Recommandé** — local, API propre pour l'app, déjà planifié dans `home/README.md` (affichage TRMNL) |
+| B. **Home Assistant + clé USB Zigbee** | ZHA (intégré) ou Zigbee2MQTT | **Recommandé** — local, API propre pour l'app, déjà planifié dans `features/home/README.md` (affichage TRMNL) |
 | C. Zigbee2MQTT seul + MQTT | plus léger que HA | Possible, mais HA apporte l'UI d'appairage, l'historique, et le pont TRMNL déjà prévu |
 
 ## Le point qui ne s'esquive pas : un hôte Home Assistant 24/7
@@ -76,7 +76,7 @@ Candidats hôte, par ordre de préférence :
    - Auth : long-lived access token (profil utilisateur HA), stocké dans l'app.
 
 Bonus alignement : le même HA alimente l'affichage d'état sur le TRMNL
-(use case n°2 de `home/README.md`) — un seul backend pour les deux projets.
+(use case n°2 de `features/home/README.md`) — un seul backend pour les deux projets.
 
 ## Journal
 
@@ -85,3 +85,9 @@ Création du doc. Vulgarisation Zigbee (besoin d'un coordinateur), choix option 
 (HA + clé USB, aligné avec le plan TRMNL). Bloquant : identifier marque/modèle
 des multiprises. Coordinateur pressenti après recherche : **Sonoff Dongle Max**
 (Ethernet/PoE, ZHA + Z2M officiels) — en Zigbee pur, sans multipan.
+
+### 2026-09-06
+`features/home/ha/docker-compose.yml` écrit : HA seul pour le dev (Docker Desktop Windows,
+intégration Demo pour des `switch.*` factices), sections mosquitto/zigbee2mqtt en
+commentaire pour la tour. Sonde `ha_probe.py` (liste + toggle d'une entité via
+`.env` HA_URL/HA_TOKEN). Toujours bloquant : marque/modèle des multiprises.

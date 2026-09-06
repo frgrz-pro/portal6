@@ -64,8 +64,8 @@ intermédiaires éventuels non annoncés, à compléter si besoin.
 dans `calendars/esports/ics/<jeu>/<ligue>.ics` et servis par raw.githubusercontent.com.
 Le workflow `.github/workflows/esports-ics.yml` regénère 4×/jour (cron) et ne commite
 que s'il y a un vrai changement (DTSTAMP stable = DTSTART, pas l'heure de génération).
-Abonnement Google Calendar (une fois pour toutes) :
-`https://raw.githubusercontent.com/frgrz-pro/portal6/main/home/calendars/esports/ics/lol/lec.ics`
+Abonnement Google Calendar (⚠️ URL changée le 2026-09-06 avec le déplacement `home/` → `features/home/` : à réabonner dans le compte `.sport`) :
+`https://raw.githubusercontent.com/frgrz-pro/portal6/main/features/home/calendars/esports/ics/lol/lec.ics`
 
 **CS2 (fait le 2026-08-29)** : source **PandaScore** (`source: "pandascore"` dans
 `leagues.json`, token gratuit dans `PANDASCORE_TOKEN` — `.env` local + secret GitHub

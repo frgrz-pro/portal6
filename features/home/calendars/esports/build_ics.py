@@ -145,7 +145,7 @@ def wrap_calendar(slug: str, label: str, vevents: list[str]) -> str:
 def pandascore_token() -> str:
     tok = os.environ.get("PANDASCORE_TOKEN", "")
     if not tok:
-        env_file = Path(__file__).parents[3] / ".env"
+        env_file = Path(__file__).parents[4] / ".env"  # racine du repo (features/home/calendars/esports/)
         if env_file.exists():
             for line in env_file.read_text().splitlines():
                 if line.startswith("PANDASCORE_TOKEN="):

@@ -5,18 +5,19 @@ Monorepo perso, deux domaines :
 - **Portal6-music** : référentiel unifié de la bibliothèque (Spotify + fichiers locaux),
   outils d'analyse/rationalisation des playlists, et à terme web radio privée + sync
   multi-plateformes (iTunes / Spotify / YouTube) — tout ce README ci-dessous.
-- **Portal6-home** (`home/`) : domotique & affichage e-ink TRMNL — calendriers sport/eSport,
-  météo, marées, courses/recettes, état Zigbee via Home Assistant — cf. [home/README.md](home/README.md).
+- **Portal6-home** (`features/home/`) : domotique & affichage e-ink TRMNL — calendriers sport/eSport,
+  météo, marées, courses/recettes, état Zigbee via Home Assistant — cf. [features/home/README.md](features/home/README.md).
 
 Le domaine musique (**Portal6-music**) a deux faces : la partie **software** (ETL, DB, analyses —
-tout ce qui est décrit ci-dessous) et la partie **hardware** (`hardware/` : transformation d'un
-poste Brandt RK 711S en web-radio cliente d'un serveur AzuraCast — cf. [hardware/README.md](hardware/README.md)).
+tout ce qui est décrit ci-dessous) et la partie **hardware** (`.docs/hardware/` : transformation d'un
+poste Brandt RK 711S en web-radio cliente d'un serveur AzuraCast — cf. [.docs/hardware/README.md](.docs/hardware/README.md)).
 
 ## Structure
 
 ```
 Portal6/
-├── apps/                      # projets applicatifs (api, web, mobile) — à venir
+├── .docs/                     # notes de design vivantes (un doc par sujet) + archives datées + hardware/ (radio)
+├── apps/remote/               # télécommande Android (Kotlin/Compose)
 ├── plugin/
 │   ├── db/                    # music.db (SQLite, artefact construit — gitignoré)
 │   └── etl/
@@ -29,10 +30,8 @@ Portal6/
 │   │   ├── extract_spotify.xlsx   # export complet du Google Sheet « extract spotify »
 │   │   └── library_scan.csv       # scan des fichiers locaux (produit par scan_library.py)
 │   └── places/                # Takeout / KMZ du domaine Lieux
-├── docs/                      # notes d'analyse et décisions
 ├── exports/                   # extended streaming history Spotify (quand reçu)
-├── hardware/                  # projet Radio : Brandt RK 711S → web-radio (notes de design + BOM)
-└── home/                      # Portal6-home : TRMNL, domotique, calendriers, courses/recettes
+└── features/home/             # Portal6-home : TRMNL, calendriers, ha/ (Home Assistant), tv/ (Shield)
 ```
 
 ## Setup d'une nouvelle machine
@@ -111,6 +110,6 @@ python plugin/etl/music/spotify/analyze_listening_history.py
 3. ⏳ Scan bibliothèque locale `M:` + matching local ↔ Spotify
 4. Dédoublonnage des fichiers locaux
 5. Reprise moisson ReccoBeats (features audio) vers la DB
-6. Web radio privée (Docker sur la tour) alimentée par la DB — design dans `hardware/design-serveur-azuracast.md`
-   et `hardware/design-programmation-editoriale.md` ; le poste physique dans `hardware/design-brandt-rk711s.md`
+6. Web radio privée (Docker sur la tour) alimentée par la DB — design dans `.docs/hardware/design-serveur-azuracast.md`
+   et `.docs/hardware/design-programmation-editoriale.md` ; le poste physique dans `.docs/hardware/design-brandt-rk711s.md`
 7. Sync playlists iTunes / Spotify / YouTube (`platform_refs`)

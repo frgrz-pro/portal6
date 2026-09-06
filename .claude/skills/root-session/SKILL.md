@@ -30,7 +30,7 @@ ensuite/en parallèle produire du code.
 - **Tout besoin matériel évoqué → une ligne dans `.docs/bom.md`** (le BOM
   central, tous projets) : statut (✅/🛒/⏸/❓), prix estimé, condition de
   déblocage. Un achat réalisé passe en ✅ ; un BOM détaillé de projet
-  (ex. `hardware/bom.md`) reste la source du détail, le central agrège.
+  (ex. `.docs/hardware/bom.md`) reste la source du détail, le central agrège.
 
 ## En fin de session (ou après un gros jalon)
 
@@ -42,7 +42,7 @@ ensuite/en parallèle produire du code.
 
 ## Garde-fous
 
-- `docs/` (sans point) = archives datées du domaine musique : ne pas y écrire.
+- Les notes datées `AAAA-MM-JJ-*.md` à la racine de `.docs/` sont des archives (ex-`docs/`) : on les lit, on n'y écrit plus. Idem `.docs/hardware/` = notes de design de la radio (ex-`hardware/`), qui gardent leur propre organisation.
 - Ne pas dupliquer dans `.docs/` ce que le code ou les README de domaine disent
   déjà — les docs portent le design, les décisions et les questions, pas la
   paraphrase du code.

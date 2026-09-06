@@ -1,0 +1,4 @@
+# Instance locale : config, base, tokens — jamais versionnés
+config/
+mosquitto/data/
+zigbee2mqtt/

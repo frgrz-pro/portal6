@@ -3,7 +3,7 @@
 Doc vivant du domaine musique côté **logiciel** (ETL, `music.db`, bibliothèque `M:\music`,
 streaming salon). Le pipeline et les scripts sont décrits dans le [README racine](../README.md) ;
 la partie **hardware/serveur** (Brandt RK 711S, AzuraCast) a ses notes dans
-[hardware/](../hardware/README.md) ; les anciennes notes datées sont dans `docs/`.
+[hardware/](hardware/README.md) ; les anciennes notes datées (`AAAA-MM-JJ-*.md`) sont ici aussi, à la racine de `.docs/`.
 
 ## Questions ouvertes
 
@@ -65,7 +65,7 @@ qui dit `data/library_scan.csv` est obsolète sur ce point.
 3. Ce qui rend B meilleur : la structuration amont (tags propres, dédup) = l'axe A.
 
 **C — Serveur AzuraCast, Phase 3** — plan dans
-[hardware/design-serveur-azuracast.md](../hardware/design-serveur-azuracast.md)
+[hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md)
 1. Action utilisateur : activer l'intégration WSL Ubuntu dans Docker Desktop.
 2. `./docker.sh install` canal Stable dans `/var/azuracast` (méthode validée).
 3. STOP / VÉRIFIER Phase 3 (ports, interface accessible) avant toute station.
