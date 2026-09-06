@@ -81,6 +81,10 @@ plugins/<nom>/
     └── *.liquid       un fichier par taille : full, half_horizontal, half_vertical, quadrant
 ```
 
+⚠️ **`trmnlp push` réécrit `settings.yml`** dans la forme canonique du serveur : les
+commentaires n'y survivent pas, et les champs vides du serveur y réapparaissent. Ne rien
+documenter dans ce fichier — il est géré par l'outil, pas à la main.
+
 ⚠️ `settings.yml` doit porter l'**`id`** du plugin côté TRMNL. Sans lui, chaque
 `trmnlp push` crée un *nouveau* plugin au lieu de mettre à jour le sien — on se retrouve
 vite avec dix doublons. L'id se récupère avec `trmnlp list` après la première création,
@@ -201,3 +205,12 @@ puisque l'agenda est privé. D'où le **gist secret**, et l'URL de polling qui n
 être commitée. Rendu validé en PNG via `trmnlp build` : mise en page corrigée trois fois
 (débordements hors écran, texte noir sur fond noir dans les blocs inversés, largeur du
 conteneur flex non contrainte).
+
+### 2026-09-06 (quater) — le plugin existe
+Dev Edition active : `trmnlp list` répond (plus de 401) et `trmnlp push` a créé
+**`portal6 — Dashboard`, id 470032**. Confirmé par le serveur au passage : le schéma
+`custom_fields` (`keyname` / `field_type` / `name` / `description`) est le bon, et
+`polling_url: "##{{ payload_url }}"` est accepté — l'URL du gist secret restera donc
+hors du repo. Appris : `trmnlp push` **réécrit `settings.yml`** (commentaires perdus),
+et y inscrit lui-même l'`id`. Reste à brancher : gist + champ « URL du payload », spot,
+et ajout à la playlist.
