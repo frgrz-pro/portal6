@@ -150,3 +150,11 @@ Device confirmé **TRMNL OG** et **Developer Edition** décidée : les deux ques
 ouvertes correspondantes sont tranchées et sorties de la liste. La construction des
 écrans part dans son propre doc, [trmnl-dashboard.md](trmnl-dashboard.md) ; ce doc-ci
 reste sur les comptes et la mise en route.
+
+### 2026-09-06 (ter) — lune blanche, tags blancs
+Retour d'écran : le disque lunaire en gris `#c8c8c8` sortait trop sombre sur l'e-ink →
+disque **blanc**, ombre noire inchangée ; quelques cratères en deux gris (`#aaa` mers,
+`#555` anneaux et points, rien sous 2 px) dessinés sous l'ombre, sur la grande lune
+seulement (la frise 7 jours à 21 px reste unie). Tags de l'agenda : typo blanche sur
+la pastille `#aaa`. Rendu vérifié via `trmnlp build --png --color-depth 2` (copie
+temporaire du plugin avec `variables:` injectées depuis `build_dashboard.py`).
