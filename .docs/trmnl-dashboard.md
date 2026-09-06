@@ -218,7 +218,18 @@ Les .ics sont lus avec `icalendar` + `recurring-ical-events` plutôt qu'avec un 
 maison : les agendas réels sont pleins de règles de récurrence, et les développer à la
 main est le genre de code qui a l'air de marcher jusqu'au premier événement mensuel.
 
-Ce qui dépasse les trois événements par jour est **compté**, pas silencieusement perdu :
+**Pas de quota par jour : un remplissage à la place disponible.** Liquid ne sait pas
+mesurer du texte, et `overflow: hidden` coupe sans prévenir. `build_dashboard.py` estime
+donc en amont le nombre de lignes de chaque événement (largeur du texte / caractères par
+ligne) et remplit la colonne jusqu'au budget de 405 px. Deux calibrages appris au rendu :
+l'écart entre journées vaut **18 px** (gap 9 + filet 2 + padding 7), et il ne passe que
+**27 caractères par ligne**, pas 33 — le retour à la ligne se faisant sur les mots, le
+remplissage réel est plus lâche que la largeur brute.
+
+L'estimateur se trompe volontairement du côté prudent : mieux vaut un peu de blanc
+qu'une ligne tronquée sur un écran qui se met à jour sans surveillance.
+
+Ce qui ne rentre pas est **compté** et affiché (`+n autres`), pas silencieusement perdu :
 un écran qui ment sur ce qu'il montre serait pire qu'un écran incomplet.
 
 ## Journal

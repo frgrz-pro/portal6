@@ -39,6 +39,16 @@ from zoneinfo import ZoneInfo
 import build_ciel_mer
 
 ROOT = Path(__file__).resolve().parent
+# Budget de la colonne agenda, en pixels. Liquid ne sait pas mesurer du texte : on
+# estime ici le nombre de lignes qu'occupera chaque événement pour remplir la colonne
+# au plus juste, plutôt que d'imposer un quota arbitraire par jour. Ce qui ne rentre
+# pas est COMPTÉ, jamais silencieusement perdu.
+AGENDA_BUDGET_PX = 405
+AGENDA_CHARS_PER_LINE = 27   # pas 33 : le retour a la ligne se fait sur les mots,
+                             # donc le remplissage reel est plus lache que la largeur brute
+AGENDA_LINE_PX = 14
+AGENDA_DAY_HEADER_PX = 21
+AGENDA_DAY_GAP_PX = 18       # gap 9 + filet 2 + padding 7
 GIST_API = "https://api.github.com/gists"
 GIST_FILENAME = "dashboard.json"
 HTTP_TIMEOUT = 30
@@ -64,14 +74,26 @@ def build_agenda_block(cfg: dict, days: int) -> dict:
                 events.append(normalized)
 
     grouped = build_agenda.group_by_day(events, now.date(), days)
-    # Trois événements par jour tiennent dans la colonne ; au-delà on compte les
-    # absents plutôt que de laisser croire que la journée est vide.
-    shown = [{
-        "label": day["label"],
-        "today": day["today"],
-        "events": [{"time": e["time"], "title": e["title"][:40], "cal": e["cal"]}
-                   for e in day["events"][:3]],
-    } for day in grouped]
+    shown, used = [], 0
+    for day in grouped:
+        if not day["events"]:
+            continue
+        cost = AGENDA_DAY_HEADER_PX + (AGENDA_DAY_GAP_PX if shown else 0)
+        if used + cost >= AGENDA_BUDGET_PX:
+            break
+        kept, used = [], used + cost
+        for event in day["events"]:
+            title = event["title"][:60]
+            width = len(event["time"]) + len(event["cal"]) + len(title) + 3
+            lines = max(1, -(-width // AGENDA_CHARS_PER_LINE))
+            if used + lines * AGENDA_LINE_PX > AGENDA_BUDGET_PX:
+                break
+            used += lines * AGENDA_LINE_PX
+            kept.append({"time": event["time"], "title": title, "cal": event["cal"]})
+        if kept:
+            shown.append({"label": day["label"], "today": day["today"], "events": kept})
+        else:
+            used -= cost  # l'en-tête seul ne sert à rien, on rend la place
     total = sum(len(day["events"]) for day in grouped)
     return {
         "days": shown,
