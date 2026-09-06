@@ -125,6 +125,32 @@ def tide_extremes(times: list[datetime], levels: list[float | None],
     return out[:4]
 
 
+# ------------------------------------------------------------------------ pression
+
+# Seuils barométriques usuels, en hPa sur 3 h. C'est la variation qui est lisible,
+# pas la valeur absolue : 1008 hPa en hausse rapide n'annonce pas la même chose que
+# 1008 hPa en chute.
+PRESSURE_STEPS = [
+    (1.6, "hausse rapide", "up"), (0.6, "hausse", "up"),
+    (-0.6, "stable", "flat"), (-1.6, "baisse", "down"),
+]
+
+
+def pressure_trend(times: list[datetime], values: list[float | None],
+                   now: datetime) -> tuple[float, str, str]:
+    """Variation de pression sur 3 h : (delta hPa, libellé, sens de la flèche)."""
+    usable = [i for i, v in enumerate(values) if v is not None]
+    if len(usable) < 4:
+        return 0.0, "—", "flat"
+    idx = min(usable, key=lambda i: abs(times[i] - now))
+    past = max(idx - 3, usable[0])
+    delta = values[idx] - values[past]
+    for threshold, label, arrow in PRESSURE_STEPS:
+        if delta >= threshold:
+            return delta, label, arrow
+    return delta, "baisse rapide", "down"
+
+
 # -------------------------------------------------------------------------- payload
 
 def build(cfg: dict) -> dict:
@@ -137,10 +163,11 @@ def build(cfg: dict) -> dict:
 
     forecast = fetch_json(FORECAST_API, {
         "latitude": lat, "longitude": lon, "timezone": spot["timezone"],
-        "current": "temperature_2m,apparent_temperature,weather_code,"
+        "current": "temperature_2m,apparent_temperature,weather_code,pressure_msl,"
                    "wind_speed_10m,wind_direction_10m,wind_gusts_10m",
+        "hourly": "pressure_msl",
         "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max",
-        "forecast_days": 1, "wind_speed_unit": "kmh",
+        "forecast_days": 1, "past_days": 1, "wind_speed_unit": "kmh",
     })
     marine = fetch_json(MARINE_API, {
         "latitude": sea_lat, "longitude": sea_lon, "timezone": spot["timezone"],
@@ -166,7 +193,14 @@ def build(cfg: dict) -> dict:
         return values[idx] if idx < len(values) else None
 
     current = forecast["current"]
+    # `past_days: 1` (nécessaire à la tendance de pression) ajoute hier en tête des
+    # tableaux journaliers : il faut retrouver l'index d'aujourd'hui, pas prendre [0].
     daily = forecast["daily"]
+    today = now.strftime("%Y-%m-%d")
+    d = daily["time"].index(today) if today in daily["time"] else -1
+    air_times = parse_hours(forecast["hourly"], tz)
+    delta, trend_label, trend_arrow = pressure_trend(
+        air_times, forecast["hourly"].get("pressure_msl") or [], now)
 
     return {
         "spot": spot["label"],
@@ -210,12 +244,16 @@ def build(cfg: dict) -> dict:
             "label": WMO.get(current.get("weather_code"), "—"),
             "temp": round(current.get("temperature_2m", 0)),
             "feels_like": round(current.get("apparent_temperature", 0)),
-            "temp_max": round(daily["temperature_2m_max"][0]),
-            "temp_min": round(daily["temperature_2m_min"][0]),
-            "rain_probability": daily["precipitation_probability_max"][0],
+            "temp_max": round(daily["temperature_2m_max"][d]),
+            "temp_min": round(daily["temperature_2m_min"][d]),
+            "rain_probability": daily["precipitation_probability_max"][d],
             "wind": round(current.get("wind_speed_10m", 0)),
             "gusts": round(current.get("wind_gusts_10m", 0)),
             "wind_direction": cardinal(current.get("wind_direction_10m")),
+            "pressure": round(current.get("pressure_msl", 0)),
+            "pressure_delta": f"{delta:+.1f}".replace(".", ","),
+            "pressure_trend": trend_label,
+            "pressure_arrow": trend_arrow,
         },
     }
 

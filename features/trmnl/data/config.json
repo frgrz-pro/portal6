@@ -7,9 +7,9 @@
     "           Laisser à null pour réutiliser les coordonnées du spot."
   ],
   "spot": {
-    "label": "À RENSEIGNER",
-    "latitude": 0.0,
-    "longitude": 0.0,
+    "label": "À nommer",
+    "latitude": 48.6081925840433,
+    "longitude": -2.193719883572932,
     "timezone": "Europe/Paris"
   },
   "marine": {
