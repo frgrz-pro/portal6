@@ -3,8 +3,9 @@
 **Statut :** **PHASE 4 FRANCHIE (2026-09-06)** — le conteneur tourne, **sous l'identité
 d'origine**, avec les 6 bibliothèques et des chemins qui résolvent. **L'install native n'a
 toujours pas été touchée**, seulement arrêtée : le rollback (§7) reste à une commande.
-**Reste la phase 5** (validation d'usage : lecture, historique, client LAN, compte
-partagé) — c'est toi qui la fais, elle ne s'automatise pas.
+**Phase 5 : historique vérifié intact** (3 693 vues, 13 311 items vus, chiffres identiques
+au natif). Restent les validations qui demandent tes yeux : lecture depuis un client LAN et
+depuis un compte partagé.
 Outillage et runbook : [`features/media/plex/`](../features/media/plex/README.md).
 **Date :** 2026-09-06
 **Voisins :** [musique.md](musique.md) (axe B : `M:\music\library` dans Plex),
@@ -44,12 +45,13 @@ Outillage et runbook : [`features/media/plex/`](../features/media/plex/README.md
       EPG `xmltv.xml` (8 Mo) ; le dossier Dropbox monté en `/m3u` contient deux jeux
       m3u4u dont un obsolète (playlist de sept. 2025).
 
-- [ ] **Phase 7 devenue prioritaire** : `PlexUpdateService` (*Running/Automatic*) et la clé
-      `Run` du registre sont **toujours armés**. À chaque reboot, le Plex natif redémarre et
-      dispute 32400 au conteneur. À désarmer en PowerShell **administrateur**.
+- [ ] **Reste de la phase 7** : la clé `Run` est **désarmée** et aucun PMS natif ne tourne,
+      mais **`PlexUpdateService` est encore en `Automatic`**. Tant qu'il l'est, il peut
+      relancer le natif et lui faire disputer 32400 au conteneur. À désactiver en PowerShell
+      **administrateur**.
 
-**Phases 0 à 4 exécutées et validées le 2026-09-06** (voir Journal). Point en attente :
-la **phase 5**, validation d'usage — elle demande tes yeux, pas une commande.
+**Phases 0 à 5 validées le 2026-09-06** (voir Journal), hors contrôles visuels : lecture
+depuis un client LAN et depuis un compte partagé.
 
 ---
 
