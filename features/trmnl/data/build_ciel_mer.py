@@ -52,6 +52,11 @@ WMO = {
 }
 CARDINALS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
              "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO"]
+# strftime dépend de la locale du système : sur un runner GitHub elle est en C, donc
+# en anglais. On formate les dates à la main plutôt que de parier sur `locale`.
+JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+MOIS = ["janvier", "février", "mars", "avril", "mai", "juin",
+        "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
 
 
 def fetch_json(url: str, params: dict) -> dict:
@@ -97,7 +102,10 @@ def tide_extremes(times: list[datetime], levels: list[float | None],
         prev, cur, nxt = levels[i - 1], levels[i], levels[i + 1]
         if prev is None or cur is None or nxt is None:
             continue
-        is_high, is_low = cur > prev and cur > nxt, cur < prev and cur < nxt
+        # `>=` d'un côté seulement : au pas horaire, un extremum s'étale souvent sur
+        # deux points de même niveau. La comparaison stricte des deux côtés les rate
+        # tous ; celle-ci retient le dernier point du plateau, une fois exactement.
+        is_high, is_low = cur >= prev and cur > nxt, cur <= prev and cur < nxt
         if not (is_high or is_low):
             continue
         curvature = prev - 2 * cur + nxt
@@ -163,7 +171,7 @@ def build(cfg: dict) -> dict:
     return {
         "spot": spot["label"],
         "generated_at": now.strftime("%d/%m %Hh%M"),
-        "date": now.strftime("%A %d %B").capitalize(),
+        "date": f"{JOURS[now.weekday()]} {now.day} {MOIS[now.month - 1]}".capitalize(),
         "sun": {
             "sunrise": hhmm(sun["sunrise"]),
             "sunset": hhmm(sun["sunset"]),

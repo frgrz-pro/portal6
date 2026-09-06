@@ -22,13 +22,13 @@ plan écrit, outillage rédigé dans [`features/media/plex/`](../features/media/
 
 ## Questions ouvertes
 
-**Les six questions d'ouverture ont toutes été tranchées le 2026-09-06 (bis) — voir §2.4.**
+**Les six questions d'ouverture ont toutes été tranchées le 2026-09-06 (bis) — voir §2.5.**
 
-Il ne reste qu'une **tâche** (pas une question) avant la phase 0 :
+- [x] ~~Réservation DHCP `192.168.0.5`~~ → **levée le 2026-09-06** : la réservation
+      `R2D2` ↔ `EC-3A-56-BD-04-5A` → `192.168.0.5` **existait déjà** sur le Mercusys
+      (bail *Permanent*), vérifiée des deux côtés. `ADVERTISE_IP` est donc sûr.
 
-- [ ] Poser la **réservation DHCP `192.168.0.5`** sur le Mercusys pour la MAC Wi-Fi
-      `EC-3A-56-BD-04-5A` (procédure : [infra-reseau.md](infra-reseau.md) §Réservations).
-      Bloquant : `ADVERTISE_IP` fige cette adresse dans la conf du conteneur.
+**Plus aucun prérequis : la phase 0 peut être lancée.**
 
 ---
 
@@ -131,10 +131,46 @@ dossier Windows, elle passe par `docker run --rm -v plex_config:/c ... tar` (§7
 | `G:\` | `/data/g` | ro |
 | `H:\` | `/data/h` | **rw** (DVR) |
 | `I:\` | `/data/i` | ro |
+| `M:\` | `/data/m` | ro (ajouté le 2026-09-06 bis, cf. §2.5) |
 
 On **ne renomme pas** en `/data/movies`, `/data/series`… : une règle uniforme
 `X:\reste` → `/data/x/reste` est vérifiable d'un coup d'œil, réversible, et ne demande
 aucun cas particulier pour les 23 racines.
+
+### 2.5 Arbitrages du 2026-09-06 (bis) — les six questions d'ouverture
+
+**a. Ethernet : NON, on reste en Wi-Fi.** Le serveur est **peu utilisé** aujourd'hui ;
+le câble serait un gain net mais ne justifie pas de retarder la bascule. Le lien actuel
+est un TP-Link Wi-Fi 7 PCIe à 2,9 Gbit/s négociés — largement au-dessus du besoin réel.
+À rouvrir si l'usage monte, ou au premier symptôme de saturation en lecture distante.
+
+**b. IP fixe : ✅ réglée — la réservation existait déjà.** `192.168.0.5` ↔ MAC Wi-Fi
+**`EC-3A-56-BD-04-5A`** (nom routeur `R2D2`), bail *Permanent* sur le Mercusys, vérifié
+le 2026-09-06 côté routeur et côté tour. `ADVERTISE_IP` ne se périmera pas.
+Détail et procédure : [infra-reseau.md](infra-reseau.md) § Réservations DHCP.
+
+**c. NordVPN : on ne fait rien de préventif.** `NordLynx 10.5.0.2` + deux interfaces
+OpenVPN tournent sur la machine. Décision : **on verra si ça arrive.** Reste consigné
+comme **suspect n°1** si l'accès distant Plex tombe après bascule — c'est là qu'on
+regardera en premier, avant de soupçonner le conteneur.
+
+**d. Stack média dans le repo : NON, définitivement.** `C:\docker\media\` reste hors
+repo. Le parallèle avec `features/home/ha/` ne tient pas : **HA est le projet domotique,
+un autre domaine** — ce n'est pas un précédent applicable au stack média. Question
+**fermée**, pas reportée. `features/media/plex/` garde uniquement l'outillage et le bloc
+de service de référence.
+
+**e. Bibliothèque Musique : le montage est posé dès la migration, la bibliothèque vient
+après.** `M:\` → `/data/m` en lecture seule est **décommenté dans `plex.service.yml`
+maintenant**. Raison : monter un volume ne crée aucune bibliothèque et n'ajoute donc
+aucune variable à valider en phase 5 ; en revanche l'ajouter plus tard imposerait de
+**recréer le conteneur**. La bibliothèque *Musique* sur `/data/m/music/library` se crée
+en phase 5+, une fois les 6 bibliothèques historiques validées (axe B de
+[musique.md](musique.md)).
+
+**f. Transcodage matériel : acté, on s'en passe.** Pas de `/dev/dri` sous Docker Desktop
+Windows, `HardwareAcceleratedCodecs` non activé aujourd'hui → **aucune perte**. Reste
+noté comme argument de déménagement le jour où le transcodage devient un besoin réel.
 
 ---
 
@@ -281,3 +317,20 @@ nommé** plutôt qu'un bind mount, la base SQLite supportant mal la couche 9p de
 Outillage écrit dans `features/media/plex/` et **phase 2 répétée à blanc avec succès** sur
 une copie jetable de la vraie base (10 947 valeurs réécrites, `integrity_check = ok`).
 L'install native n'a pas été touchée : la bascule attend le go.
+
+### 2026-09-06 (bis) — les six questions d'ouverture sont tranchées
+Arbitrages de François, consignés en §2.5 : (a) **on reste en Wi-Fi**, le serveur est peu
+utilisé ; (b) réservation DHCP `192.168.0.5` ↔ MAC `EC-3A-56-BD-04-5A` à poser — seule
+tâche bloquante restante, procédure écrite dans [infra-reseau.md](infra-reseau.md) ;
+(c) NordVPN : aucune action préventive, consigné comme suspect n°1 si l'accès distant
+tombe ; (d) stack média dans le repo → **non, question fermée** (HA relève du domaine
+domotique, ce n'est pas un précédent) ; (e) le bind `M:` → `/data/m` est **décommenté dès
+maintenant** dans `plex.service.yml`, la bibliothèque Musique n'étant créée qu'après la
+phase 5 — monter ne coûte rien à la validation, ajouter plus tard imposerait de recréer
+le conteneur ; (f) transcodage matériel : acté, on s'en passe.
+Le tableau de mapping §2.4 gagne la ligne `M:\` → `/data/m` (ro).
+
+### 2026-09-06 (ter) — dernier prérequis levé
+La réservation DHCP `192.168.0.5` ↔ `EC-3A-56-BD-04-5A` **existait déjà** sur le Mercusys
+(bail *Permanent*, nom routeur `R2D2`) : rien à poser. `ADVERTISE_IP=http://192.168.0.5:32400/`
+est donc stable. **La phase 0 (arrêt du Plex natif + copie de travail) est lançable.**

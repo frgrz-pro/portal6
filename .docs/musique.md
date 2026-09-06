@@ -57,7 +57,7 @@ qui dit `data/library_scan.csv` est obsolète sur ce point.
 | Fingerprint | cache + `retag_plan.csv` importés, run interrompu à 7,7 % |
 | `exports/` (historique d'écoute) | vide |
 | Plex Media Server | tourne en natif sur la machine (avec xTeVe) — `M:\music` pas encore ajouté comme bibliothèque. ⚠️ **Migration vers Docker préparée** ([plex-docker.md](plex-docker.md)) : créer la bibliothèque Musique **après** la bascule, directement dans le conteneur (chemin `/data/m/music/library`, à ajouter aux montages), sinon elle serait à refaire |
-| AzuraCast | Phases 1–2 validées le 2026-08-20, **re-vérifiées le 2026-09-06** (méthode officielle inchangée, parc Docker sain, ports 80/443/2022/8000 libres, `/mnt/m` monté). **Phase 3 toujours bloquée par la même case** : Docker n'est pas exposé dans WSL Ubuntu → Docker Desktop → Settings → Resources → **WSL integration** → activer Ubuntu → Apply & Restart. Détail : [hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md) §5 Phase 3 |
+| AzuraCast | Phases 1–2 validées le 2026-08-20, **re-vérifiées le 2026-09-06** (méthode officielle inchangée, parc Docker sain, ports 80/443/2022/8000 libres, `/mnt/m` monté). ✅ **DÉPLOYÉ le 2026-09-06** (Phase 3 franchie) : conteneurs `azuracast` + `azuracast_updater`, canal stable, interface joignable sur `http://localhost` et `http://192.168.0.5`. Reste : créer le super-admin, puis **Phase 4** (brancher `M:\music` sans duplication). Détail : [hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md) |
 
 `M:` contient : `music/` (library, playlists, tracks, workspace), `radio/`, `downloads/`,
 `_a_trier/`.

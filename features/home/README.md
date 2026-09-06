@@ -5,6 +5,10 @@ Deuxième domaine du monorepo (après la musique) : écosystème autour du/des �
 de la domotique. Vision : un premier TRMNL généraliste pour découvrir et valider les use cases,
 puis plusieurs devices spécialisés (les playlists sont par device, le mirroring existe).
 
+> Les écrans effectivement construits pour le device (private plugins Liquid +
+> générateurs de payloads) vivent dans [features/trmnl/](../trmnl/) ; le design est
+> dans [.docs/trmnl-dashboard.md](../../.docs/trmnl-dashboard.md).
+
 ## Ce qu'est un TRMNL (l'essentiel, vérifié août 2026)
 
 - Écran e-ink **affichage uniquement** : le device tire une image du serveur, il n'envoie

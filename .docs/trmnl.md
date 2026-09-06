@@ -7,18 +7,24 @@ les décisions de comptes.
 
 ## Questions ouvertes
 
-- [ ] Le device est un **TRMNL OG** ou un **TRMNL X** ? (impacte la taille des layouts
-  des futurs private plugins ; le BOM le porte en ✅ « à confirmer »).
 - [ ] Les calendriers sport dans le compte `.sport` sont-ils **un seul agenda « sport »**
   qui agrège les abonnements ICS, ou **un agenda par abonnement** (foot, rally, F1,
   LEC, LCK, CS2…) ? → détermine ce qu'on partage vers `.case` et ce qu'on coche dans
   le plugin.
 - [ ] Refresh souhaité pour l'écran calendrier (15 min suffit largement : les ICS
   côté Google ne se rafraîchissent que toutes les ~24 h de toute façon).
-- [ ] Prendre la **Developer Edition (20 $)** dès maintenant ou seulement quand le
-  premier private plugin (marées) arrive ? Le calendrier Google n'en a pas besoin.
-
 ## Décisions
+
+### Le device : TRMNL OG (800 × 480, 1-bit)
+
+Confirmé le 2026-09-06. Toute la conception des écrans part de là — les layouts des
+private plugins sont dimensionnés pour 800 × 480 en noir et blanc pur (pas de gris).
+
+### Developer Edition : prise
+
+Tranché le 2026-09-06 : on la prend maintenant, puisque les deux premiers écrans
+maison sont conçus (cf. [trmnl-dashboard.md](trmnl-dashboard.md)). Sans l'addon,
+l'onglet Private Plugins n'existe pas côté TRMNL.
 
 ### Comptes — `.sport` (données) et `.case` (device)
 
@@ -71,3 +77,9 @@ Rien à coder pour ce jalon : les .ics eSport sont déjà générés et servis p
 Création du doc. Décision : le TRMNL vit sur un nouveau compte `.case` ; les agendas
 sport restent dans `.sport` et sont **partagés** vers `.case` (le plugin Google Calendar
 ne lit qu'un compte). Ordre de setup posé. Rien à coder côté repo pour ce jalon.
+
+### 2026-09-06 (bis) — cap sur les écrans
+Device confirmé **TRMNL OG** et **Developer Edition** décidée : les deux questions
+ouvertes correspondantes sont tranchées et sorties de la liste. La construction des
+écrans part dans son propre doc, [trmnl-dashboard.md](trmnl-dashboard.md) ; ce doc-ci
+reste sur les comptes et la mise en route.

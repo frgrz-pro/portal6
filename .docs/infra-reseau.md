@@ -16,8 +16,11 @@ Shield. Doc de référence à enrichir au fil des découvertes (modèles, IPs).
 ## Questions ouvertes
 
 - [ ] Modèle exact du Mercusys (détermine : réservations DHCP, mDNS, serveur VPN ?)
-- [ ] IPs actuelles de la Shield et de la tour ; poser des **réservations DHCP**
-  pour les deux (l'app remote a besoin d'adresses stables).
+- [x] ~~IPs de la Shield et de la tour ; poser des réservations DHCP~~ → **tranché le
+  2026-09-06** : tour `192.168.0.5`, Shield `192.168.0.52`, les deux **déjà réservées**
+  en bail permanent (section Réservations DHCP).
+- [ ] **Activer le débogage réseau (ADB) sur la Shield** : le port 5555 est fermé alors que
+  6466/6467 et 8008/8009 répondent — prérequis de l'app remote ([app-remote.md](app-remote.md)).
 - [ ] Le VPN NordVPN du routeur route-t-il TOUT le trafic ? Vérifier que le
   trafic LAN↔LAN n'est pas impacté (normalement non) et que les services locaux
   (HA, Shield) restent joignables.
@@ -26,14 +29,65 @@ Shield. Doc de référence à enrichir au fil des découvertes (modèles, IPs).
   serveur OpenVPN sur le Mercusys. **Pas un sujet v1** : l'app remote est
   LAN-only.
 
-## Conventions cibles
+## Réservations DHCP
 
-- Réservations DHCP (à remplir) :
+Passerelle / admin du routeur : **`192.168.0.1`**, LAN en `192.168.0.0/24`.
 
-| Device | IP | Notes |
-|---|---|---|
-| Shield TV Pro | à fixer | ADB 5555 / Remote 6466-6467 |
-| Tour Docker (HA) | à fixer | HA :8123 |
+Plage DHCP du routeur : `192.168.0.2` → `192.168.0.253`, bail 120 min, DNS servi par le
+routeur lui-même.
+
+| Device | Nom routeur | IP | MAC | Statut |
+|---|---|---|---|---|
+| **Tour DevLab** (Wi-Fi) | `R2D2` | `192.168.0.5` | `EC-3A-56-BD-04-5A` | ✅ **réservée** (bail *Permanent*) |
+| **Shield TV Pro** | `Android` | `192.168.0.52` | `AC-3A-E2-E8-74-6A` | ✅ **réservée** (bail *Permanent*) |
+
+**Constaté le 2026-09-06 : les deux réservations étaient déjà posées.** Vérifié côté tour
+(`192.168.0.5` effective) et côté routeur (bail *Permanent* dans la liste des clients DHCP).
+
+- Tour : TP-Link Wi-Fi 7 PCIe. Porte HA `:8123`, Plex `:32400` après migration, et bientôt
+  AzuraCast `:80` / `:8000+`. C'est cette réservation qui débloque `ADVERTISE_IP`
+  ([plex-docker.md](plex-docker.md) §2.5b).
+- Shield : identifiée par empreinte de ports — **6466/6467 ouverts** (Android TV Remote v2)
+  et **8008/8009** (Google Cast). ⚠️ **ADB 5555 est fermé** : le débogage réseau n'est pas
+  activé sur la Shield — à faire avant tout test de l'app remote
+  ([app-remote.md](app-remote.md)).
+- Autres clients vus au passage, en bail dynamique (pas de réservation nécessaire) :
+  `TRMNL-OG-RT97Q4` → `.117` (le TRMNL sort vers le cloud, cf. [trmnl.md](trmnl.md)),
+  plus un Mac, un iPhone et un `R2D2s-Air` en MAC randomisées.
+
+> ⚠️ La tour a **plusieurs interfaces** (Ethernet en APIPA car débranché, NordLynx,
+> OpenVPN, vEthernet WSL). La seule MAC qui compte pour la réservation est celle de
+> l'adaptateur **Wi-Fi**, ci-dessus — ne pas réserver sur une MAC virtuelle.
+
+### Marche à suivre (Mercusys) — pour la prochaine réservation
+
+Les deux réservations utiles sont déjà en place ; cette procédure est conservée comme
+référence.
+
+1. Ouvrir `http://192.168.0.1` (ou `mwlogin.net`) et se connecter à l'admin du routeur.
+2. Aller dans **Advanced → Network → DHCP Server** (selon firmware : **LAN → DHCP**),
+   section **Address Reservation** / *Réservation d'adresse*.
+3. **Add** → soit choisir la tour dans la liste des clients connectés (plus sûr : la MAC
+   est pré-remplie), soit saisir à la main :
+   - MAC : `EC-3A-56-BD-04-5A`
+   - IP : `192.168.0.5`
+4. Vérifier que `192.168.0.5` est **dans** la plage DHCP du routeur (sinon élargir la
+   plage, ou sortir l'IP de la plage ET la fixer côté Windows — ne pas faire les deux).
+5. **Save**, puis côté tour :
+
+```powershell
+ipconfig /release "Wi-Fi"; ipconfig /renew "Wi-Fi"; ipconfig | Select-String -Context 0,4 'Wi-Fi'
+```
+
+> **Vérification :** l'IP doit revenir à `192.168.0.5` après le renouvellement, et le bail
+> doit être long (la réservation le rend permanent en pratique).
+
+**Alternative écartée** : fixer l'IP statiquement dans Windows. Ça marche, mais ça
+dédouble la source de vérité et le routeur peut attribuer `.5` à un autre device — la
+réservation côté routeur est la bonne place.
+
+Modèle exact du Mercusys encore à relever : il détermine le libellé exact des menus
+(et l'existence d'un serveur VPN entrant).
 
 ## Journal
 
@@ -41,3 +95,22 @@ Shield. Doc de référence à enrichir au fil des découvertes (modèles, IPs).
 Création du doc. Clarification importante : NordVPN sur le routeur = client
 sortant, pas d'accès distant entrant. v1 de l'app = LAN-only ; accès distant
 éventuel via Tailscale sur la tour, plus tard.
+
+### 2026-09-06
+Relevé des interfaces de la tour : Wi-Fi `192.168.0.5` (TP-Link Wi-Fi 7 PCIe, MAC
+`EC-3A-56-BD-04-5A`, 2,9 Gbit/s négociés), passerelle `192.168.0.1` ; l'Ethernet est
+débranché (APIPA `169.254.x`), et NordLynx + deux interfaces OpenVPN tournent en plus
+sur la machine. Décidé de **rester en Wi-Fi** pour la migration Plex (serveur peu
+utilisé). Section **Réservations DHCP** créée avec la marche à suivre Mercusys : la
+réservation `192.168.0.5` est désormais **bloquante** pour
+[plex-docker.md](plex-docker.md) (`ADVERTISE_IP`).
+
+### 2026-09-06 (bis) — réservations DHCP : elles étaient déjà là
+Accès à l'admin Mercusys retrouvé. **Les deux réservations attendues existaient déjà** en
+bail permanent : `R2D2` (la tour) → `192.168.0.5` et `Android` → `192.168.0.52`. Ce dernier
+a été **identifié comme la Shield TV Pro** par empreinte de ports : 6466/6467 (Android TV
+Remote v2) et 8008/8009 (Cast) répondent. La question ouverte « IPs Shield et tour +
+réservations » est donc close sans rien avoir à modifier, et le dernier prérequis de la
+migration Plex tombe. Plage DHCP relevée : `.2`–`.253`, bail 120 min.
+Découverte annexe : **ADB 5555 est fermé sur la Shield** → nouvelle question ouverte,
+prérequis de l'app remote.

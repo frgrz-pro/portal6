@@ -10,6 +10,8 @@
     "places:build": "$HOME/.venvs/portal6/bin/python plugin/etl/places/build_db.py",
     "places:stats": "$HOME/.venvs/portal6/bin/python plugin/etl/places/build_db.py --stats",
     "web:manifest": "$HOME/.venvs/portal6/bin/python apps/web/build_manifest.py",
-    "web": "$HOME/.venvs/portal6/bin/python -m http.server 8712 --directory apps/web"
+    "web": "$HOME/.venvs/portal6/bin/python -m http.server 8712 --directory apps/web",
+    "trmnl:ciel-mer": "$HOME/.venvs/portal6/bin/python features/trmnl/data/build_ciel_mer.py",
+    "trmnl:agenda": "$HOME/.venvs/portal6/bin/python features/trmnl/data/build_agenda.py"
   }
 }

@@ -1,8 +1,9 @@
 # Design — Serveur de web-radios (AzuraCast)
 
 **Owner :** François Grzybowski
-**Statut :** **EN REPRISE** — Phases 1 et 2 validées le 2026-08-20, re-vérifiées le 2026-09-06 ;
-Phase 3 (déploiement) **prête à lancer**, bloquée par une seule action utilisateur (§5, Phase 3)
+**Statut :** **EN MARCHE** — Phases 1, 2 et **3 validées** (déploiement réussi le 2026-09-06,
+canal stable). Prochaine étape : **Phase 4**, brancher `M:\music` sans duplication (Q3).
+⚠️ Créer le compte super-admin si ce n'est pas encore fait.
 **Date :** 2026-08-12, mises à jour 2026-08-20 et 2026-09-06
 **Piste :** SERVEUR — le poste qui consomme ces flux est décrit dans
 [design-brandt-rk711s.md](design-brandt-rk711s.md)
@@ -43,10 +44,10 @@ touché, aucun `down`).
 | Dépôt AzuraCast cloné | `C:\docker\media\azuracast` — **inutile** : la procédure officielle ne s'en sert pas (§5, Phase 1). Vestige à supprimer. |
 | `docker.sh` téléchargé | dans ce clone — **non utilisable** : il doit être retéléchargé dans `/var/azuracast` côté WSL |
 | Compose global | `C:\docker\media\docker-compose.yml` — **re-vérifié sain le 2026-09-06** : xteve + samba + dozzle uniquement, `docker compose config` valide, `--images` ne sort que `alturismo/xteve`, `dperson/samba`, `amir20/dozzle:latest` |
-| Déploiement AzuraCast | ❌ **rien n'existe** : `/var/azuracast` absent côté WSL, aucun conteneur, aucun volume nommé |
+| Déploiement AzuraCast | ✅ **EN MARCHE depuis le 2026-09-06** : base `/var/azuracast` (disque WSL), conteneurs `azuracast` + `azuracast_updater`, canal **stable**, 10 volumes `azuracast_*`. Détail : §5 Phase 3 |
 | WSL2 | ✅ **Ubuntu 26.04 LTS**, distribution par défaut, version 2, 953 Go libres sur le disque de la VM |
 | Docker Desktop | ✅ moteur 29.5.2, Compose v5.1.3, backend WSL2, opérationnel côté Windows |
-| **Intégration WSL de Docker Desktop** | ❌ **DÉSACTIVÉE** — c'est le blocage unique. `docker` dans Ubuntu répond *« The command 'docker' could not be found in this WSL 2 distro »* ; `settings-store.json` ne contient aucune clé d'intégration WSL (= valeur par défaut, désactivée). |
+| **Intégration WSL de Docker Desktop** | ✅ **ACTIVÉE le 2026-09-06** par François. Vérifié depuis le shell Ubuntu : `docker version` → **client 29.5.2 / serveur 29.5.2**, `docker compose version` → **v5.1.3**. **Le blocage historique est levé.** |
 
 **Conteneurs en marche (2026-09-06)** — aucun ne dispute un port à AzuraCast :
 
@@ -57,8 +58,9 @@ touché, aucun `down`).
 | `samba` | `dperson/samba` | 139, 1445→445 |
 | `xteve` | `alturismo/xteve` | 34400 |
 
-Ports **80, 443, 2022, 8000, 8005 : tous libres** (aucun listener Windows).
-Volumes : uniquement des volumes anonymes (hashes), **aucun `azuracast_*`**.
+*(État du pré-vol, avant déploiement)* : ports **80, 443, 2022, 8000, 8005** tous libres,
+volumes uniquement anonymes, aucun `azuracast_*`. **Depuis le déploiement**, AzuraCast
+publie 80 / 443 / 2022 + la plage **8000–8496**, et les 10 volumes `azuracast_*` existent.
 
 **Historique.** Une installation antérieure tournait dans un **LXC Proxmox** (`LXC-Radio`,
 `/media/music`, `/srv/services/azuracast`) et avait validé le fonctionnement d'AzuraCast et de
@@ -286,6 +288,35 @@ AzuraCast utilise notamment **80**, **443**, **2022**, plus une plage de ports p
 > **STOP / VÉRIFIER (Phase 3) :** interface AzuraCast accessible · aucun conflit de port avec
 > les autres services · Dozzle toujours joignable.
 
+**✅ VALIDÉ le 2026-09-06.** Installation réussie du premier coup, canal **stable**.
+
+- Séquence réellement exécutée, depuis Windows, **sans `sudo`** : `wsl -d Ubuntu -u root`
+  donne un shell root directement (l'utilisateur `r2d2` exige un mot de passe pour `sudo`,
+  qui n'est pas saisissable depuis un shell non interactif).
+- `./docker.sh setup-release stable` **avant** `install` : passer le canal en argument évite
+  le prompt. Les `ask` restants prennent leur valeur par défaut si l'entrée standard est
+  fermée (`< /dev/null`) — vérifié dans le script avant de lancer.
+- Résultat : conteneurs **`azuracast`** (`ghcr.io/azuracast/azuracast:stable`) et
+  **`azuracast_updater`**, 15 migrations de base appliquées, `All stations restarted`,
+  `AzuraCast installation complete!`.
+- **10 volumes nommés créés** : `azuracast_acme`, `azuracast_backups`, `azuracast_db_data`,
+  `azuracast_geolite_install`, `azuracast_rsas_install`, `azuracast_sftpgo_data`,
+  `azuracast_shoutcast2_install`, `azuracast_station_data`, `azuracast_stereo_tool_install`,
+  `azuracast_www_uploads`. **C'est désormais ce que protège l'interdit n°3** (§10) : plus
+  jamais de `down -v` sans sauvegarde.
+- Vérifications du STOP : `http://localhost` → **200**, `http://192.168.0.5` → **200**,
+  Dozzle `http://localhost:8080` → **200**. `portal6-ha`, `dozzle`, `samba`, `xteve`
+  tournent toujours — **aucun conflit de port**.
+- Ports effectivement publiés par le conteneur : **80, 443, 2022** + la plage stations
+  **8000–8496**.
+
+> ⚠️ **Fenêtre de vulnérabilité tant que le super-admin n'existe pas.** `/setup` répond 200 :
+> **le premier visiteur qui l'ouvre devient administrateur de l'instance.** Créer le compte
+> est la toute première action post-installation. (Le log d'installation affiche
+> l'IP publique du foyer parce qu'AzuraCast fait un lookup externe — ce n'est pas une preuve
+> d'exposition, mais ça ne dit pas non plus qu'il n'y a pas de redirection de port sur le
+> routeur.)
+
 **Pré-vol du 2026-09-06 — tout est vert sauf une case à cocher.**
 
 | Prérequis | État |
@@ -295,16 +326,12 @@ AzuraCast utilise notamment **80**, **443**, **2022**, plus une plage de ports p
 | Aucun volume `azuracast_*` à préserver | ✅ (Phase 2) |
 | Ports 80 / 443 / 2022 / 8000 / 8005 libres | ✅ |
 | Ubuntu WSL2 en place, place disque suffisante | ✅ (26.04 LTS, 953 Go libres) |
-| **`docker` utilisable depuis le shell Ubuntu** | ❌ **BLOQUANT** |
+| **`docker` utilisable depuis le shell Ubuntu** | ✅ **levé le 2026-09-06** — intégration WSL activée, `docker version` répond 29.5.2 client **et** serveur |
 
-> **🔴 Action utilisateur — la seule qui manque.**
-> Docker Desktop → **Settings → Resources → WSL integration** → activer l'intégration pour la
-> distribution **Ubuntu** (ou cocher *« Enable integration with my default WSL distro »*) →
-> **Apply & Restart**.
-> Vérification attendue, dans un shell Ubuntu : `docker version` doit répondre côté serveur
-> (aujourd'hui : *« The command 'docker' could not be found in this WSL 2 distro »*).
+> ✅ **Plus aucun prérequis.** L'intégration WSL a été activée par François le 2026-09-06 ;
+> le tableau ci-dessus est intégralement vert. **La Phase 3 peut être lancée.**
 
-Une fois cette case cochée, la séquence Phase 3 est (dans le shell Ubuntu, en sudo) :
+La séquence Phase 3 (dans le shell Ubuntu, en sudo) :
 
 ```bash
 sudo mkdir -p /var/azuracast && cd /var/azuracast
@@ -469,3 +496,21 @@ l'intégration WSL de Docker Desktop pour Ubuntu (`settings-store.json` ne conti
 clé d'intégration = désactivée par défaut). Séquence d'installation écrite dans la Phase 3.
 Deux points ouverts ajoutés : Q6 (sort du clone inutile `C:\docker\media\azuracast`) et
 la piste de repli SMB/CIFS si le pont 9p s'avère trop lent (Q3).
+
+### 2026-09-06 (bis) — blocage levé
+François a activé l'intégration WSL de Docker Desktop pour Ubuntu. Vérifié depuis le shell
+Ubuntu : `docker version` répond **29.5.2 client et serveur**, `docker compose version`
+répond **v5.1.3**. `/var/azuracast` n'existe toujours pas → départ propre.
+**Le pré-vol Phase 3 est intégralement vert : `docker.sh install` peut être lancé.**
+
+### 2026-09-06 (ter) — Phase 3 franchie
+AzuraCast est **déployé et en marche** sur canal stable, du premier coup. Deux
+enseignements de méthode : (1) `wsl -u root` évite le `sudo` interactif impossible à
+satisfaire depuis un shell non interactif ; (2) `setup-release stable` passé **en argument
+avant** `install` supprime le prompt de canal, et les `ask` restants prennent leur défaut
+avec `< /dev/null` — mécanique vérifiée dans le script avant lancement, conformément à §3.
+STOP/VÉRIFIER validé : interface 200 en local et sur `192.168.0.5`, Dozzle intact, les
+quatre autres conteneurs indemnes. 10 volumes `azuracast_*` existent maintenant — l'interdit
+n°3 (`down -v`) cesse d'être théorique.
+**Reste à faire immédiatement : créer le compte super-admin** (`/setup` est ouvert).
+Prochaine étape : Phase 4, brancher `M:\music` sans duplication (Q3).

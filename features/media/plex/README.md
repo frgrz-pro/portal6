@@ -20,7 +20,9 @@ ce README n'est que le **runbook**.
 ## Prérequis
 
 - Plex natif **complètement arrêté** (sinon la copie de base est incohérente).
-- Réservation DHCP posée sur `192.168.0.5` (sinon `ADVERTISE_IP` se périme).
+- Réservation DHCP posée sur `192.168.0.5` ↔ MAC Wi-Fi `EC-3A-56-BD-04-5A` (sinon
+  `ADVERTISE_IP` se périme). Marche à suivre Mercusys :
+  [`.docs/infra-reseau.md`](../../../.docs/infra-reseau.md) § Réservations DHCP.
 - ~13 Go libres sur `M:` (381 Go dispo).
 
 ---

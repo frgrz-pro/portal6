@@ -35,7 +35,7 @@ des flux et de l'API du serveur.
 | | État |
 |---|---|
 | **Poste** | Cadrage terminé. **Rien n'est construit, rien n'est acheté, aucun outillage possédé.** Bloqué par la **Phase 0** : les mesures sur le poste ouvert (haut-parleurs, profondeur du logement cassette, touches, mécanisme d'accord). |
-| **Serveur** | **Prêt à déployer (Phase 3).** Phases 1 et 2 validées le 2026-08-20 et re-vérifiées le 2026-09-06 : méthode officielle confirmée, parc Docker sain, ports libres, aucun volume à préserver. Reste **une action utilisateur** : activer l'intégration WSL d'Ubuntu dans Docker Desktop. |
+| **Serveur** | **EN MARCHE.** Phases 1 à 3 validées : AzuraCast déployé le 2026-09-06 (canal stable, conteneurs `azuracast` + `azuracast_updater`, interface joignable en local). Prochaine étape : **Phase 4**, brancher `M:\music` sans duplication. |
 
 ## Comment ces notes fonctionnent
 

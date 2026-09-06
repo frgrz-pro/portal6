@@ -21,8 +21,8 @@ Statuts : ✅ possédé · 🛒 à acheter · ⏸ bloqué (voir « Débloqué pa
 
 | Article | Statut | Prix | Débloqué par |
 |---|---|---|---|
-| TRMNL (premier device généraliste) | ✅ possédé — setup en cours ([trmnl.md](trmnl.md)) ; OG ou X à confirmer | — | — |
-| **Developer Edition** (addon, une fois, par device — 1 seul suffit pour créer les plugins) | 🛒 | 20 $ | Device en main ✅ ; inutile pour le plugin Google Calendar, à prendre au premier private plugin (marées) |
+| TRMNL (premier device généraliste) | ✅ possédé — **TRMNL OG** (800 × 480, 1-bit), confirmé le 2026-09-06 | — | — |
+| **Developer Edition** (addon, une fois, par device — 1 seul suffit pour créer les plugins) | 🛒 **à acheter maintenant** | 20 $ | Débloqué : les 2 premiers private plugins sont écrits ([trmnl-dashboard.md](trmnl-dashboard.md)), ils ne peuvent pas être poussés sans l'addon |
 | TRMNL X 10.3" / devices spécialisés | ⏸ plus tard | — | Use cases validés sur le premier device |
 
 ## Radio Brandt RK 711S
@@ -39,7 +39,7 @@ commandé, achats par vagues avec conditions de déblocage. Résumé :
 ## Synthèse — ce qui est achetable maintenant
 
 1. **Outillage radio** (~200 €) — non bloqué, sert aussi à tout le reste du bricolage.
-2. **Dev Edition TRMNL** (20 $) — device en main, débloqué ; à acheter au premier private plugin.
+2. **Dev Edition TRMNL** (20 $) — **à acheter tout de suite** : les 2 premiers private plugins sont écrits et attendent l'addon pour être poussés.
 3. **Clé Zigbee** (~25–40 €) — dès que la tour tourne (sinon elle dort dans un tiroir).
 
 ## Journal
@@ -51,3 +51,7 @@ possédé ?, la tour Docker = machine AzuraCast ?
 
 ### 2026-09-06
 TRMNL passé en ✅ possédé (setup en cours). Dev Edition débloquée, différée au premier private plugin.
+
+### 2026-09-06 (bis)
+Device confirmé **TRMNL OG**. Dev Edition passée de « différée » à « à acheter
+maintenant » : les deux private plugins sont écrits, l'addon est le seul blocage.
