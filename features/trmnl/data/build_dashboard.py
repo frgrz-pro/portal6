@@ -49,6 +49,7 @@ AGENDA_CHARS_PER_LINE = 27   # pas 33 : le retour a la ligne se fait sur les mot
 AGENDA_LINE_PX = 14
 AGENDA_DAY_HEADER_PX = 21
 AGENDA_DAY_GAP_PX = 18       # gap 9 + filet 2 + padding 7
+AGENDA_EVENT_GAP_PX = 5      # respiration entre deux evenements d une meme journee
 GIST_API = "https://api.github.com/gists"
 GIST_FILENAME = "dashboard.json"
 HTTP_TIMEOUT = 30
@@ -104,9 +105,10 @@ def build_agenda_block(cfg: dict, days: int) -> dict:
             title = event["title"][:60]
             width = len(event["time"]) + len(event["cal"]) + len(title) + 3
             lines = max(1, -(-width // AGENDA_CHARS_PER_LINE))
-            if used + lines * AGENDA_LINE_PX > AGENDA_BUDGET_PX:
+            cost_event = lines * AGENDA_LINE_PX + (AGENDA_EVENT_GAP_PX if kept else 0)
+            if used + cost_event > AGENDA_BUDGET_PX:
                 break
-            used += lines * AGENDA_LINE_PX
+            used += cost_event
             kept.append({"time": event["time"], "title": title, "cal": event["cal"]})
         if kept:
             shown.append({"label": day["label"], "today": day["today"], "events": kept})

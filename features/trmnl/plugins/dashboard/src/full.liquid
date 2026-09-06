@@ -43,10 +43,14 @@
   /* Le jour courant est le seul repère visuel possible en 1-bit : inverse vidéo. */
   .ag__day--today .ag__label { background: black; color: white; padding: 1px 6px; }
   .ag__ev { font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; padding-left: 2px; }
-  .ag__ev b { font-weight: normal; }
+  .ag__ev + .ag__ev { margin-top: 5px; }
+  /* Ecran en 4 niveaux de gris : le titre garde le noir, l'heure et le tag reculent
+     d'un cran chacun. La hierarchie remplace le gras, qui epaissit sans hierarchiser. */
+  .ag__ev b { font-weight: normal; color: #555; }
   /* Le tag remplace le mot retire du titre : il porte la meme information pour
-     moins de place, et il est le seul repere de categorie sur un ecran 1-bit. */
-  .ag__tag { font-size: 10px; letter-spacing: 0.03em; border-bottom: 1px solid black; }
+     moins de place, et c'est le seul repere de categorie de la colonne. */
+  .ag__tag { font-size: 10px; letter-spacing: 0.03em; color: #999;
+             border-bottom: 1px solid #999; }
   .ag__none { font-size: 11px; padding-left: 2px; }
   /* Ce qui ne rentre pas est annonce : un ecran qui ment sur ce qu'il montre est
      pire qu'un ecran incomplet. */
