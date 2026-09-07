@@ -40,8 +40,8 @@ routeur lui-même.
 |---|---|---|---|---|
 | **Tour DevLab** (Wi-Fi) | `R2D2` | `192.168.0.5` | `EC-3A-56-BD-04-5A` | ✅ **réservée** (bail *Permanent*) |
 | **Shield TV Pro** | `Android` | `192.168.0.52` | `AC-3A-E2-E8-74-6A` | ✅ **réservée** (bail *Permanent*) |
-| **Multiprise A** (Shelly Power Strip 4 Gen4) | `shellypstripg4-48f6eedd4148` | `192.168.0.78` | `48-F6-EE-DD-41-48` | 🔴 **à réserver** — HA la joint par IP |
-| **Multiprise B** (Shelly Power Strip 4 Gen4) | `shellypstripg4-d885aceb742c` | `192.168.0.98` | `D8-85-AC-EB-74-2C` | 🔴 **à réserver** — idem |
+| **Multiprise A** (Shelly Power Strip 4 Gen4) | `shellypstripg4-48f6eedd4148` | `192.168.0.78` | `48-F6-EE-DD-41-48` | ✅ **réservée** le 2026-09-07 — HA la joint par IP |
+| **Multiprise B** (Shelly Power Strip 4 Gen4) | `shellypstripg4-d885aceb742c` | `192.168.0.98` | `D8-85-AC-EB-74-2C` | ✅ **réservée** le 2026-09-07 |
 
 **Constaté le 2026-09-06 : les deux réservations étaient déjà posées.** Vérifié côté tour
 (`192.168.0.5` effective) et côté routeur (bail *Permanent* dans la liste des clients DHCP).
@@ -130,6 +130,8 @@ jamais composée. À rouvrir seulement le jour où on passera en BYOS.
 
 ### 2026-09-07 — Shelly sur le LAN
 Deux Shelly Power Strip 4 Gen4 rejoignent le Wi-Fi : `.78` (A) et `.98` (B), bail
-dynamique. **Réservation à poser** (procédure ci-dessus) : Home Assistant les
-adresse par IP, pas par mDNS (Docker Desktop). AP ouvert, Bluetooth et Matter
+dynamique, puis **réservations posées dans la foulée** (menu *Serveur DHCP →
+Réservation d'adresses*, choix dans la liste des clients) : Home Assistant les
+adresse par IP, pas par mDNS (Docker Desktop). Plex n'a pas besoin de ligne : le
+serveur tourne sur la tour `.5`, déjà réservée. AP ouvert, Bluetooth et Matter
 désactivés sur les deux ([zigbee-multiprises.md](zigbee-multiprises.md)).

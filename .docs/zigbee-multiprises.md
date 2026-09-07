@@ -18,9 +18,6 @@ multiprises Shelly ──Wi-Fi (LAN)──▶ intégration Shelly ───┘  
 
 ## Questions ouvertes
 
-- [ ] **Réservations DHCP** pour les 2 Shelly (`.78` / `.98`, MAC dans
-  [infra-reseau.md](infra-reseau.md)) : HA les joint par IP, si le bail change
-  les 8 prises passent « unavailable » jusqu'à correction de l'hôte dans HA.
 - [ ] **Firmware Shelly** : 1.7.99 installé, **2.0.0 stable** proposé (entité
   `update.multiprise_x_firmware` dans HA). Majeure → faire une multiprise
   d'abord, vérifier que HA la retrouve, puis l'autre. Pas urgent.
