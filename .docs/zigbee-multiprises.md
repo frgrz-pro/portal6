@@ -21,8 +21,6 @@ multiprises Shelly ──Wi-Fi (LAN)──▶ intégration Shelly ───┘  
 - [ ] **Firmware Shelly** : 1.7.99 installé, **2.0.0 stable** proposé (entité
   `update.multiprise_x_firmware` dans HA). Majeure → faire une multiprise
   d'abord, vérifier que HA la retrouve, puis l'autre. Pas urgent.
-- [ ] **A / B = laquelle physiquement ?** Provisoire : A = `.78` (la première
-  connectée), B = `.98`. À confirmer, puis nommer les prises par lampe.
 - [ ] Mot de passe sur la web UI des Shelly (`auth`) : l'AP et le BLE sont coupés,
   il reste l'accès HTTP local sans auth depuis le LAN. Acceptable en LAN privé ;
   si on met un mot de passe, le renseigner aussi dans HA (option de l'entrée).
@@ -127,7 +125,12 @@ Mise en route côté HA (Docker Desktop, sans mDNS → ajout manuel) — **fait 
    l'app** (`DefaultLights`). Capteurs : `sensor.multiprise_a_prise_1_power` /
    `_energy`, `update.multiprise_a_firmware`, etc.
 5. ✅ Test réel : `switch.turn_on` puis `turn_off` sur A prise 1 par l'API HA,
-   état renvoyé cohérent. À faire ensuite : nommer chaque prise par lampe.
+   état renvoyé cohérent.
+6. **Nommage générique, tranché par François le 2026-09-07** : on garde
+   « Multiprise A / B » et « prise 1…4 » (A = `.78`, B = `.98`), et « Bouton 1…4 »
+   pour les MOES — pas de noms par lampe. Les lampes changent de prise, pas les
+   identifiants ; le sens (« lampe du canapé ») vit dans les configs de pièce de
+   l'app, pas dans HA.
 
 ## Plan retenu (option B) — historique, coordinateur pour les boutons
 
@@ -217,8 +220,12 @@ Séquence :
 
 1. Multiprises Shelly intégrées en Wi-Fi et prises nommées
    (`switch.salon_lampe_bureau`…) — section Multiprises.
-2. Appairer les 4 boutons **à moins de 2 m du dongle**, un par un (bas-gauche
-   10 s), nommés par emplacement : `bouton_canape`, `bouton_entree`…
+2. Appairer les 4 boutons **à moins de 2 m du dongle**, un par un. Pas de bouton
+   reset sur le MOES : c'est la **touche en bas à gauche, ~10 s**, jusqu'au
+   clignotement des LED (retirer d'abord la languette isolante de la pile si
+   présente ; le QR code au dos est un code Tuya, inutile ici). Le réseau doit
+   être ouvert : « Ajouter un appareil » dans ZHA, ou service `zha.permit` par
+   l'API (240 s max par appel). Noms : `Bouton 1` … `Bouton 4`.
 3. Tester : Outils de développement → Événements → écouter `zha_event` et
    appuyer → noter `device_ieee`, `endpoint_id`, `command`. Mesurer la latence
    à l'œil (appui → log).

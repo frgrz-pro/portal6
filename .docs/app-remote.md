@@ -8,10 +8,11 @@ pénibles et les apps constructeur.
 
 - [ ] Le téléphone est-il Android ? (supposé oui vu le profil Kotlin — à confirmer,
   si iPhone dans le foyer → argument KMP)
-- [ ] ~~Mapping exact des 8 boutons~~ → **2 multiprises × 4 prises, confirmé
-  (Shelly Power Strip 4 Gen4)** ; la grille 2 × 4 est la bonne. Reste : quelle
-  lampe sur quelle prise, et A/B = laquelle physiquement.
-- [ ] Noms des boutons : par lampe ("Salon", "Biblio"…) ou par prise physique ?
+- [x] ~~Mapping exact des 8 boutons~~ → **2 multiprises × 4 prises, confirmé
+  (Shelly Power Strip 4 Gen4)** ; la grille 2 × 4 est la bonne.
+- [x] ~~Noms des boutons : par lampe ou par prise ?~~ → **génériques, tranché le
+  2026-09-07** : A1…A4 / B1…B4 restent les libellés ; le sens est porté par les
+  configs de pièce (scènes nommées), pas par les boutons.
 - [ ] **Client HA réel à écrire** (`HaLightsRepository`) : le backend est prêt
   (cf. [zigbee-multiprises.md](zigbee-multiprises.md)), les 8 entités portent
   déjà les `entityId` de `DefaultLights`. Choix à faire : OkHttp (REST + WebSocket
