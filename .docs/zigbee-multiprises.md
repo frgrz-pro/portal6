@@ -26,10 +26,10 @@ multiprises Shelly ──Wi-Fi (LAN)──▶ intégration Shelly ───┘  
   si on met un mot de passe, le renseigner aussi dans HA (option de l'entrée).
 - [ ] **Qui pilote quoi** : quel bouton (et quel geste) commande quelle prise ?
   (tableau dans la section Boutons, à remplir une fois les prises nommées).
-- [ ] **Latence ZHA sur les TS0044** : première mesure rassurante (2026-09-07,
-  appuis rapprochés de ~350 ms tous reçus, `zha_event` quasi immédiat). À
-  confirmer au ressenti appui → lampe une fois les automatisations en place ;
-  Z2M reste le plan B (déjà prêt en commentaire dans le compose).
+- [ ] Appairer les **Boutons 2, 3, 4** (même procédure) et créer leurs
+  automatisations (Bouton 2 → Multiprise B ; 3 et 4 : à décider).
+- [ ] **Sauvegarde ZHA** : faite le 2026-09-07 (`config/zha-backup-*.json`, hors
+  git — contient la clé réseau). À refaire après chaque appairage.
 - [ ] Portée Zigbee sans routeur : le réseau n'a que le coordinateur + 4 boutons à
   pile (les Shelly ne relaient pas puisqu'ils restent en Wi-Fi). Si un bouton
   décroche à l'autre bout de l'appartement : rallonge USB pour le dongle, puis
@@ -200,7 +200,7 @@ Fiche (identifié le 2026-09-07) :
 | Dans ZHA | Supporté (quirk Tuya intégré). Pas d'entité `switch` : un capteur batterie + des **événements `zha_event`**, un par geste, avec `endpoint_id` 1–4 = la touche et `command` `remote_button_short_press` / `remote_button_double_press` / `remote_button_long_press` |
 | Appairage | **Touche en bas à gauche, 10 s**, jusqu'à ce que les 4 LED clignotent |
 | **Binding direct** | **Non** : le TS0044 envoie des commandes Tuya propriétaires (pas un On/Off standard) → une prise ne peut pas l'écouter en direct. Tout passe par HA |
-| Point d'attention | Latence ~1 s signalée sous ZHA par certains utilisateurs (instantané sous Z2M) — voir question ouverte |
+| Latence | **Mesurée le 2026-09-07 : 66–92 ms** entre `zha_event` et le changement d'état de la prise Shelly (appui long → 8 prises en ≤ 145 ms). La crainte communautaire (~1 s sous ZHA) ne se vérifie pas ici ; Z2M reste en réserve mais n'a plus de motif |
 
 Conséquence sur l'arbitrage binding vs automatisation : **tranché, automatisation
 HA obligatoire** pour ces boutons. Donc : PC/HA/pont éteints = boutons morts.
@@ -311,6 +311,11 @@ Shelly native**, Zigbee écarté (bug d'inondation documenté avec exactement de
 Power Strip 4 Gen4, sans correctif). Le dongle/ZHA ne sert qu'aux boutons MOES.
 Doc retitré, architecture posée, questions ouvertes réécrites (Wi-Fi + DHCP
 réservé, ne pas activer le profil Zigbee des Shelly, portée sans routeur).
+
+### 2026-09-07 (nonies)
+**Bout en bout validé** : touche n → prise n de A en 66–92 ms, appui long → les 8
+prises off en ≤ 145 ms, double-clic reçu (libre). Question latence close.
+Sauvegarde réseau ZHA créée (hors git).
 
 ### 2026-09-07 (octies)
 **Bouton 1 appairé** (TS0044 `_TZ3000_zgyzgdua`, quirk Tuya, LQI 123), entités
