@@ -14,6 +14,8 @@ Statuts : ✅ possédé · 🛒 à acheter · ⏸ bloqué (voir « Débloqué pa
 | Multiprises Zigbee ×2 | ✅ possédé | — | ❓ marque/modèle à identifier ([zigbee-multiprises.md](zigbee-multiprises.md)) |
 | **Coordinateur Zigbee** — **Sonoff Zigbee 3.0 USB Dongle Plus « Dongle-P »** (CC2652P, USB) | ✅ acheté 2026-09-07 | ~25 € | Branché sur le PC Windows Docker ; reste à installer le pilote CP210x + lancer le pont TCP ([zigbee-multiprises.md](zigbee-multiprises.md)) |
 | *(le Dongle Max Ethernet pressenti le 2026-08-30 n'a pas été retenu : l'hôte Docker est à portée d'USB, moitié moins cher)* | — | — | — |
+| Interrupteurs Zigbee ×4 | ✅ reçus 2026-09-07 | — | ❓ marque/modèle, à pile ou filaire — l'appairage ZHA le dira ([zigbee-multiprises.md](zigbee-multiprises.md)) |
+| Rallonge USB 2.0 (0,5–1 m) pour éloigner le dongle du PC / des ports USB 3 | 🛒 optionnel | ~5 € | Seulement si un device à pile décroche ou si l'appairage rame (interférences 2,4 GHz) |
 | Tour Docker (Home Assistant + AzuraCast) | ✅ de fait : le PC Windows (Docker Desktop) héberge HA, Plex, AzuraCast | — | ❓ machine définitive ou étape ? Si une tour Linux arrive, le dongle USB la suit |
 | Shield TV Pro, barre TCL, télé, téléphone | ✅ possédé | — | — |
 

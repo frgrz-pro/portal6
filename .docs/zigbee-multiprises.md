@@ -1,9 +1,21 @@
 # Multiprises Zigbee — comprendre et piloter
 
 2 multiprises Zigbee, plusieurs lampes branchées sur chaque prise. Objectif : les
-piloter depuis l'app remote ([app-remote.md](app-remote.md)).
+piloter depuis l'app remote ([app-remote.md](app-remote.md)). Depuis le
+2026-09-07, le même réseau accueille aussi **4 interrupteurs physiques Zigbee**
+(section dédiée plus bas).
 
 ## Questions ouvertes
+
+- [ ] **Interrupteurs ×4 : marque/modèle**, et surtout **à pile ou filaire** ?
+  À pile (bouton sans fil type Sonoff SNZB-01, Tuya, Aqara) = *end device*, ne
+  relaie pas le mesh, s'appaire près du coordinateur. Filaire (module encastré
+  avec neutre) = *router*, renforce le mesh. La fiche ZHA le dira à l'appairage.
+- [ ] **Qui pilote quoi** : quel interrupteur commande quelle prise/lampe ?
+  (tableau à remplir dans la section Interrupteurs une fois les multiprises
+  appairées et leurs prises nommées).
+- [ ] Liaison **directe Zigbee (binding)** interrupteur → prise, ou tout passer
+  par des automatisations HA ? Voir la section Interrupteurs pour l'arbitrage.
 
 - [ ] **Marque et modèle exacts des multiprises** (étiquette dessous / boîte).
   C'est LA question bloquante : elle détermine la compatibilité et le nombre de
@@ -117,6 +129,54 @@ Séquence de mise en route :
 Détails électriques notés dans le script : sur le Dongle-P les lignes DTR/RTS
 pilotent reset et bootloader, on les laisse basses à l'ouverture du port.
 
+## Interrupteurs physiques ×4 (reçus le 2026-09-07)
+
+Rôle dans le plan : la commande **au mur / sur la table**, en complément de l'app.
+Objectif final : un interrupteur = une prise (ou un groupe de lampes), avec
+l'app remote et le TRMNL qui reflètent l'état quoi qu'il arrive.
+
+Ce qu'un interrupteur Zigbee est, selon le type :
+
+| Type | Ce que ZHA en fait | Conséquences |
+|---|---|---|
+| **Bouton sans fil à pile** (SNZB-01, Tuya « scene switch », Aqara…) | Pas d'entité `switch` : il émet des **événements** (`zha_event` : simple / double / long) + un capteur batterie | Ne commande rien tout seul → il faut une automatisation HA **ou** un binding direct ; end device, à appairer près du coordinateur, il ne relaie pas |
+| **Module / interrupteur filaire** (avec neutre) | Une entité `switch.xxx` par voie, comme une prise | Il coupe sa propre ligne ; il peut *aussi* émettre des événements pour commander autre chose ; router, renforce le mesh |
+
+Deux façons de relier interrupteur → prise, **à arbitrer après appairage** :
+
+| Voie | Principe | Verdict pressenti |
+|---|---|---|
+| **Automatisation HA** | `zha_event` du bouton → `switch.toggle` de la prise | Simple, visible dans l'UI, n'importe quelle combinaison ; **dépend de HA + du pont** : si le PC/HA est éteint, le bouton est mort |
+| **Binding Zigbee direct** | ZHA → fiche du bouton → *Manage Zigbee device* → Bindings → lier le cluster On/Off à la prise (ou à un groupe Zigbee) | Marche **sans HA** (radio à radio), latence minimale ; HA voit quand même l'état changer ; mais tous les boutons ne supportent pas le binding (Tuya souvent non) |
+
+Reco : **binding direct quand le bouton le permet** (résilience : la lumière
+marche même PC éteint), automatisation HA pour le reste (double-clic = « tout
+éteindre », etc.).
+
+Séquence :
+
+1. Appairer les **multiprises d'abord** (routers, elles solidifient le mesh) et
+   nommer chaque prise (`switch.salon_lampe_bureau`…).
+2. Appairer les 4 interrupteurs **à moins de 2 m du dongle**, un par un
+   (pile : appui long 5 s sur le bouton d'appairage ; les nommer par
+   emplacement : `bouton_canape`, `bouton_entree`…).
+3. Tester l'événement : Outils de développement → Événements → écouter `zha_event`
+   et appuyer → on voit `command: toggle / on / off` et l'`ieee`.
+4. Remplir le tableau « qui pilote quoi » ci-dessous, puis binding ou
+   automatisation par ligne.
+
+| Interrupteur (nom ZHA) | Emplacement | Pilote | Voie (binding / HA) |
+|---|---|---|---|
+| — | — | — | — |
+| — | — | — | — |
+| — | — | — | — |
+| — | — | — | — |
+
+Portée : un mesh de 2 multiprises (routers) + coordinateur couvre un appartement
+sans souci ; si un bouton à pile à l'autre bout perd le lien, c'est une
+multiprise mal placée, pas le dongle. Rallonge USB pour éloigner le dongle du
+PC/USB 3 (interférences 2,4 GHz) = bon réflexe, ligne au BOM.
+
 ## Journal
 
 ### 2026-08-30
@@ -150,3 +210,9 @@ François a configuré **ZHA sur le pont** : coordinateur CC2652 reconnu, résea
 formé. Pont : avertissement `WinError 10038` à la fermeture normale d'un client
 rendu silencieux (prend effet au prochain redémarrage de la tâche). Reste :
 jeton `HA_TOKEN`, appairage des multiprises.
+
+### 2026-09-07 (quater)
+**4 interrupteurs physiques Zigbee** reçus, intégrés au plan : section dédiée
+(bouton à pile = événements `zha_event`, filaire = `switch.*`), arbitrage
+binding direct vs automatisation HA (reco : binding quand supporté), ordre
+d'appairage multiprises → boutons, tableau « qui pilote quoi » à remplir.
