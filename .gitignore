@@ -48,3 +48,4 @@ _build/
 # Portail web : fichiers de détail générés (chemins, titres) — le manifeste agrégé reste versionné
 apps/web/data/dedup.js
 apps/web/data/proposals.js
+apps/web/dl/

@@ -297,3 +297,9 @@ dialog.plan-dialog > form > p { padding: 0 24px; }
 .dot.ok { background: var(--ok); }
 .dot.bad { background: var(--bad); }
 @keyframes pulse { 50% { opacity: .35; } }
+
+/* --- tuile APK : QR à droite -------------------------------------------------- */
+.app.apk { cursor: default; }
+.app.apk:hover { transform: none; border-color: var(--line); }
+.app .qr { margin-left: auto; flex: none; display: block; background: #fff; border-radius: 6px; padding: 4px; line-height: 0; }
+.app .qr img { width: 96px; height: 96px; display: block; }

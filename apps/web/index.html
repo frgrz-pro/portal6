@@ -48,6 +48,22 @@
 
   </div>
 
+  <h2>App</h2>
+  <div class="launch">
+
+    <div class="app apk" id="apk">
+      <span class="ico">📱</span>
+      <span class="body">
+        <span class="name">HA Remote <i class="dot" id="apk-dot" title="statut"></i></span>
+        <span class="url" id="apk-info">Android · scanner le QR pour installer l'APK</span>
+      </span>
+      <a class="qr" id="apk-qr" href="dl/ha-remote.apk" title="Télécharger l'APK">
+        <img src="dl/qr.svg" alt="QR code de l'APK" onerror="this.parentNode.hidden = true">
+      </a>
+    </div>
+
+  </div>
+
   <h2>Media</h2>
   <div class="launch">
 
@@ -82,6 +98,7 @@
 
 </main>
 
+<script src="dl/apk.js" onerror="void 0"></script>
 <script>
 
   // Témoin de disponibilité : fetch no-cors → réponse opaque si le service répond,
@@ -93,6 +110,18 @@
     catch { return false; }
     finally { clearTimeout(t); }
   }
+  // Tuile APK : dl/apk.js est écrit par publish_apk.py (non versionné).
+  const apk = window.PORTAL6_APK;
+  const apkInfo = document.getElementById('apk-info'), apkDot = document.getElementById('apk-dot');
+  if (apk) {
+    apkInfo.textContent = `APK debug du ${apk.built} · ${apk.size_mb} Mo · scanner pour installer`;
+    document.getElementById('apk-qr').title = apk.url;
+    apkDot.className = 'dot ok'; apkDot.title = 'APK publié';
+  } else {
+    apkInfo.textContent = 'APK non publié — lancer python apps/web/publish_apk.py';
+    apkDot.className = 'dot bad'; apkDot.title = 'APK absent';
+  }
+
   document.querySelectorAll('.app[data-ping]').forEach(async a => {
     const dot = a.querySelector('.dot');
     dot.className = 'dot wait'; dot.title = 'vérification…';

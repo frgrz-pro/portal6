@@ -34,6 +34,11 @@ ici, les choix et ce qui reste à trancher.
   **catégorie** (Home : HA, routeur, TRMNL ; Media : Playlist Manager, AzuraCast, Plex) —
   plus de cartes « domaines à venir », elles ne servaient à rien. `music.html` s'appelle
   **Playlist Manager** dans la nav.
+- **Tuile « HA Remote » avec QR d'installation** (2026-09-07) : `publish_apk.py`
+  copie l'APK debug dans `apps/web/dl/` (non versionné, 17 Mo) et génère un QR
+  (`segno`, pure Python) vers `http://192.168.0.5:8712/dl/ha-remote.apk` — l'IP LAN,
+  parce que c'est le téléphone qui scanne. Pas de QR en JS : ça aurait demandé une
+  lib vendue ou un CDN. À relancer après chaque build.
 - **Statique, zéro build, zéro framework.** Node n'est installé nulle part sur ce
   poste (ni Windows ni WSL) — les scripts `npm run` du `package.json` ne tournent
   pas ici. Python sert le dossier (`python -m http.server`).
@@ -95,3 +100,8 @@ Vérifié dans le navigateur : les six répondent, le témoin passe au rouge sur
 fermé. Puis nettoyage à la demande de François : plus de texte d'intro, tuiles en deux
 catégories Home / Media, section « domaines du repo » supprimée, Music renommé
 Playlist Manager. Piège rencontré : `style.css` en cache navigateur → lien versionné.
+
+### 2026-09-07 (ter) — QR de l'APK
+Catégorie « App » sur l'accueil : tuile HA Remote, QR à scanner depuis le téléphone pour
+télécharger l'APK servi par le portail. `segno` ajouté au venv `portal6-home` et à
+`requirements.txt`. Vérifié dans le navigateur (QR chargé, APK servi en octet-stream).

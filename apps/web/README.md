@@ -19,7 +19,9 @@ apps/web/
 ├── data/manifest.js        # GÉNÉRÉ, versionné — agrégats : window.PORTAL6
 ├── data/dedup.js           # GÉNÉRÉ, non versionné — détail des doublons (chemins)
 ├── data/proposals.js       # GÉNÉRÉ, non versionné — détail des propositions (titres)
-└── build_manifest.py       # produit les trois fichiers data/
+├── build_manifest.py       # produit les trois fichiers data/
+├── publish_apk.py          # copie l'APK ha-remote dans dl/ + QR + dl/apk.js (dl/ non versionné)
+└── dl/                     # GÉNÉRÉ, non versionné : ha-remote.apk, qr.svg, apk.js
 ```
 
 ## Lancer
@@ -37,6 +39,18 @@ venv. Sur Windows natif, `python` du PATH est le stub Microsoft Store : utiliser
 Puis <http://localhost:8712>. Un simple double-clic sur `index.html` marche aussi :
 le manifeste est un `.js` (et non un `.json`) précisément pour que `file://`
 n'ait pas besoin de `fetch`.
+
+## Publier l'APK de l'app (tuile « HA Remote » + QR)
+
+```powershell
+& "$env:USERPROFILE\.venvs\portal6-home\Scripts\python.exe" apps\web\publish_apk.py
+```
+
+Copie `apps/ha-remote/.../app-debug.apk` dans `apps/web/dl/`, génère le QR de
+`http://192.168.0.5:8712/dl/ha-remote.apk` (l'IP LAN de la tour — le téléphone ne
+connaît pas `localhost`) et `dl/apk.js` (date, taille) pour la tuile. À relancer après
+chaque build. Sur le téléphone : scanner, télécharger, autoriser « sources inconnues »
+pour le navigateur la première fois.
 
 ## Régénérer les chiffres
 
