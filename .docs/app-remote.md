@@ -13,10 +13,10 @@ pénibles et les apps constructeur.
 - [x] ~~Noms des boutons : par lampe ou par prise ?~~ → **génériques, tranché le
   2026-09-07** : A1…A4 / B1…B4 restent les libellés ; le sens est porté par les
   configs de pièce (scènes nommées), pas par les boutons.
-- [ ] **Tester sur le téléphone** : installer l'APK, onglet Réglages → URL
-  `http://192.168.0.5:8123` + jeton → « Tester » puis « Enregistrer » ; vérifier
-  que les 8 prises suivent HA en temps réel et que définir un mode dans l'app
-  change bien ce que fait la touche du bouton MOES.
+- [x] ~~Tester sur le téléphone~~ → **fait le 2026-09-07** : S20 Ultra branché sur
+  HA (`192.168.0.5:8123`), Mode 2 défini depuis l'app = `scene.mode_2` (A2, A3, B3)
+  vérifié par l'API. Reste à tester depuis le MOES : touche 2 → ces 3 prises.
+- [ ] Définir les modes 3 et 4 depuis l'app (scènes HA encore vides).
 - [ ] Interprétation « 4 modes ↔ 4 boutons » : retenu **mode n = touche n**, identique
   sur chacun des 4 MOES (voir Décisions). Si François voulait plutôt « un MOES = un
   mode », seule l'automatisation HA change (`ha_modes_setup.py`), pas l'app.
@@ -186,6 +186,10 @@ mode 2-4 ouvre son édition, les tuiles servent de filtre, Enregistrer → le sw
 pilote ce mode (ON = filtre allumé / reste éteint, OFF = tout éteint). Implémenté
 sans toucher au modèle ni à HA (une scène = un filtre). Retiré : dialogue d'édition,
 switch All, bouton Turn off. Testé sur le S20 Ultra : édition A1+A3+B2, ON, OFF.
+
+### 2026-09-07 (septies) — app branchée sur le vrai HA
+Jeton poussé par adb, app connectée : Mode 2 défini sur le téléphone se retrouve
+dans `scene.mode_2` côté HA (A2, A3, B3). Boucle app ↔ HA ↔ MOES fermée côté données.
 
 ### 2026-09-07 (sexies) — skill `android`
 Skill projet `.claude/skills/android/` : adb (détection, install, lancement, capture,
