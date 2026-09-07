@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,6 +33,7 @@ import com.portal6.haremote.Portal6App
 import com.portal6.haremote.data.HaSettings
 import com.portal6.haremote.data.SettingsStore
 import com.portal6.haremote.data.ha.HaClient
+import com.portal6.haremote.data.trmnl.TrmnlClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -44,6 +47,21 @@ class SettingsViewModel(
     val azuracastUrl: StateFlow<String> = store.azuracastUrl
 
     fun saveAzuracastUrl(url: String) = store.saveAzuracastUrl(url)
+
+    val trmnlKey: StateFlow<String> = store.trmnlKey
+    fun saveTrmnlKey(key: String) = store.saveTrmnlKey(key)
+
+    private val _trmnlTestResult = MutableStateFlow<String?>(null)
+    val trmnlTestResult: StateFlow<String?> = _trmnlTestResult
+
+    /** `GET /api/me` avec la clé saisie, sans l'enregistrer. */
+    fun testTrmnl(key: String) {
+        viewModelScope.launch {
+            _trmnlTestResult.value = "Test en cours…"
+            _trmnlTestResult.value = runCatching { TrmnlClient(key).ping() }
+                .fold({ "OK — compte $it" }, { "Échec : ${it.message}" })
+        }
+    }
 
     private val _testResult = MutableStateFlow<String?>(null)
     val testResult: StateFlow<String?> = _testResult
@@ -84,10 +102,13 @@ fun SettingsScreen(
     val testResult by viewModel.testResult.collectAsStateWithLifecycle()
     val azuracastUrl by viewModel.azuracastUrl.collectAsStateWithLifecycle()
     var radioUrl by rememberSaveable(azuracastUrl) { mutableStateOf(azuracastUrl) }
+    val trmnlKey by viewModel.trmnlKey.collectAsStateWithLifecycle()
+    val trmnlTestResult by viewModel.trmnlTestResult.collectAsStateWithLifecycle()
+    var trmnlKeyInput by rememberSaveable(trmnlKey) { mutableStateOf(trmnlKey) }
     var url by rememberSaveable(settings.url) { mutableStateOf(settings.url.ifBlank { "http://192.168.0.5:8123" }) }
     var token by rememberSaveable(settings.token) { mutableStateOf(settings.token) }
 
-    Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
         Text("Home Assistant", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(
@@ -141,6 +162,38 @@ fun SettingsScreen(
         }
         Text(
             "API publique, pas de jeton. Pour essayer sans station : https://demo.azuracast.com",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(24.dp))
+        Text("TRMNL", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = trmnlKeyInput,
+            onValueChange = { trmnlKeyInput = it },
+            label = { Text("Clé de compte (user_…)") },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(8.dp))
+        Row {
+            OutlinedButton(
+                enabled = trmnlKeyInput.isNotBlank(),
+                onClick = { viewModel.testTrmnl(trmnlKeyInput) },
+            ) { Text("Tester") }
+            Spacer(Modifier.width(8.dp))
+            Button(
+                enabled = trmnlKeyInput.trim() != trmnlKey,
+                onClick = { viewModel.saveTrmnlKey(trmnlKeyInput) },
+            ) { Text("Enregistrer") }
+        }
+        trmnlTestResult?.let {
+            Spacer(Modifier.height(4.dp))
+            Text(it, style = MaterialTheme.typography.bodyMedium)
+        }
+        Text(
+            "Clé de compte trmnl.com/account (Developer Edition), pas la clé de device.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

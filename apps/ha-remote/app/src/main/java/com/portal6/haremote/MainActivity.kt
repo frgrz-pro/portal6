@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tablet
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,8 @@ import com.portal6.haremote.ui.RadioScreen
 import com.portal6.haremote.ui.RadioViewModel
 import com.portal6.haremote.ui.SettingsScreen
 import com.portal6.haremote.ui.SettingsViewModel
+import com.portal6.haremote.ui.TrmnlScreen
+import com.portal6.haremote.ui.TrmnlViewModel
 import com.portal6.haremote.ui.TvScreen
 import com.portal6.haremote.ui.TvViewModel
 
@@ -49,7 +52,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Tab(val label: String) { Lights("Lights"), Tv("TV"), Radio("Radio"), Settings("Réglages") }
+private enum class Tab(val label: String) { Lights("Lights"), Tv("TV"), Radio("Radio"), Trmnl("TRMNL"), Settings("Réglages") }
 
 @Composable
 private fun RemoteApp() {
@@ -57,6 +60,7 @@ private fun RemoteApp() {
     val lightsViewModel: LightsViewModel = viewModel(factory = LightsViewModel.Factory)
     val tvViewModel: TvViewModel = viewModel(factory = TvViewModel.Factory)
     val radioViewModel: RadioViewModel = viewModel(factory = RadioViewModel.Factory)
+    val trmnlViewModel: TrmnlViewModel = viewModel(factory = TrmnlViewModel.Factory)
     val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
 
     Scaffold(
@@ -81,6 +85,12 @@ private fun RemoteApp() {
                     label = { Text(Tab.Radio.label) },
                 )
                 NavigationBarItem(
+                    selected = currentTab == Tab.Trmnl,
+                    onClick = { currentTab = Tab.Trmnl },
+                    icon = { Icon(Icons.Filled.Tablet, contentDescription = null) },
+                    label = { Text(Tab.Trmnl.label) },
+                )
+                NavigationBarItem(
                     selected = currentTab == Tab.Settings,
                     onClick = { currentTab = Tab.Settings },
                     icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
@@ -100,6 +110,10 @@ private fun RemoteApp() {
             )
             Tab.Radio -> RadioScreen(
                 viewModel = radioViewModel,
+                modifier = Modifier.padding(innerPadding),
+            )
+            Tab.Trmnl -> TrmnlScreen(
+                viewModel = trmnlViewModel,
                 modifier = Modifier.padding(innerPadding),
             )
             Tab.Settings -> SettingsScreen(

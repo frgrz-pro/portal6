@@ -39,6 +39,16 @@ class SettingsStore(context: Context) {
         _azuracastUrl.value = clean
     }
 
+    /** Clé de **compte** TRMNL (`user_…`, Developer Edition) — pas la clé de device. Vide = démo. */
+    private val _trmnlKey = MutableStateFlow(prefs.getString(KEY_TRMNL, "") ?: "")
+    val trmnlKey: StateFlow<String> = _trmnlKey
+
+    fun saveTrmnlKey(key: String) {
+        val clean = key.trim()
+        prefs.edit().putString(KEY_TRMNL, clean).apply()
+        _trmnlKey.value = clean
+    }
+
     private fun load() = HaSettings(
         url = prefs.getString(KEY_URL, "") ?: "",
         token = prefs.getString(KEY_TOKEN, "") ?: "",
@@ -48,6 +58,7 @@ class SettingsStore(context: Context) {
         const val KEY_URL = "ha_url"
         const val KEY_TOKEN = "ha_token"
         const val KEY_AZURACAST = "azuracast_url"
+        const val KEY_TRMNL = "trmnl_api_key"
         const val DEFAULT_AZURACAST = "http://192.168.0.5"
     }
 }

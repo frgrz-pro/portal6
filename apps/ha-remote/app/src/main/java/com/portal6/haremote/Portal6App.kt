@@ -11,6 +11,8 @@ import com.portal6.haremote.data.ModesRepository
 import com.portal6.haremote.data.MockTvRepository
 import com.portal6.haremote.data.SettingsStore
 import com.portal6.haremote.data.TvRepository
+import com.portal6.haremote.data.trmnl.DelegatingTrmnlRepository
+import com.portal6.haremote.data.trmnl.TrmnlRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,6 +38,9 @@ class AppContainer(context: Context) {
     val connection: StateFlow<String> = backends.connection
 
     val tv: TvRepository = MockTvRepository(store)
+
+    /** Rotation des écrans du TRMNL — parle directement à trmnl.com, pas via HA. */
+    val trmnl: TrmnlRepository = DelegatingTrmnlRepository(settings.trmnlKey, appScope)
 }
 
 class Portal6App : Application() {

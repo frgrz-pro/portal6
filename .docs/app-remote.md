@@ -36,9 +36,9 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
   Cadré le 2026-09-07 (voir Décisions). À trancher par l'usage : si François veut
   surtout « ce soir je veux l'écran X », les interrupteurs suffisent ; si c'est
   « le matin l'agenda, le soir la mer », c'est le schedule qu'il faut exposer.
-- [ ] Onglet TRMNL : où stocker la clé compte `user_…` ? Même mécanique que le jeton
-  HA (Réglages, stockage privé) — mais c'est une **2e clé** à pousser sur le téléphone
-  (skill `android`, François lance la commande qui lit `.env`).
+- [x] ~~Onglet TRMNL : où stocker la clé compte `user_…` ?~~ → **Réglages, section
+  TRMNL, stockage privé** (codé le 2026-09-07). Reste à la pousser sur le téléphone
+  (skill `android`, François lance la commande qui lit `.env`) puis tester en réel.
 
 ## Décisions
 
@@ -114,6 +114,10 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
   - Architecture : `data/trmnl/TrmnlClient` (OkHttp, même style que `HaClient`),
     `TrmnlRepository` (mock sans clé), clé `user_…` dans Réglages. Le device n'est
     pas choisi en v1 (un seul TRMNL) mais le code garde le `device_id`.
+  - **Codé le 2026-09-07**, testé sur le téléphone en mode démo. Écart avec le
+    cadrage : l'ordre se change par **flèches ▲▼** (pas de glisser-déposer, qui
+    aurait demandé une lib ou du code de drag maison — à revoir si la playlist
+    dépasse 4-5 écrans). Chaque action relit tout derrière (l'API ne pousse rien).
 - **Mini player radio (2026-09-07)** : onglet **Radio** qui consomme les flux
   AzuraCast. Source = l'API publique `GET /api/nowplaying` (aucun jeton : liste
   des stations publiques, mount par défaut = URL du flux, artiste/titre/pochette,
@@ -291,3 +295,9 @@ de la maison n'a pas encore de station → **testé sur `demo.azuracast.com` dep
 S20 Ultra** : liste, pochette, titre en cours, lecture (décodeur MP3 + notification
 média vus dans logcat), Play/Stop alternés. Piège adb : rediriger `screencap` depuis
 PowerShell corrompt le PNG (BOM) → passer par bash ; `wm dismiss-keyguard` déverrouille.
+
+### 2026-09-07 (decies) — onglet TRMNL codé
+`data/trmnl/` (client API compte + dépôt HTTP/mock/délégué sur la clé), onglet TRMNL
+(switch par écran, ▲▼, refresh 5 min/15 min/1 h/6 h, « Uniquement celui-ci »), clé
+dans Réglages avec Tester (`GET /api/me`). Réglages passés en scroll. Build OK,
+installé sur le S20 Ultra, vérifié en démo. Reste : pousser la clé et tester en réel.
