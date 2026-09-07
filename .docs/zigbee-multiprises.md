@@ -11,10 +11,11 @@ piloter depuis l'app remote ([app-remote.md](app-remote.md)).
 - [ ] Vendues avec un hub/passerelle constructeur (Tuya, etc.) ou nues ?
 - [ ] Chaque prise est-elle commutable individuellement, ou la multiprise
   s'allume/s'éteint en bloc ? (+ ports USB pilotables ?)
-- [ ] **Configurer ZHA dans HA** (bloqué côté Claude : pas d'auth HA). Deux voies :
-  François le fait dans l'UI (étape 4 du README `features/home/ha/`), ou crée un
-  jeton longue durée → `.env` `HA_TOKEN`, et Claude lance le config flow par l'API
-  (le jeton sert de toute façon à l'app remote).
+- [ ] **Jeton longue durée HA → `.env` `HA_TOKEN`** : sans lui Claude ne peut ni
+  sonder les entités (`ha_probe.py`), ni corriger la localisation, ni brancher l'app.
+- [ ] **Appairer les 2 multiprises** : bouton d'appairage (5 s, LED clignote) →
+  ZHA « Ajouter un appareil ». La fiche ZHA donnera enfin marque/modèle et le
+  nombre de prises pilotables — ça tranche les 3 premières questions.
 - [ ] Firmware du dongle : Z-Stack **rev 20210708** d'usine. Fonctionne avec ZHA ;
   Koenkk recommande ≥ 20211217 (stabilité, plus de routes). Mise à jour possible
   plus tard via le bootloader série (cc2538-bsl), **pas avant** que le réseau
@@ -102,11 +103,14 @@ Séquence de mise en route :
 2. ✅ Pont validé de bout en bout : `SYS_VERSION` répond en direct sur COM4 et à
    travers le pont depuis le conteneur HA (CC2652, Z-Stack 2.7 rev 20210708).
    Tâche planifiée `portal6-zigbee-bridge` créée et en cours (Running).
-3. HA → **Paramètres → Appareils et services → Ajouter → Zigbee Home Automation**,
+3. ✅ HA → **Paramètres → Appareils et services → Ajouter → Zigbee Home Automation**,
    type de radio **ZNP (Texas Instruments)**, port `socket://host.docker.internal:6638`
-   (vitesse et contrôle de flux indifférents en mode socket).
-4. ZHA forme le réseau (nouveau réseau, canal par défaut 15 ; le sauver =
-   `config/zigbee.db` + sauvegarde ZHA, hors git).
+   (vitesse et contrôle de flux indifférents en mode socket). Fait par François
+   le 2026-09-07 sur l'instance recréée à neuf.
+4. ✅ Réseau formé : coordinateur « Texas Instruments CC2652 » visible dans ZHA,
+   IEEE `00:12:4B:00:38:A8:EB:B6`, `config/zigbee.db` créé (hors git). Le config
+   flow a sondé le port plusieurs fois (connexions/déconnexions en rafale dans
+   le journal du pont — normal), puis la connexion tient.
 5. Appairer : multiprise en mode appairage (bouton 5 s en général) →
    « Ajouter un appareil » dans ZHA.
 
@@ -139,3 +143,10 @@ Pilote CP210x Silabs installé (pnputil, UAC) → COM4. Z-Stack répond (rev
 20210708) en direct et via le pont depuis le conteneur. Tâche planifiée
 `portal6-zigbee-bridge` (à l'ouverture de session, `--log`) en cours. Reste :
 ZHA à configurer dans HA (auth François), puis appairage des multiprises.
+
+### 2026-09-07 (ter)
+Instance HA recréée à neuf (mot de passe perdu par autofill Brave à l'onboarding).
+François a configuré **ZHA sur le pont** : coordinateur CC2652 reconnu, réseau
+formé. Pont : avertissement `WinError 10038` à la fermeture normale d'un client
+rendu silencieux (prend effet au prochain redémarrage de la tâche). Reste :
+jeton `HA_TOKEN`, appairage des multiprises.

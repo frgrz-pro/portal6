@@ -54,7 +54,8 @@ def pump(ser: serial.Serial, conn: socket.socket, stop: threading.Event) -> None
                 if data:
                     conn.sendall(data)
         except (serial.SerialException, OSError) as e:
-            log.warning("série -> tcp interrompu : %s", e)
+            if not stop.is_set():  # sinon c'est juste l'autre sens qui a fermé le socket
+                log.warning("série -> tcp interrompu : %s", e)
         finally:
             stop.set()
 
@@ -66,7 +67,8 @@ def pump(ser: serial.Serial, conn: socket.socket, stop: threading.Event) -> None
                     break
                 ser.write(data)
         except (serial.SerialException, OSError) as e:
-            log.warning("tcp -> série interrompu : %s", e)
+            if not stop.is_set():
+                log.warning("tcp -> série interrompu : %s", e)
         finally:
             stop.set()
 
