@@ -84,17 +84,18 @@ pénibles et les apps constructeur.
 
 ## UI v1
 
-- **Bottom bar, 2 tabs : Lights / TV.**
+- **Bottom bar, 3 tabs : Lights / TV / Réglages** (depuis le 2026-09-07).
 - **Tab Lights** :
-  - une rangée de **configs du salon** (chips) + « Gérer » pour enregistrer
-    l'état courant sous un nom ou supprimer une config ;
-  - grille **2 colonnes × 4 boutons** (toggle par prise/lampe, état on/off visible) ;
+  - une rangée de **4 modes** (Mode 1 = tout on/off, Modes 2-4 = scènes ;
+    appui = jouer, appui long = redéfinir ; le mode qui correspond à l'état
+    des prises est mis en avant) ;
+  - grille **2 colonnes × 4 boutons** (toggle par prise, état on/off visible) ;
   - un **switch "All"** (tout allumer) ;
-  - un bouton **"Turn off"** (tout éteindre d'un coup — le geste du soir).
+  - un bouton **"Turn off"** (tout éteindre d'un coup — le geste du soir) ;
+  - la ligne d'état de la liaison HA (connecté / hors ligne / mode démo).
 - **Tab TV** : placeholder en v1, spec dans [tv-mute.md](tv-mute.md) — le bouton
   central sera un gros **MUTE**.
-- Pas de login, pas de settings élaborés en v1 : l'URL/token du backend en
-  configuration simple (voire en dur au début, l'app ne sort pas du foyer).
+- **Tab Réglages** : URL + jeton HA, « Tester », « Enregistrer ». Pas de login.
 
 ## Architecture cible
 
