@@ -30,25 +30,32 @@ Test rapide de l'API depuis le venv :
 Docker Desktop ne passe pas l'USB au conteneur : `zigbee_bridge.py` expose le
 port COM du dongle en TCP, et ZHA s'y connecte comme à un coordinateur Ethernet.
 
-1. **Pilote CP210x** (une fois) : Windows Update → mises à jour facultatives →
-   pilotes « Silicon Labs », ou le zip *CP210x Universal Windows Driver* de
-   silabs.com puis, en admin, `pnputil /add-driver silabser.inf /install`.
-   Vérif : un `COMx` apparaît dans le Gestionnaire de périphériques.
+1. **Pilote CP210x** (une fois — fait le 2026-09-07, dongle sur **COM4**) :
+   Windows Update ne le propose pas ; zip *CP210x Universal Windows Driver* de
+   silabs.com (catalogue signé WHQL), puis en admin
+   `pnputil /add-driver silabser.inf /install`. Vérif : un `COMx` apparaît.
 2. **Pont, test à la main** (détecte le COM tout seul par VID:PID `10C4:EA60`) :
 
    ```powershell
    & "$env:USERPROFILE\.venvs\portal6-home\Scripts\python.exe" features\home\ha\zigbee_bridge.py -v
    ```
 
-3. **Pont en continu** — tâche planifiée à l'ouverture de session (Docker
-   Desktop démarre au même moment) :
+3. **Pont en continu** — tâche planifiée `portal6-zigbee-bridge` (à l'ouverture
+   de session, redémarrage auto ×5, journal dans `zigbee_bridge.log`, hors git).
+   Un déclencheur « à l'ouverture de session » exige un PowerShell **admin** :
 
    ```powershell
-   schtasks /Create /TN "portal6-zigbee-bridge" /SC ONLOGON /RL LIMITED /F /TR "\"$env:USERPROFILE\.venvs\portal6-home\Scripts\pythonw.exe\" \"C:\DevLab\portal6\features\home\ha\zigbee_bridge.py\""
+   $pyw = "$env:USERPROFILE\.venvs\portal6-home\Scripts\pythonw.exe"
+   $a = New-ScheduledTaskAction -Execute $pyw -Argument '"C:\DevLab\portal6\features\home\ha\zigbee_bridge.py" --log "C:\DevLab\portal6\features\home\ha\zigbee_bridge.log"'
+   $t = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+   $s = New-ScheduledTaskSettingsSet -RestartCount 5 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+   Register-ScheduledTask -TaskName portal6-zigbee-bridge -Action $a -Trigger $t -Settings $s -RunLevel Limited -Force
+   Start-ScheduledTask -TaskName portal6-zigbee-bridge
    ```
 
-   Puis `schtasks /Run /TN portal6-zigbee-bridge`. Le pont réessaie tout seul
-   si le dongle est débranché ou si HA se déconnecte.
+   Contrôle : `Get-ScheduledTask portal6-zigbee-bridge` → *Running*, et
+   `Get-NetTCPConnection -LocalPort 6638 -State Listen`. Le pont réessaie tout
+   seul si le dongle est débranché ou si HA se déconnecte.
 4. **ZHA** : Paramètres → Appareils et services → Ajouter → *Zigbee Home
    Automation* → radio **ZNP (Texas Instruments)** → port
    `socket://host.docker.internal:6638`. Nouveau réseau, puis « Ajouter un

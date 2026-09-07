@@ -11,12 +11,14 @@ piloter depuis l'app remote ([app-remote.md](app-remote.md)).
 - [ ] Vendues avec un hub/passerelle constructeur (Tuya, etc.) ou nues ?
 - [ ] Chaque prise est-elle commutable individuellement, ou la multiprise
   s'allume/s'éteint en bloc ? (+ ports USB pilotables ?)
-- [ ] **Pilote CP210x sous Windows** : le dongle est vu (`VID_10C4&PID_EA60`) mais
-  en erreur code 28 (pas de pilote, pas de COM). Installer le pilote Silicon Labs
-  (Windows Update → mises à jour facultatives → pilotes, ou zip « CP210x Universal
-  Windows Driver » sur silabs.com + `pnputil /add-driver silabser.inf /install`).
-- [ ] Le pont série→TCP doit tourner en continu : tâche planifiée Windows à créer
-  (commande dans `features/home/ha/README.md`).
+- [ ] **Configurer ZHA dans HA** (bloqué côté Claude : pas d'auth HA). Deux voies :
+  François le fait dans l'UI (étape 4 du README `features/home/ha/`), ou crée un
+  jeton longue durée → `.env` `HA_TOKEN`, et Claude lance le config flow par l'API
+  (le jeton sert de toute façon à l'app remote).
+- [ ] Firmware du dongle : Z-Stack **rev 20210708** d'usine. Fonctionne avec ZHA ;
+  Koenkk recommande ≥ 20211217 (stabilité, plus de routes). Mise à jour possible
+  plus tard via le bootloader série (cc2538-bsl), **pas avant** que le réseau
+  soit formé et sauvegardé — pas bloquant.
 - [ ] Le PC Windows héberge aujourd'hui toute la pile Docker (HA, Plex, AzuraCast) :
   est-ce « la tour » définitive ou une étape ? Si une machine Linux arrive, le
   dongle la suit (`/dev/ttyUSB0` direct, plus de pont).
@@ -95,8 +97,11 @@ les périphériques USB aux conteneurs. Deux façons de contourner :
 
 Séquence de mise en route :
 
-1. Pilote CP210x installé → un `COMx` apparaît (le script le retrouve seul par VID:PID).
-2. Lancer le pont (test à la main, puis tâche planifiée « au démarrage de session »).
+1. ✅ Pilote CP210x installé (Silabs 11.6.0.420, Windows Update ne le proposait
+   pas) → dongle sur **COM4** (le script le retrouve seul par VID:PID).
+2. ✅ Pont validé de bout en bout : `SYS_VERSION` répond en direct sur COM4 et à
+   travers le pont depuis le conteneur HA (CC2652, Z-Stack 2.7 rev 20210708).
+   Tâche planifiée `portal6-zigbee-bridge` créée et en cours (Running).
 3. HA → **Paramètres → Appareils et services → Ajouter → Zigbee Home Automation**,
    type de radio **ZNP (Texas Instruments)**, port `socket://host.docker.internal:6638`
    (vitesse et contrôle de flux indifférents en mode socket).
@@ -128,3 +133,9 @@ toute la pile Docker). Détecté en `VID_10C4&PID_EA60` mais **sans pilote CP210
 (code 28) → action François. Montage retenu : pont série→TCP
 `zigbee_bridge.py` + ZHA en `socket://host.docker.internal:6638` ; joignabilité
 conteneur→hôte vérifiée. `HA_TOKEN` toujours absent de `.env`.
+
+### 2026-09-07 (bis)
+Pilote CP210x Silabs installé (pnputil, UAC) → COM4. Z-Stack répond (rev
+20210708) en direct et via le pont depuis le conteneur. Tâche planifiée
+`portal6-zigbee-bridge` (à l'ouverture de session, `--log`) en cours. Reste :
+ZHA à configurer dans HA (auth François), puis appairage des multiprises.

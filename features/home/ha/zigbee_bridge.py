@@ -4,7 +4,7 @@ Docker Desktop ne passe pas l'USB aux conteneurs : ce script expose le port COM
 du dongle sur un port TCP, et ZHA (dans le conteneur HA) s'y connecte via
 `socket://host.docker.internal:6638` — exactement comme un coordinateur Ethernet.
 
-Usage : python features/home/ha/zigbee_bridge.py [--port COM5] [--tcp-port 6638]
+Usage : python features/home/ha/zigbee_bridge.py [--port COM5] [--tcp-port 6638] [--log fichier]
 Sans --port, le dongle est détecté par son VID:PID (CP2102N 10C4:EA60).
 Un seul client à la fois (un coordinateur = un maître). Reconnexion automatique
 si le dongle disparaît ou si HA se déconnecte.
@@ -129,10 +129,12 @@ def main() -> None:
     ap.add_argument("--port", help="port COM du dongle (défaut : détection par VID:PID)")
     ap.add_argument("--bind", default="0.0.0.0", help="adresse d'écoute (défaut 0.0.0.0)")
     ap.add_argument("--tcp-port", type=int, default=6638, help="port TCP (défaut 6638)")
+    ap.add_argument("--log", help="fichier journal (sinon stderr) — utile sous pythonw/tâche planifiée")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
-                        format="%(asctime)s %(levelname)s %(message)s")
+                        format="%(asctime)s %(levelname)s %(message)s",
+                        filename=args.log, encoding="utf-8")
     serve(args.port, args.bind, args.tcp_port)
 
 
