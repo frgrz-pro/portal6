@@ -26,9 +26,11 @@ services:
     # pour la découverte automatique (Shield/Google Cast, Zigbee2MQTT, etc.).
     # network_mode: host
 
-  # --- Zigbee (à activer avec le coordinateur, cf. .docs/zigbee-multiprises.md)
-  # Option 1 (plan retenu) : ZHA intégré à HA, rien à ajouter ici — le Sonoff
-  # Dongle Max en Ethernet se déclare dans HA par `socket://<ip-dongle>:6638`.
+  # --- Zigbee (cf. .docs/zigbee-multiprises.md)
+  # Option 1 (plan retenu) : ZHA intégré à HA, rien à ajouter ici. Le Sonoff
+  # Dongle-P (USB) est exposé en TCP par zigbee_bridge.py sur l'hôte Windows
+  # (Docker Desktop ne passe pas l'USB) → radio ZNP, port
+  # `socket://host.docker.internal:6638`. Sur une tour Linux : /dev/ttyUSB0.
   # Option 2 : Zigbee2MQTT si un device est mal supporté par ZHA.
   #
   # mosquitto:
@@ -52,5 +54,5 @@ services:
   #     - "8080:8080"
   #   environment:
   #     - TZ=Europe/Paris
-  #   # Dongle Max en Ethernet : serial.port = tcp://<ip-dongle>:6638 dans
-  #   # zigbee2mqtt/configuration.yaml (pas de passthrough USB nécessaire).
+  #   # Via le pont : serial.port = tcp://host.docker.internal:6638 et
+  #   # serial.adapter = zstack dans zigbee2mqtt/configuration.yaml.

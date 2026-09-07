@@ -12,9 +12,9 @@ Statuts : ✅ possédé · 🛒 à acheter · ⏸ bloqué (voir « Débloqué pa
 | Article | Statut | Prix | Débloqué par |
 |---|---|---|---|
 | Multiprises Zigbee ×2 | ✅ possédé | — | ❓ marque/modèle à identifier ([zigbee-multiprises.md](zigbee-multiprises.md)) |
-| **Coordinateur Zigbee** — choix pressenti : **Sonoff Dongle Max (Dongle-M)**, EFR32MG24 + ESP32, Ethernet/PoE/Wi-Fi/USB — l'Ethernet le rend indépendant de l'emplacement de la tour | 🛒 | ~40–50 € | Tour Docker allumée en continu ; l'utiliser en **Zigbee pur** (pas de multipan Zigbee+Thread) ; PoE seulement si switch PoE, sinon USB-C |
-| *(alternatives écartées : Dongle-E ~25 € — USB only, colle le coordinateur à la tour ; SLZB-06 — même idée Ethernet mais le Max est plus récent/complet)* | — | — | — |
-| Tour Docker (Home Assistant + AzuraCast) | ❓ | — | Machine déjà identifiée côté radio ([design-serveur-azuracast.md](hardware/design-serveur-azuracast.md)) — confirmer que c'est la même |
+| **Coordinateur Zigbee** — **Sonoff Zigbee 3.0 USB Dongle Plus « Dongle-P »** (CC2652P, USB) | ✅ acheté 2026-09-07 | ~25 € | Branché sur le PC Windows Docker ; reste à installer le pilote CP210x + lancer le pont TCP ([zigbee-multiprises.md](zigbee-multiprises.md)) |
+| *(le Dongle Max Ethernet pressenti le 2026-08-30 n'a pas été retenu : l'hôte Docker est à portée d'USB, moitié moins cher)* | — | — | — |
+| Tour Docker (Home Assistant + AzuraCast) | ✅ de fait : le PC Windows (Docker Desktop) héberge HA, Plex, AzuraCast | — | ❓ machine définitive ou étape ? Si une tour Linux arrive, le dongle USB la suit |
 | Shield TV Pro, barre TCL, télé, téléphone | ✅ possédé | — | — |
 
 ## TRMNL (affichage e-ink)
@@ -40,7 +40,7 @@ commandé, achats par vagues avec conditions de déblocage. Résumé :
 
 1. **Outillage radio** (~200 €) — non bloqué, sert aussi à tout le reste du bricolage.
 2. **Dev Edition TRMNL** (20 $) — **à acheter tout de suite** : les 2 premiers private plugins sont écrits et attendent l'addon pour être poussés.
-3. **Clé Zigbee** (~25–40 €) — dès que la tour tourne (sinon elle dort dans un tiroir).
+3. ~~Clé Zigbee~~ — achetée (Dongle-P), plus rien à acheter côté domotique.
 
 ## Journal
 
@@ -55,3 +55,7 @@ TRMNL passé en ✅ possédé (setup en cours). Dev Edition débloquée, différ
 ### 2026-09-06 (bis)
 Device confirmé **TRMNL OG**. Dev Edition passée de « différée » à « à acheter
 maintenant » : les deux private plugins sont écrits, l'addon est le seul blocage.
+
+### 2026-09-07
+Coordinateur Zigbee ✅ : Sonoff Dongle-P (USB) acheté à la place du Dongle Max.
+« Tour Docker » = le PC Windows, de fait.
