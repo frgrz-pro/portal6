@@ -36,6 +36,16 @@ class LightsViewModel(
         viewModelScope.launch { modesRepository.apply(mode) }
     }
 
+    /**
+     * Le switch unique : ON = jouer le mode (ses prises allumees, les autres
+     * eteintes) ; OFF = tout eteindre.
+     */
+    fun setModeOn(mode: Mode, on: Boolean) {
+        viewModelScope.launch {
+            if (on) modesRepository.apply(mode) else repository.setAll(false)
+        }
+    }
+
     /** Redéfinit un mode 2-4 avec [states] (entityId → on/off). */
     fun saveMode(number: Int, states: Map<String, Boolean>) {
         viewModelScope.launch { modesRepository.save(number, states) }

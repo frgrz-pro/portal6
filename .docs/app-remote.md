@@ -22,6 +22,10 @@ pénibles et les apps constructeur.
   mode », seule l'automatisation HA change (`ha_modes_setup.py`), pas l'app.
 - [ ] Tuile Modes : un appui passe au mode suivant parmi 2-4. Alternative si ça
   ne colle pas à l'usage : une tuile par mode.
+- [ ] Depuis le mur, touche n = mode n **ON** seulement ; le « mode OFF » (tout
+  éteindre) n'existe que via la touche 1 ou le switch de l'app. Suffisant ?
+- [ ] Le mode sélectionné n'est pas persisté (déduit de l'état des prises au
+  lancement, sinon mode 1). À mémoriser si ça gêne.
 
 ## Décisions
 
@@ -89,13 +93,19 @@ pénibles et les apps constructeur.
   - une rangée de **4 modes** (Mode 1 = tout on/off, Modes 2-4 = scènes ;
     appui = jouer, appui long = redéfinir ; le mode qui correspond à l'état
     des prises est mis en avant) ;
-  - grille **4 colonnes × 2 rangées** (rangée A, rangée B) d'**interrupteurs
-    verticaux** `SocketSwitch` (depuis le 2026-09-07, sur maquette de François) :
-    piste sombre, curseur en bas gris + cercle creux = éteint, curseur en haut
-    ambre + icône power = allumé, piste teintée ambre. Couleurs fixes hors thème
-    Material, animation ressort. Libellé A1…B4 sous chaque interrupteur ;
-  - un **switch "All"** (tout allumer) ;
-  - un bouton **"Turn off"** (tout éteindre d'un coup — le geste du soir) ;
+  - grille **4 colonnes × 2 rangées** (rangée A, rangée B) de **tuiles lampes**
+    (ambre + ampoule pleine = allumée, gris + ampoule vide = éteinte). Hors
+    édition, un appui bascule la prise ;
+  - **un seul switch** (le rocker vertical `SocketSwitch`, maquette de François
+    du 2026-09-07) pour le mode sélectionné : ON = jouer le mode (ses prises
+    allumées, **les autres éteintes**), OFF = tout éteindre. Plus de switch « All »
+    ni de bouton « Turn off » : le switch les remplace ;
+  - **définir un mode = filtre** (UX actée le 2026-09-07) : appui sur un mode 2-4
+    → édition, les tuiles deviennent des cases à cocher (A1, A3, B2…), Enregistrer
+    (≥ 1 prise) ou Annuler → retour au switch avec ce mode sélectionné. Le mode 1
+    n'est pas éditable (= toutes les prises) : un appui le sélectionne. Le filtre
+    est stocké tel quel dans la scène HA `mode_n` (cochées → `on`, autres → `off`),
+    donc rien ne change côté boutons MOES ;
   - la ligne d'état de la liaison HA (connecté / hors ligne / mode démo).
 - **Tab TV** : placeholder en v1, spec dans [tv-mute.md](tv-mute.md) — le bouton
   central sera un gros **MUTE**.
@@ -168,3 +178,10 @@ L'émulateur gèle → **Galaxy S20 Ultra (Android 13) branché en USB**, APK de
 installé et lancé via adb sans crash. Puis, sur maquette de François (rocker vertical
 ambre), **`SocketSwitch`** remplace les cartes « ampoule » de la grille des prises ;
 passage en 4 × 2 (rangée A / rangée B) parce que l'interrupteur est haut et étroit.
+
+### 2026-09-07 (quater) — UX « un seul switch »
+Demande François : modes en haut, tuiles lampes, **un seul switch**. Sélectionner un
+mode 2-4 ouvre son édition, les tuiles servent de filtre, Enregistrer → le switch
+pilote ce mode (ON = filtre allumé / reste éteint, OFF = tout éteint). Implémenté
+sans toucher au modèle ni à HA (une scène = un filtre). Retiré : dialogue d'édition,
+switch All, bouton Turn off. Testé sur le S20 Ultra : édition A1+A3+B2, ON, OFF.
