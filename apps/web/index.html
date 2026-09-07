@@ -23,21 +23,88 @@
 
 <main class="wrap">
   <p class="lede">
-    Hub des besoins perso : un domaine par besoin de la vie courante. Ce portail
-    est une vue en lecture seule de ce que le repo sait — la source de vérité
-    reste <code>.docs/</code> pour le design et le vault <code>data/</code> pour la donnée.
+    Le point d'entrée : toutes les apps de la maison au même endroit. Une tuile =
+    une app, le témoin dit si elle répond. Chaque tuile s'ouvre dans un nouvel onglet.
   </p>
 
-  <h2>Domaines</h2>
+  <h2>Mes apps</h2>
+  <p class="hint">
+    Les services <code>localhost</code> ne répondent que depuis la tour ; le routeur
+    et TRMNL depuis n'importe où sur le réseau.
+  </p>
+
+  <div class="launch">
+
+    <a class="app" href="http://localhost:8123/home/overview" target="_blank" rel="noopener"
+       data-ping="http://localhost:8123/">
+      <span class="ico">🏠</span>
+      <span class="body">
+        <span class="name">Home Assistant <i class="dot" title="statut"></i></span>
+        <span class="url">localhost:8123 · domotique, Zigbee, Shield</span>
+      </span>
+    </a>
+
+    <a class="app" href="http://192.168.0.1/webpages/index.html#/login" target="_blank" rel="noopener"
+       data-ping="http://192.168.0.1/">
+      <span class="ico">📡</span>
+      <span class="body">
+        <span class="name">Routeur Mercusys <i class="dot" title="statut"></i></span>
+        <span class="url">192.168.0.1 · DHCP, réservations, clients</span>
+      </span>
+    </a>
+
+    <a class="app" href="https://trmnl.com/playlists" target="_blank" rel="noopener"
+       data-ping="https://trmnl.com/">
+      <span class="ico">🖼️</span>
+      <span class="body">
+        <span class="name">TRMNL <i class="dot" title="statut"></i></span>
+        <span class="url">trmnl.com · playlists de l'écran e-ink</span>
+      </span>
+    </a>
+
+    <a class="app" href="music.html" target="_blank" rel="noopener"
+       data-ping="http://localhost:8712/music.html">
+      <span class="ico">🎧</span>
+      <span class="body">
+        <span class="name">Music <i class="dot" title="statut"></i></span>
+        <span class="url">localhost:8712 · mediacenter du portail (playlists, sync)</span>
+      </span>
+    </a>
+
+    <a class="app" href="http://localhost/" target="_blank" rel="noopener"
+       data-ping="http://localhost/">
+      <span class="ico">📻</span>
+      <span class="body">
+        <span class="name">AzuraCast <i class="dot" title="statut"></i></span>
+        <span class="url">localhost:80 · web-radio (Docker)</span>
+      </span>
+    </a>
+
+    <a class="app" href="http://localhost:32400/web" target="_blank" rel="noopener"
+       data-ping="http://localhost:32400/identity">
+      <span class="ico">🎬</span>
+      <span class="body">
+        <span class="name">Plex <i class="dot" title="statut"></i></span>
+        <span class="url">localhost:32400 · médias, xTeVe</span>
+      </span>
+    </a>
+
+  </div>
+
+  <h2>Domaines du repo</h2>
+  <p class="hint">
+    Ce que le portail sait lui-même — vues en lecture seule sur la donnée du repo.
+  </p>
 
   <div class="grid">
-    <a class="card" href="music.html">
+    <div class="card">
       <span class="tag">actif</span>
-      <h3>Music</h3>
-      <p>Vue mediacenter : les playlists, leur état par plateforme (Spotify /
-         local / iTunes), les groupes, la sync. L'inventaire brut de la donnée est
-         dans l'onglet <em>Données</em>.</p>
-    </a>
+      <h3><a href="music.html">Music</a></h3>
+      <p>Mediacenter : playlists par plateforme (Spotify / local / iTunes), groupes,
+         sync. <a href="music-dedup.html">Doublons</a>,
+         <a href="music-proposals.html">Propositions</a>,
+         <a href="music-data.html">Données</a>.</p>
+    </div>
 
     <div class="card disabled">
       <span class="tag">à venir</span>
@@ -63,20 +130,13 @@
     <div class="card disabled">
       <span class="tag">à venir</span>
       <h3>Apps</h3>
-      <p>Télécommande Android (Kotlin/Compose) dans <code>apps/remote/</code>.</p>
+      <p>Télécommande Android (Kotlin/Compose) dans <code>apps/ha-remote/</code>.</p>
     </div>
   </div>
 
-  <h2>Comment ça marche</h2>
-  <p class="hint">
-    Site statique, zéro dépendance, zéro build JS. Les chiffres viennent de
-    <code>apps/web/data/manifest.js</code>, régénéré par
-    <code>python apps/web/build_manifest.py</code> — qui lit la DB et le vault,
-    jamais <code>M:</code> directement.
-  </p>
-
   <footer>
     <span id="generated"></span>
+    · Site statique, zéro build. Ajouter une app = une tuile dans <code>index.html</code>.
   </footer>
 </main>
 
@@ -84,7 +144,24 @@
 <script>
   const g = window.PORTAL6 && window.PORTAL6.generated;
   document.getElementById('generated').textContent =
-    g ? `Données arrêtées au ${g}.` : 'Manifeste absent — lancer python apps/web/build_manifest.py';
+    g ? `Données arrêtées au ${g}` : 'Manifeste absent — lancer python apps/web/build_manifest.py';
+
+  // Témoin de disponibilité : fetch no-cors → réponse opaque si le service répond,
+  // erreur réseau sinon. Aucune donnée lue, juste « ça répond ou pas ».
+  async function ping(url, ms = 3000) {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), ms);
+    try { await fetch(url, { mode: 'no-cors', cache: 'no-store', signal: c.signal }); return true; }
+    catch { return false; }
+    finally { clearTimeout(t); }
+  }
+  document.querySelectorAll('.app[data-ping]').forEach(async a => {
+    const dot = a.querySelector('.dot');
+    dot.className = 'dot wait'; dot.title = 'vérification…';
+    const up = await ping(a.dataset.ping);
+    dot.className = 'dot ' + (up ? 'ok' : 'bad');
+    dot.title = up ? 'répond' : 'ne répond pas (service arrêté ou hors réseau)';
+  });
 </script>
 
 </body>

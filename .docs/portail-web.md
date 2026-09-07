@@ -25,6 +25,13 @@ ici, les choix et ce qui reste à trancher.
 
 ## Décisions
 
+- **L'accueil est un launcher.** `index.html` = une tuile par app de la maison
+  (Home Assistant `:8123`, routeur Mercusys `192.168.0.1`, TRMNL, Music `:8712`,
+  AzuraCast `:80`, Plex `:32400`), ouverte dans un nouvel onglet, avec un témoin
+  vert/rouge par `fetch` en `no-cors` (réponse opaque = ça répond, erreur réseau =
+  arrêté). Aucune donnée lue. Ajouter une app = une tuile dans `index.html`, pas de
+  config séparée tant qu'il y en a moins d'une dizaine. Les cartes de domaine
+  restent en dessous.
 - **Statique, zéro build, zéro framework.** Node n'est installé nulle part sur ce
   poste (ni Windows ni WSL) — les scripts `npm run` du `package.json` ne tournent
   pas ici. Python sert le dossier (`python -m http.server`).
@@ -78,3 +85,9 @@ revue → JSON + commande + historique. Générateur étendu (lecture xlsx sans 
 copies marquées d'un clic, plan de 5 changements validé, chip inter, création de
 sous-playlist renommée, déplacement vers la reco. Le preview tourne sur 8713 (8712
 occupé par le serveur WSL).
+
+### 2026-09-07 — accueil launcher
+François se perdait entre les URLs : `index.html` devient le hub de redirection vers
+les six apps (HA, routeur, TRMNL, Music, AzuraCast, Plex) avec témoin de disponibilité.
+Vérifié dans le navigateur : les six répondent, le témoin passe au rouge sur un port
+fermé.

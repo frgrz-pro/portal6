@@ -5,7 +5,7 @@ sans framework. Une entrée par domaine ; seule **Music** est remplie pour l'ins
 
 ```
 apps/web/
-├── index.html              # hub : une carte par domaine
+├── index.html              # LAUNCHER : une tuile par app (HA, routeur, TRMNL, Music, AzuraCast, Plex) + cartes de domaine
 ├── music.html              # MEDIACENTER : playlists × plateformes, groupes, push
 ├── music-dedup.html        # DOUBLONS : résolution façon dupeGuru (local, Spotify intra/inter)
 ├── music-proposals.html    # PROPOSITIONS : découpes des monolithes, déplacements de titres
@@ -96,3 +96,9 @@ relancer le script.
    au dict retourné par `build()`.
 2. Une page `<domaine>.html` sur le modèle de `music.html`.
 3. La carte correspondante dans `index.html` (enlever la classe `disabled`).
+
+## Ajouter une app au launcher
+
+Une tuile `<a class="app" href=… data-ping=…>` dans `index.html`. `data-ping` est l'URL
+sondée en `fetch` no-cors pour le témoin vert/rouge (prendre la racine du service, pas
+une page de login).

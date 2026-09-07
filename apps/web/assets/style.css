@@ -80,7 +80,8 @@ h3 { font-size: 15px; margin: 22px 0 8px; }
   text-decoration: none;
   color: inherit;
 }
-a.card:hover { border-color: var(--accent); }
+a.card:hover, .card:has(h3 a):hover { border-color: var(--accent); }
+.card h3 a { color: inherit; text-decoration: none; }
 .card h3 { margin: 0 0 6px; font-size: 16px; }
 .card p { margin: 0; color: var(--muted); font-size: 13.5px; }
 .card .tag {
@@ -276,3 +277,23 @@ dialog.plan-dialog form { display: flex; flex-direction: column; max-height: 85v
 dialog.plan-dialog h3 { padding: 0; }
 dialog.plan-dialog pre { margin: 12px 24px; }
 dialog.plan-dialog > form > p { padding: 0 24px; }
+
+/* --- launcher (accueil) : une tuile par app --------------------------------- */
+.launch { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-top: 8px; }
+.app {
+  display: flex; gap: 14px; align-items: center;
+  padding: 16px 18px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  text-decoration: none; color: inherit;
+  transition: border-color .12s, transform .12s;
+}
+.app:hover { border-color: var(--accent); transform: translateY(-1px); }
+.app .ico { font-size: 26px; line-height: 1; width: 36px; text-align: center; flex: none; }
+.app .body { display: flex; flex-direction: column; min-width: 0; }
+.app .name { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.app .url { color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--line); flex: none; }
+.dot.wait { background: var(--muted); animation: pulse 1s ease-in-out infinite; }
+.dot.ok { background: var(--ok); }
+.dot.bad { background: var(--bad); }
+@keyframes pulse { 50% { opacity: .35; } }
