@@ -42,7 +42,12 @@ class LightsViewModel(
      */
     fun setModeOn(mode: Mode, on: Boolean) {
         viewModelScope.launch {
-            if (on) modesRepository.apply(mode) else repository.setAll(false)
+            when {
+                !on -> repository.setAll(false)
+                // Le mode 1 « joue » = tout allumer (apply() le ferait basculer).
+                mode.isAllToggle -> repository.setAll(true)
+                else -> modesRepository.apply(mode)
+            }
         }
     }
 

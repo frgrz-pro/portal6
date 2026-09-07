@@ -28,9 +28,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
 /**
- * Interrupteur vertical façon « rocker » : une piste sombre, un curseur qui
- * occupe la moitié de la hauteur — en bas et gris quand la prise est éteinte
- * (cercle creux), en haut et ambre quand elle est allumée (icône power), la
+ * Interrupteur façon « rocker » : une piste sombre, un curseur qui occupe la
+ * moitié de la piste — en bas (ou à gauche) et gris quand c'est éteint (cercle
+ * creux), en haut (ou à droite) et ambre quand c'est allumé (icône power), la
  * piste se teintant d'ambre. Couleurs fixes, indépendantes du thème : c'est
  * un objet physique, pas une surface Material.
  */
@@ -39,6 +39,8 @@ fun SocketSwitch(
     checked: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Couché : le curseur va de gauche (off) à droite (on). */
+    horizontal: Boolean = false,
 ) {
     val track by animateColorAsState(if (checked) TrackOn else TrackOff, label = "track")
     val thumb by animateColorAsState(if (checked) ThumbOn else ThumbOff, label = "thumb")
@@ -50,7 +52,7 @@ fun SocketSwitch(
 
     Box(
         modifier = modifier
-            .aspectRatio(0.55f)
+            .aspectRatio(if (horizontal) 1 / 0.55f else 0.55f)
             .clip(RoundedCornerShape(percent = 32))
             .background(track)
             .clickable(role = Role.Switch, onClick = onToggle)
@@ -59,9 +61,11 @@ fun SocketSwitch(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .align(BiasAlignment(0f, bias))
-                .fillMaxWidth()
-                .fillMaxHeight(0.5f)
+                .align(if (horizontal) BiasAlignment(-bias, 0f) else BiasAlignment(0f, bias))
+                .then(
+                    if (horizontal) Modifier.fillMaxHeight().fillMaxWidth(0.5f)
+                    else Modifier.fillMaxWidth().fillMaxHeight(0.5f),
+                )
                 .clip(RoundedCornerShape(percent = 28))
                 .background(thumb),
         ) {

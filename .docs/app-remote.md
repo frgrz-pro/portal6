@@ -100,10 +100,11 @@ pénibles et les apps constructeur.
     du 2026-09-07) pour le mode sélectionné : ON = jouer le mode (ses prises
     allumées, **les autres éteintes**), OFF = tout éteindre. Plus de switch « All »
     ni de bouton « Turn off » : le switch les remplace ;
-  - **définir un mode = filtre** (UX actée le 2026-09-07) : appui sur un mode 2-4
-    → édition, les tuiles deviennent des cases à cocher (A1, A3, B2…), Enregistrer
-    (≥ 1 prise) ou Annuler → retour au switch avec ce mode sélectionné. Le mode 1
-    n'est pas éditable (= toutes les prises) : un appui le sélectionne. Le filtre
+  - **appui sur un mode = le sélectionner et le jouer** ; **2e appui** sur le mode
+    sélectionné (2-4, ou un mode encore vide) = **édition** : les tuiles deviennent
+    des cases à cocher (A1, A3, B2…), Enregistrer (≥ 1 prise) ou Annuler → retour
+    au switch avec ce mode sélectionné. Le mode 1 n'est pas éditable (= toutes les
+    prises). Le switch est **couché, centré**, le nom du mode et ses prises dessous. Le filtre
     est stocké tel quel dans la scène HA `mode_n` (cochées → `on`, autres → `off`),
     donc rien ne change côté boutons MOES ;
   - la ligne d'état de la liaison HA (connecté / hors ligne / mode démo).
@@ -185,3 +186,8 @@ mode 2-4 ouvre son édition, les tuiles servent de filtre, Enregistrer → le sw
 pilote ce mode (ON = filtre allumé / reste éteint, OFF = tout éteint). Implémenté
 sans toucher au modèle ni à HA (une scène = un filtre). Retiré : dialogue d'édition,
 switch All, bouton Turn off. Testé sur le S20 Ultra : édition A1+A3+B2, ON, OFF.
+
+### 2026-09-07 (quinquies)
+Ajustements François : 1er appui sur un mode = le jouer (et le sélectionner), 2e appui
+= éditer ; switch horizontal centré avec le label dessous. Corrigé : switch ON du mode 1
+= tout allumer (et non basculer). Vérifié sur le téléphone.

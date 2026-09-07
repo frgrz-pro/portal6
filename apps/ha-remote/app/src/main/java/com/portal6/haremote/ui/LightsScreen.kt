@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -52,8 +53,9 @@ import com.portal6.haremote.qs.TvMuteTileService
 
 /**
  * Onglet Lights, en trois zones :
- * 1. la rangée des **4 modes** — appui sur un mode 2-4 = le (re)définir,
- *    appui sur le mode 1 = le sélectionner (toutes les prises, pas éditable) ;
+ * 1. la rangée des **4 modes** — 1er appui = sélectionner le mode **et le
+ *    jouer** ; 2e appui sur le mode sélectionné (2-4) = le (re)définir. Le
+ *    mode 1 (toutes les prises) n'est pas éditable ;
  * 2. la grille des **8 tuiles lampes** — hors édition elles montrent l'état
  *    réel des prises (et un appui bascule la prise) ; en édition elles servent
  *    de **filtre** : on coche celles qui font partie du mode ;
@@ -87,12 +89,16 @@ fun LightsScreen(
             selected = selected?.number,
             editing = editing,
             onSelect = { mode ->
-                if (mode.isEditable) {
+                val alreadySelected = editing == null && mode.number == selected?.number
+                if (mode.isEditable && (alreadySelected || !mode.isDefined)) {
+                    // 2e appui sur le mode sélectionné (ou mode encore vide) : on le définit.
                     editing = mode.number
                     draft = mode.states?.filterValues { it }?.keys ?: emptySet()
                 } else {
+                    // 1er appui : le mode devient celui du switch, et il est joué.
                     editing = null
                     chosen = mode.number
+                    viewModel.setModeOn(mode, true)
                 }
             },
         )
@@ -207,7 +213,7 @@ private fun ModesRow(
         }
         Text(
             if (editing != null) "Coche les prises du mode, puis Enregistrer."
-            else "Appui sur un mode 2-4 pour choisir ses prises.",
+            else "Appui : jouer le mode. Second appui (modes 2-4) : choisir ses prises.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp),
@@ -286,7 +292,7 @@ private fun EditBar(
     }
 }
 
-/** Le switch unique : le mode sélectionné, ses prises, et le rocker ON/OFF. */
+/** Le switch unique, centré et couché ; le mode et ses prises en dessous. */
 @Composable
 private fun ModeSwitchRow(
     mode: Mode,
@@ -298,21 +304,25 @@ private fun ModeSwitchRow(
         else mode.states?.filterValues { it }?.keys
             ?.let { ids -> lights.filter { it.entityId in ids }.joinToString(", ") { it.label } }
             ?.ifEmpty { null }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(mode.label, style = MaterialTheme.typography.titleLarge)
-            Text(
-                members ?: "à définir — appuie sur le mode",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
         if (mode.isDefined) {
-            SocketSwitch(checked = on, onToggle = { onToggle(!on) }, modifier = Modifier.height(96.dp))
+            SocketSwitch(
+                checked = on,
+                onToggle = { onToggle(!on) },
+                horizontal = true,
+                modifier = Modifier.width(200.dp),
+            )
+            Spacer(Modifier.height(10.dp))
         }
+        Text(mode.label, style = MaterialTheme.typography.titleLarge)
+        Text(
+            members ?: "à définir — appuie sur le mode",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
