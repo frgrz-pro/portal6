@@ -34,6 +34,18 @@ les use cases et la fiche technique du TRMNL dans
 - [ ] **Écran sport/eSport dédié ?** Les .ics sont déjà générés ; un private plugin
   ferait un bien meilleur rendu que la liste brute du plugin Google Calendar. Pas
   demandé pour l'instant, noté comme candidat n°3.
+- [ ] **Écran Marée pixel art — vue carte ou vue profil ?** Reco : carte (vue du ciel,
+  l'estran qui se découvre, les Ébihens à pied à marée basse). Voir « Écrans pixel art ».
+- [ ] **Écran Ciel sud — quelle silhouette d'horizon ?** Depuis chez François, le sud
+  c'est l'intérieur des terres, pas la mer. Silhouette générique (dunes, pins, clocher)
+  ou vrai profil ? Lieu public uniquement, comme le spot.
+- [ ] **Skyfield en CI** (planètes + Lune + catalogue Hipparcos, éphémérides ~17 Mo
+  téléchargées à chaque run) ou calcul maison dans `astro.py` (étoiles seulement, pas
+  de planètes) ? Reco : Skyfield, le run Actions s'en fiche.
+- [ ] **Heure courante côté Liquid.** Les deux écrans choisissent leur frame d'après
+  l'heure au moment du rendu : vérifier que `{{ 'now' | date: '%H:%M' }}` rend en
+  heure de Paris chez TRMNL (fuseau du compte ?) et pas en UTC. Sinon : mettre l'heure
+  UTC dans le payload et comparer en UTC.
 - [ ] Noms traditionnels des pleines lunes (lune des moissons, lune du loup…) : à
   ajouter ou pas ? La table est anglo-américaine, l'intérêt est décoratif.
 
@@ -247,6 +259,66 @@ partie éclairée est **précalculé en Python** et transmis dans le payload. Le
 se projette en demi-ellipse de demi-axe `r·(2f−1)`, signé — positif en phase gibbeuse,
 négatif en croissant. Rendu vérifié sur les 8 phases avant commit.
 
+### Écrans pixel art : Marée et Ciel sud (cadrage 2026-09-07)
+
+Idée de François : deux écrans « vivants » en pixel art, à côté du dashboard.
+
+**Ce que le TRMNL permet — et pas.** Le device pose une image fixe à chaque check-in
+(15 min) et dort entre deux : **pas d'animation**, mais une **frame différente à
+chaque check-in**, c'est exactement le rythme de la marée (6 h de cycle) et du ciel
+(15° par heure). Le 800 × 480 en 1-bit / 4 gris est un format de pixel art natif : un
+SVG à coordonnées entières avec `shape-rendering: crispEdges`, mis à l'échelle ×4 ou ×5,
+sort sans dithering. Vérifier le rendu avec `trmnlp build --png --color-depth 2`.
+
+**Principe commun : les frames vivent dans le template, la donnée dans le payload.**
+Le dessin (statique) est dans le `.liquid` ; le payload (gist, regénéré toutes les 3 h)
+ne porte que des **séries horaires pour les prochaines heures** ; le Liquid choisit
+la frame d'après l'heure de rendu. Aucun cron à accélérer, aucune image dans le payload.
+
+#### Marée — la côte qui se découvre
+
+- **Dessin** : vue du ciel de la presqu'île de Saint-Jacut, générée depuis
+  OpenStreetMap (vérifié le 2026-09-07 sur la bbox : 54 segments `coastline`, 47
+  `beach`, 29 `sand`, 108 `bare_rock`, 5 `tidalflat`, l'Arguenon en `tidal`), rasterisée
+  en grille ~200 × 120 puis retouchée à la main. Chaque cellule d'estran porte un
+  **niveau 0-7** (à défaut de vraie bathymétrie : plages/tidalflat = bas, rochers =
+  moyen, distance à la côte pour le reste). Les Ébihens à pied à marée basse = le
+  gag visuel à réussir.
+- **Rendu** : un `<rect>` (ou path fusionné) par zone, classe `z0…z7` ; le Liquid émet
+  un `<style>` qui met en « eau » les zones `< niveau courant`. Eau en gris 1, estran
+  découvert en gris 2 tramé, terre en blanc, côte en noir. Nuit = inversion.
+- **Donnée** : `sea_level_by_hour` (Open-Meteo, déjà lu par `build_ciel_mer.py`) pour
+  les 30 h à venir, normalisé 0-7 sur le marnage du cycle. Précision ±30-40 min
+  (cf. question SHOM), largement suffisant pour une frame par quart d'heure.
+- **Bonus** : heure de la prochaine PM/BM et coefficient en cartouche, sens de la
+  marée (flèche montante/descendante).
+
+#### Ciel sud — ce qu'on voit en levant les yeux
+
+- **Projection** : panorama plein sud, azimut 90° → 270° en x (est à gauche, ouest à
+  droite), altitude 0° → 90° en y, ~4 px/degré. Repères E / S / O, échelle
+  d'altitude discrète.
+- **Contenu** : étoiles mag ≤ 3.5-4 (≈ 300-500, carrés 1/2/3 px selon la magnitude),
+  Lune à sa phase (on a déjà `moon_svg_path`), planètes visibles (Vénus, Mars,
+  Jupiter, Saturne), quelques lignes de constellations (Orion, Cygne, Pégase, Lion,
+  Scorpion…). **Le jour, le même écran montre l'arc du Soleil** et sa position : il
+  reste utile 24 h/24, pas seulement la nuit.
+- **Donnée** : `build_ciel.py` (Skyfield, catalogue Hipparcos filtré, éphémérides
+  de421) écrit dans le payload **12 frames à 15 min** (les 3 h jusqu'au prochain run),
+  chacune = liste `[x, y, taille]` (~2-3 Ko par frame). Le Liquid prend la frame la
+  plus proche de l'heure de rendu.
+- **Horizon** : une silhouette pixel art en bas (question ouverte : laquelle).
+
+#### Playlist
+
+Trois écrans distincts (dashboard, marée, ciel) plutôt qu'un mashup : la rotation
+se pilote maintenant depuis l'app ha-remote (onglet TRMNL), et le **schedule** de
+l'API permet par exemple « ciel » seulement la nuit. Refresh device à 15 min.
+
+**Ordre de fabrication proposé** : 1) `build_ciel.py` + template ciel (le rendu se
+valide sans données de terrain), 2) génération de la grille de côte depuis OSM, 3)
+retouche du pixel art côte avec François, 4) template marée.
+
 ### La colonne agenda
 
 Sept jours empilés verticalement, tous agendas confondus, trois événements maximum par
@@ -330,3 +402,11 @@ Vérifié contre le spec OpenAPI et par des appels réels : l'API compte expose 
 playlist (list/add/visible/order/schedule), le refresh et le sommeil du device. La
 table « pilotable par le code » du 2026-09-06 était trop pessimiste, corrigée. Limite
 structurelle : pas de « afficher maintenant », le device tire à son rythme.
+
+### 2026-09-07 (bis) — deux écrans pixel art cadrés
+Idée de François : une vue « marée » (la côte de Saint-Jacut en pixel art, l'estran
+qui se couvre/découvre) et une « carte du ciel » plein sud. Cadré : pas d'animation
+possible sur le device mais une frame par check-in ; frames dans le template, séries
+horaires dans le payload, choix de la frame par le Liquid à l'heure de rendu. OSM
+vérifié comme base de la carte. Quatre questions ouvertes (carte/profil, horizon,
+Skyfield, fuseau du rendu), rien de codé.

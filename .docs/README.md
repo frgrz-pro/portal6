@@ -28,7 +28,7 @@ plus. `hardware/` contient les notes de design de la radio Brandt (BOM détaill�
 - [tv-mute.md](tv-mute.md) — couper le son de la TV : Shield / TCL soundbar / télé (phase 2)
 - [infra-reseau.md](infra-reseau.md) — réseau domestique : Mercusys, OpenVPN/NordVPN, IPs
 - [trmnl.md](trmnl.md) — setup du premier TRMNL : comptes `.sport` / `.case`, plugin Google Calendar, ordre de mise en route
-- [trmnl-dashboard.md](trmnl-dashboard.md) — construire les écrans : ce qui se code, private plugins Liquid, pattern payload/webhook, écrans « Ciel & Mer » et « Agenda semaine »
+- [trmnl-dashboard.md](trmnl-dashboard.md) — construire les écrans : ce qui se code, private plugins Liquid, pattern payload/webhook, écrans « Ciel & Mer » et « Agenda semaine », API compte (playlist), écrans pixel art Marée / Ciel sud
 - [lieux.md](lieux.md) — espace Lieux : état du vault My Maps, clôture du Lot A, todo (design figé dans les notes datées `2026-08-20-*`)
 - [musique.md](musique.md) — relance du domaine musique : référentiel `music.db`, Plex/Symfonium, AzuraCast Phase 3
 - [setup-dev-windows.md](setup-dev-windows.md) — poste de dev Windows : Android Studio/SDK/JDK, venv outils, HA de dev Docker, pièges d'install
