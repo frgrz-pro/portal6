@@ -29,6 +29,14 @@ pénibles et les apps constructeur.
 - [x] ~~Mode sélectionné non persisté~~ → sans objet : il se déduit de l'état réel des
   prises (voir UI v1).
 
+- [ ] **Onglet TRMNL : v1 = interrupteurs de playlist, ou aussi les créneaux ?**
+  Cadré le 2026-09-07 (voir Décisions). À trancher par l'usage : si François veut
+  surtout « ce soir je veux l'écran X », les interrupteurs suffisent ; si c'est
+  « le matin l'agenda, le soir la mer », c'est le schedule qu'il faut exposer.
+- [ ] Onglet TRMNL : où stocker la clé compte `user_…` ? Même mécanique que le jeton
+  HA (Réglages, stockage privé) — mais c'est une **2e clé** à pousser sur le téléphone
+  (skill `android`, François lance la commande qui lit `.env`).
+
 ## Décisions
 
 - **v1 Android natif, Kotlin + Jetpack Compose (Material 3).** KMP reste ouvert
@@ -84,6 +92,25 @@ pénibles et les apps constructeur.
   chaque changement de réglages ; l'UI et les tuiles parlent à des dépôts
   « délégués » stables. Sans réglages → mode démo (mocks), utile hors LAN.
   Manifest : `usesCleartextTraffic` (HA en http sur le LAN).
+- **Onglet TRMNL (cadré le 2026-09-07)** — gérer la rotation des écrans du TRMNL
+  depuis l'app. Faisable : l'API compte TRMNL expose la playlist, endpoints listés
+  dans [trmnl-dashboard.md](trmnl-dashboard.md) (section « L'API compte pilote la
+  playlist »). L'app parle **directement à `trmnl.com`** (pas via HA : l'intégration
+  HA officielle ne gère que batterie et sommeil). Contenu v1 :
+  - une ligne par instance de plugin du compte (`GET /api/plugin_settings`), avec un
+    **switch = dans la rotation ou pas** : item présent et `visible:true` → ON ;
+    présent et `visible:false` → OFF (`PATCH /api/playlists/items/{id}`) ; absent de la
+    playlist → OFF, l'allumer fait un `POST …/playlist_items` ;
+  - réordonner par glisser-déposer → `PUT …/playlist_items/order` ;
+  - en tête : batterie, dernier ping, **refresh** (choix 5/15/60 min → `PATCH
+    /api/devices/{id}`) ;
+  - un bouton « Uniquement celui-ci » qui masque tous les autres (l'équivalent
+    pratique d'un « afficher X », faute d'endpoint « afficher maintenant »).
+  - Limite à afficher dans l'UI : le changement n'est visible qu'au prochain check-in
+    du device (15 min par défaut) — pas d'instantané, c'est le modèle pull du TRMNL.
+  - Architecture : `data/trmnl/TrmnlClient` (OkHttp, même style que `HaClient`),
+    `TrmnlRepository` (mock sans clé), clé `user_…` dans Réglages. Le device n'est
+    pas choisi en v1 (un seul TRMNL) mais le code garde le `device_id`.
 - ~~Le Mac de dev n'a ni JDK ni Android Studio ni SDK~~ → **poste de dev = PC Windows depuis le 2026-09-06**, outillage complet et wrapper Gradle commité, cf. [setup-dev-windows.md](setup-dev-windows.md). (Ancienne note : build à faire après
   installation d'Android Studio (le wrapper Gradle jar n'est pas commité,
   `gradle wrapper` le génère.)
@@ -223,3 +250,9 @@ lui-même la commande qui lit `.env`.
 Ajustements François : 1er appui sur un mode = le jouer (et le sélectionner), 2e appui
 = éditer ; switch horizontal centré avec le label dessous. Corrigé : switch ON du mode 1
 = tout allumer (et non basculer). Vérifié sur le téléphone.
+
+### 2026-09-07 (nonies) — onglet TRMNL cadré
+Demande : piloter la rotation des écrans TRMNL depuis l'app. Vérifié que l'API compte
+le permet (playlist visible/order/schedule, refresh du device) → onglet TRMNL cadré
+(switch par écran, ordre, refresh, « uniquement celui-ci »). Pas encore codé ; reste à
+trancher schedule-ou-pas en v1 et la 2e clé dans Réglages (Questions ouvertes).

@@ -46,7 +46,8 @@ Trois étages, dont deux seulement vivent dans le repo :
 | Plugins du catalogue (Google Calendar, météo) | ❌ configuration web | dashboard TRMNL |
 | **Private plugins** : markup Liquid + réglages | ✅ | `features/trmnl/plugins/` |
 | **Données** affichées | ✅ | `features/trmnl/data/` |
-| Playlist, refresh, sommeil, mashups | ❌ | dashboard TRMNL |
+| **Playlist** (ajouter/masquer/réordonner/planifier un item), refresh, sommeil | ✅ **API compte** (vérifié le 2026-09-07, voir ci-dessous) | `PATCH /api/playlists/items/{id}`… |
+| Mashups, réglages d'un plugin du catalogue | ❌ | dashboard TRMNL |
 
 Deux contraintes structurantes :
 
@@ -54,6 +55,39 @@ Deux contraintes structurantes :
   Plugins n'existe pas. Décision : on la prend maintenant (BOM mis à jour).
 - **Webhook plafonné à 2 Ko** par envoi (12 envois/h). Le **polling** n'a pas cette
   limite — c'est lui qu'on privilégie dès que la donnée est publiable.
+
+### L'API compte pilote la playlist (vérifié le 2026-09-07)
+
+Ce qu'on croyait réservé au dashboard web est en fait exposé par l'**API compte**
+(clé `user_…`, `Authorization: Bearer`, Developer Edition requise). Spec OpenAPI :
+<https://trmnl.com/api-docs/openapi.yaml>. Endpoints utiles, testés en lecture sur le
+device `RT97Q4` (id 64422) :
+
+| Besoin | Endpoint |
+|---|---|
+| Lister les devices (batterie, RSSI, `refresh_interval`, sommeil) | `GET /api/devices` |
+| Lister les instances de plugins du compte (`plugin_setting_id`) | `GET /api/plugin_settings` |
+| Playlist d'un device | `GET /api/devices/{device_id}/playlist_items` |
+| Ajouter une instance à la playlist | `POST …/playlist_items` `{plugin_setting_id}` |
+| **Afficher / masquer** un item (pause sans le supprimer) | `PATCH /api/playlists/items/{id}` `{visible: bool}` |
+| Réordonner | `PUT …/playlist_items/order` `{playlist_item_ids: [...]}` (tous les ids) |
+| Créneaux horaires d'un item | `PUT /api/playlists/items/{id}/schedule` `{week_schedules: [{week_days, start_time, end_time}]}` |
+| Supprimer un item | `DELETE /api/playlists/items/{id}` |
+| Refresh, sommeil, orientation du device | `PATCH /api/devices/{id}` (`refresh_interval` 300-86400 s, `sleep_*`) |
+| Forcer le refetch d'un plugin polling | `POST /api/plugin_settings/{id}/refreshes` |
+| Ce qui est à l'écran maintenant | `GET /api/display/current` (**clé device**, pas compte) |
+
+Ce qu'il n'y a **pas** : un « afficher cet écran maintenant ». Le device tire son
+image à chaque check-in (`refresh_interval`, 15 min chez nous) et avance d'un item ;
+`/api/display` avance aussi, donc pas utilisable comme « next ». L'équivalent pratique
+d'un « je veux voir X » = masquer tous les autres items (`visible:false`) ; l'écran
+change au check-in suivant, jamais instantanément.
+
+État réel le 2026-09-07 : **1 seul item** dans la playlist (le private plugin
+« portal6 — Dashboard », `plugin_setting_id` 470032) ; les 6 autres instances du
+compte (My Town, LoL/CS2 eSport, Liverpool, France Football, Welcome) existent mais ne
+sont dans aucune playlist. Le pilotage depuis l'app ha-remote est cadré dans
+[app-remote.md](app-remote.md) (onglet TRMNL).
 
 ### Les deux clés TRMNL — ne pas les confondre
 
@@ -289,3 +323,10 @@ Deux erreurs corrigées en route, toutes deux issues d'une lecture trop littéra
 doc : le `##` de `##{{ champ }}` n'est pas de la syntaxe, et `past_days: 1` décale les
 tableaux journaliers d'Open-Meteo (les min/max affichaient la veille).
 Reste à valider : le workflow GitHub Actions n'a pas encore tourné pour de vrai.
+
+### 2026-09-07 — la playlist se pilote par l'API
+Question de François : gérer la rotation des écrans TRMNL depuis l'app ha-remote.
+Vérifié contre le spec OpenAPI et par des appels réels : l'API compte expose la
+playlist (list/add/visible/order/schedule), le refresh et le sommeil du device. La
+table « pilotable par le code » du 2026-09-06 était trop pessimiste, corrigée. Limite
+structurelle : pas de « afficher maintenant », le device tire à son rythme.
