@@ -1,0 +1,129 @@
+{
+  "_comment": "Grille Midnight Club. Source de verite editoriale : ce fichier, pas AzuraCast. Voir .docs/hardware/design-programmation-editoriale.md §2 et §10.",
+  "station": {
+    "name": "Midnight Club",
+    "shortcode": "midnight_club",
+    "timezone": "Europe/Paris",
+    "identity": "Tokyo underground racing, conduite nocturne, cyberpunk, neons",
+    "genres": ["phonk", "vaporwave", "liquid dnb"],
+    "principle": "univers > genre"
+  },
+
+  "_playlists_comment": "kind = nature du contenu. sources = prefixes de chemin sous la storage location /media/lib (v1 : selection par dossier, faute de metadonnees). energy = intention editoriale, non appliquee en v1.",
+  "playlists": {
+    "mixtape_phonk": {
+      "title": "MC · Mixtape Phonk",
+      "kind": "mixtape",
+      "sources": ["radio/"],
+      "order": "shuffle",
+      "weight": 3,
+      "energy": [3, 5]
+    },
+    "mixtape_vaporwave": {
+      "title": "MC · Mixtape Vaporwave",
+      "kind": "mixtape",
+      "sources": ["radio/"],
+      "order": "shuffle",
+      "weight": 3,
+      "energy": [1, 3]
+    },
+    "mixtape_liquiddnb": {
+      "title": "MC · Mixtape Liquid DnB",
+      "kind": "mixtape",
+      "sources": ["radio/"],
+      "order": "shuffle",
+      "weight": 3,
+      "energy": [3, 4]
+    },
+    "tracks_phonk": {
+      "title": "MC · Tracks Phonk",
+      "kind": "track",
+      "sources": ["library/"],
+      "order": "random",
+      "weight": 3,
+      "energy": [3, 5]
+    },
+    "tracks_vaporwave": {
+      "title": "MC · Tracks Vaporwave",
+      "kind": "track",
+      "sources": ["library/"],
+      "order": "random",
+      "weight": 3,
+      "energy": [1, 3]
+    },
+    "tracks_liquiddnb": {
+      "title": "MC · Tracks Liquid DnB",
+      "kind": "track",
+      "sources": ["library/"],
+      "order": "random",
+      "weight": 3,
+      "energy": [2, 4]
+    },
+    "signature": {
+      "title": "MC · Signature",
+      "kind": "signature",
+      "sources": ["radio/"],
+      "order": "shuffle",
+      "weight": 5,
+      "energy": [3, 5],
+      "cooldown_days": 7,
+      "_cooldown_note": "Interdit n°3 : ne pas rejouer un mix de signature avant 7 jours. NON APPLICABLE en v1 — AzuraCast n'a pas de cooldown, il faudra le generateur."
+    },
+    "replay_signature": {
+      "title": "MC · Replay Signature",
+      "kind": "replay",
+      "sources": ["radio/"],
+      "order": "shuffle",
+      "weight": 2,
+      "energy": [3, 4]
+    }
+  },
+
+  "_schedule_comment": "days : 1=lundi ... 7=dimanche. Un bloc franchissant minuit est coupe en deux entrees (AzuraCast n'accepte pas end < start sur un meme jour).",
+  "schedule": [
+    { "days": [1,2,3,4], "start": "00:00", "end": "02:00", "playlist": "mixtape_phonk",      "energy": [3,4], "label": "Mixtape Phonk dark/racing" },
+    { "days": [1,2,3,4], "start": "02:00", "end": "03:00", "playlist": "tracks_phonk",       "energy": [3,4], "label": "Tracks Phonk random pondere" },
+    { "days": [1,2,3,4], "start": "03:00", "end": "05:00", "playlist": "mixtape_vaporwave",  "energy": [1,2], "label": "Mixtape Vaporwave dreamy/ambient" },
+    { "days": [1,2,3,4], "start": "05:00", "end": "06:00", "playlist": "tracks_phonk",       "energy": [2,3], "label": "Tracks Phonk downtempo" },
+    { "days": [1,2,3,4], "start": "06:00", "end": "08:00", "playlist": "mixtape_liquiddnb",  "energy": [2,3], "label": "Mixtape LiquidDnB smooth" },
+    { "days": [1,2,3,4], "start": "08:00", "end": "10:00", "playlist": "mixtape_vaporwave",  "energy": [2,3], "label": "Mixtape Vaporwave/Phonk alternance" },
+    { "days": [1,2,3,4], "start": "10:00", "end": "12:00", "playlist": "replay_signature",   "energy": [3,4], "label": "Replay Signature veille" },
+    { "days": [1,2,3,4], "start": "12:00", "end": "14:00", "playlist": "mixtape_phonk",      "energy": [3,3], "label": "Mixtape Phonk standard" },
+    { "days": [1,2,3,4], "start": "14:00", "end": "16:00", "playlist": "tracks_liquiddnb",   "energy": [2,3], "label": "Tracks LiquidDnB + Vaporwave" },
+    { "days": [1,2,3,4], "start": "16:00", "end": "18:00", "playlist": "mixtape_vaporwave",  "energy": [2,3], "label": "Mixtape Vaporwave retro/dystopie" },
+    { "days": [1,2,3,4], "start": "18:00", "end": "20:00", "playlist": "mixtape_phonk",      "energy": [3,4], "label": "Mixtape Phonk boost progressif" },
+    { "days": [1,2,3,4], "start": "20:00", "end": "21:00", "playlist": "tracks_phonk",       "energy": [3,4], "label": "Tracks Phonk random pondere" },
+    { "days": [1,2,3,4], "start": "21:00", "end": "22:00", "playlist": "mixtape_liquiddnb",  "energy": [3,4], "label": "Mixtape LiquidDnB groove nocturne" },
+    { "days": [1,2,3,4], "start": "22:00", "end": "23:59", "playlist": "signature",          "energy": [3,4], "label": "Signature – Night Drive" },
+
+    { "days": [5,6], "start": "00:00", "end": "02:00", "playlist": "signature",          "energy": [4,5], "label": "Signature – Full Boost (suite de la veille)" },
+    { "days": [5,6], "start": "02:00", "end": "03:00", "playlist": "tracks_phonk",       "energy": [3,4], "label": "Tracks Phonk" },
+    { "days": [5,6], "start": "03:00", "end": "05:00", "playlist": "mixtape_vaporwave",  "energy": [1,2], "label": "Mixtape Vaporwave dreamy" },
+    { "days": [5,6], "start": "05:00", "end": "06:00", "playlist": "tracks_phonk",       "energy": [2,3], "label": "Tracks Phonk downtempo" },
+    { "days": [5,6], "start": "06:00", "end": "08:00", "playlist": "mixtape_liquiddnb",  "energy": [2,3], "label": "Mixtape LiquidDnB" },
+    { "days": [5,6], "start": "08:00", "end": "10:00", "playlist": "mixtape_vaporwave",  "energy": [2,3], "label": "Mixtape Vaporwave/Phonk alternance" },
+    { "days": [5,6], "start": "10:00", "end": "12:00", "playlist": "replay_signature",   "energy": [3,4], "label": "Replay Signature veille" },
+    { "days": [5,6], "start": "12:00", "end": "14:00", "playlist": "mixtape_phonk",      "energy": [3,3], "label": "Mixtape Phonk" },
+    { "days": [5,6], "start": "14:00", "end": "16:00", "playlist": "replay_signature",   "energy": [3,4], "label": "Replay Signature veille" },
+    { "days": [5,6], "start": "16:00", "end": "18:00", "playlist": "mixtape_vaporwave",  "energy": [2,3], "label": "Mixtape Vaporwave" },
+    { "days": [5,6], "start": "18:00", "end": "20:00", "playlist": "mixtape_phonk",      "energy": [3,4], "label": "Mixtape Phonk boost" },
+    { "days": [5,6], "start": "20:00", "end": "21:00", "playlist": "tracks_phonk",       "energy": [3,4], "label": "Tracks Phonk" },
+    { "days": [5,6], "start": "21:00", "end": "23:00", "playlist": "mixtape_liquiddnb",  "energy": [3,4], "label": "Mixtape LiquidDnB" },
+    { "days": [5,6], "start": "23:00", "end": "23:59", "playlist": "signature",          "energy": [4,5], "label": "Signature – Full Boost" },
+
+    { "days": [7], "start": "00:00", "end": "02:00", "playlist": "signature",          "energy": [4,5], "label": "Signature – Full Boost (suite de samedi)" },
+    { "days": [7], "start": "02:00", "end": "03:00", "playlist": "tracks_phonk",       "energy": [3,4], "label": "Tracks Phonk" },
+    { "days": [7], "start": "03:00", "end": "05:00", "playlist": "mixtape_vaporwave",  "energy": [1,2], "label": "Mixtape Vaporwave dreamy" },
+    { "days": [7], "start": "05:00", "end": "06:00", "playlist": "tracks_phonk",       "energy": [2,3], "label": "Tracks Phonk downtempo" },
+    { "days": [7], "start": "06:00", "end": "08:00", "playlist": "mixtape_liquiddnb",  "energy": [2,3], "label": "Mixtape LiquidDnB" },
+    { "days": [7], "start": "08:00", "end": "10:00", "playlist": "mixtape_vaporwave",  "energy": [2,3], "label": "Mixtape Vaporwave/Phonk alternance" },
+    { "days": [7], "start": "10:00", "end": "12:00", "playlist": "replay_signature",   "energy": [3,4], "label": "Replay Signature veille" },
+    { "days": [7], "start": "12:00", "end": "14:00", "playlist": "mixtape_phonk",      "energy": [3,3], "label": "Mixtape Phonk" },
+    { "days": [7], "start": "14:00", "end": "16:00", "playlist": "replay_signature",   "energy": [3,4], "label": "Replay Signature veille" },
+    { "days": [7], "start": "16:00", "end": "18:00", "playlist": "mixtape_vaporwave",  "energy": [2,3], "label": "Mixtape Vaporwave" },
+    { "days": [7], "start": "18:00", "end": "20:00", "playlist": "mixtape_phonk",      "energy": [3,4], "label": "Mixtape Phonk boost progressif" },
+    { "days": [7], "start": "20:00", "end": "21:00", "playlist": "tracks_phonk",       "energy": [3,4], "label": "Tracks Phonk" },
+    { "days": [7], "start": "21:00", "end": "23:00", "playlist": "signature",          "energy": [2,3], "label": "Signature – Neon Wind-down" },
+    { "days": [7], "start": "23:00", "end": "23:59", "playlist": "tracks_vaporwave",   "energy": [1,2], "label": "Tracks Vaporwave downtempo" }
+  ]
+}
