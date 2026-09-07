@@ -26,10 +26,10 @@ multiprises Shelly ──Wi-Fi (LAN)──▶ intégration Shelly ───┘  
   si on met un mot de passe, le renseigner aussi dans HA (option de l'entrée).
 - [ ] **Qui pilote quoi** : quel bouton (et quel geste) commande quelle prise ?
   (tableau dans la section Boutons, à remplir une fois les prises nommées).
-- [ ] **Latence ZHA sur les TS0044** : des retours communauté signalent ~1 s entre
-  appui et action sous ZHA, instantané sous Zigbee2MQTT. À mesurer sur le
-  premier bouton appairé ; si c'est gênant, c'est LE déclencheur pour basculer
-  sur Z2M (déjà prêt en commentaire dans le compose).
+- [ ] **Latence ZHA sur les TS0044** : première mesure rassurante (2026-09-07,
+  appuis rapprochés de ~350 ms tous reçus, `zha_event` quasi immédiat). À
+  confirmer au ressenti appui → lampe une fois les automatisations en place ;
+  Z2M reste le plan B (déjà prêt en commentaire dans le compose).
 - [ ] Portée Zigbee sans routeur : le réseau n'a que le coordinateur + 4 boutons à
   pile (les Shelly ne relaient pas puisqu'ils restent en Wi-Fi). Si un bouton
   décroche à l'autre bout de l'appartement : rallonge USB pour le dongle, puis
@@ -231,12 +231,23 @@ Séquence :
    à l'œil (appui → log).
 4. Remplir le tableau « qui pilote quoi », puis une automatisation par bouton.
 
-| Bouton (nom ZHA) | Emplacement | Touche 1 | Touche 2 | Touche 3 | Touche 4 |
+Disposition des touches (endpoint ZHA = touche) : **1 haut-gauche, 2 haut-droite,
+3 bas-gauche, 4 bas-droite** (la touche d'appairage, bas-gauche, remonte en `ep=3`).
+
+| Bouton (nom ZHA) | IEEE | Simple, touche n | Long (toute touche) | Double | Automatisations HA |
 |---|---|---|---|---|---|
-| — | — | — | — | — | — |
-| — | — | — | — | — | — |
-| — | — | — | — | — | — |
-| — | — | — | — | — | — |
+| **Bouton 1** (`_TZ3000_zgyzgdua`) | `a4:c1:38:a8:8d:be:30:90` | toggle `switch.multiprise_a_prise_n` | éteint les 8 prises | libre | `automation.bouton_1_appui_simple_multiprise_a_prise_n`, `automation.bouton_1_appui_long_tout_eteindre` |
+| Bouton 2 | — | toggle `switch.multiprise_b_prise_n` (prévu) | idem | libre | à créer à l'appairage |
+| Bouton 3 | — | à décider (doublon de A ou B dans une autre pièce ?) | idem | libre | — |
+| Bouton 4 | — | idem | idem | libre | — |
+
+Les automatisations sont créées **par l'API config de HA** (`POST /api/config/automation/config/<id>`),
+donc visibles/éditables dans l'UI (Paramètres → Automatisations) et stockées dans
+`config/automations.yaml` (hors git). Le déclencheur filtre sur `device_ieee` +
+`command`, l'action cible `switch.multiprise_a_prise_{{ trigger.event.data.endpoint_id }}`
+— une seule automatisation pour les 4 touches. Le script de création n'est pas
+versionné : l'IEEE vit dans `.env` (`ZIGBEE_BOUTON_1_IEEE`) et la recette est
+ci-dessus ; si on en vient à 4 boutons, on l'externalise dans `features/home/ha/`.
 
 Portée : un mesh de 2 multiprises (routers) + coordinateur couvre un appartement
 sans souci ; si un bouton à pile à l'autre bout perd le lien, c'est une
@@ -300,6 +311,14 @@ Shelly native**, Zigbee écarté (bug d'inondation documenté avec exactement de
 Power Strip 4 Gen4, sans correctif). Le dongle/ZHA ne sert qu'aux boutons MOES.
 Doc retitré, architecture posée, questions ouvertes réécrites (Wi-Fi + DHCP
 réservé, ne pas activer le profil Zigbee des Shelly, portée sans routeur).
+
+### 2026-09-07 (octies)
+**Bouton 1 appairé** (TS0044 `_TZ3000_zgyzgdua`, quirk Tuya, LQI 123), entités
+renommées `sensor.bouton_1_*` (3 batteries en doublon désactivées), IEEE dans
+`.env`. `zha_event` reçu sur les 4 touches, latence faible. Deux automatisations
+créées par l'API : simple → toggle prise n de A, long → tout éteindre.
+Incident : l'ajout de l'IEEE dans `.env` s'est collé à la ligne `HA_TOKEN` (pas de
+retour à la ligne final) → jeton invalide quelques minutes, réparé.
 
 ### 2026-09-07 (septies)
 Les 2 Shelly sur le Wi-Fi (`.78`, `.98`), ajoutées dans HA par l'API, verrouillées
