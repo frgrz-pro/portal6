@@ -65,6 +65,21 @@ Le réseau Zigbee vit dans `config/zigbee.db` (hors git) : penser à la
 sauvegarde ZHA (Paramètres → Zigbee → Télécharger la sauvegarde) une fois les
 appareils appairés.
 
+## Modes : scènes + automatisations des boutons MOES
+
+`ha_modes_setup.py` (idempotent, à relancer après chaque bouton appairé) crée
+les scènes `mode_2..4` si absentes et, pour chaque `ZIGBEE_BOUTON_<n>_IEEE` de
+`.env`, les automatisations « touche 1 = tout on/off, touches 2-4 =
+`scene.mode_<touche>`, appui long = tout éteindre » :
+
+```powershell
+& "$env:USERPROFILE\.venvs\portal6-home\Scripts\python.exe" features\home\ha\ha_modes_setup.py
+```
+
+Les scènes sont ensuite redéfinies depuis l'app (`apps/ha-remote`, appui long
+sur un mode) via l'API config des scènes — ne pas les éditer à la main en
+parallèle.
+
 ## Prod (tour Linux, si elle arrive)
 
 Même compose, avec `network_mode: host` (voir commentaires) et le dongle en

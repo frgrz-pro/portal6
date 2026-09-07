@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Pour le futur client Home Assistant (LAN) -->
+    <!-- Client Home Assistant sur le LAN (http://192.168.0.5:8123 : pas de TLS, donc cleartext) -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".Portal6App"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity
             android:name=".MainActivity"
@@ -20,10 +21,10 @@
 
         <!-- Tuiles du volet des réglages rapides (la topbar déroulante). -->
         <service
-            android:name=".qs.SalonConfigTileService"
+            android:name=".qs.ModesTileService"
             android:exported="true"
             android:icon="@drawable/ic_qs_salon"
-            android:label="@string/tile_salon"
+            android:label="@string/tile_modes"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />

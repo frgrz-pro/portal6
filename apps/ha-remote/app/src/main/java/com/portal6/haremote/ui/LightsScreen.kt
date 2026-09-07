@@ -5,6 +5,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.graphics.drawable.Icon
 import android.os.Build
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,45 +16,38 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.portal6.haremote.R
 import com.portal6.haremote.data.Light
-import com.portal6.haremote.data.RoomConfig
-import com.portal6.haremote.data.Rooms
-import com.portal6.haremote.qs.SalonConfigTileService
+import com.portal6.haremote.data.Mode
+import com.portal6.haremote.qs.ModesTileService
 import com.portal6.haremote.qs.TvMuteTileService
 
 @Composable
@@ -61,18 +56,18 @@ fun LightsScreen(
     modifier: Modifier = Modifier,
 ) {
     val lights by viewModel.lights.collectAsStateWithLifecycle()
-    val configs by viewModel.configs.collectAsStateWithLifecycle()
-    val activeConfigId by viewModel.activeConfigId.collectAsStateWithLifecycle()
+    val modes by viewModel.modes.collectAsStateWithLifecycle()
+    val connection by viewModel.connection.collectAsStateWithLifecycle()
     val allOn = lights.isNotEmpty() && lights.all { it.isOn }
-    var showConfigDialog by rememberSaveable { mutableStateOf(false) }
+    var editing by rememberSaveable { mutableStateOf<Int?>(null) }
 
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
 
-        ConfigsRow(
-            configs = configs,
-            activeConfigId = activeConfigId,
-            onApply = viewModel::applyConfig,
-            onManage = { showConfigDialog = true },
+        ModesRow(
+            modes = modes,
+            lights = lights,
+            onApply = viewModel::applyMode,
+            onEdit = { editing = it.number },
         )
 
         Spacer(Modifier.height(12.dp))
@@ -114,101 +109,138 @@ fun LightsScreen(
         }
 
         QuickSettingsTilesRow()
+
+        Text(
+            connection,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp),
+        )
     }
 
-    if (showConfigDialog) {
-        ConfigDialog(
-            configs = configs,
-            onSave = viewModel::saveConfig,
-            onDelete = viewModel::deleteConfig,
-            onDismiss = { showConfigDialog = false },
+    editing?.let { number ->
+        val mode = modes.firstOrNull { it.number == number } ?: return@let
+        ModeDialog(
+            mode = mode,
+            lights = lights,
+            onSave = { states ->
+                viewModel.saveMode(number, states)
+                editing = null
+            },
+            onDismiss = { editing = null },
         )
     }
 }
 
 /**
- * Les configs enregistrées du salon. Un appui rejoue la config ; le bouton
- * « + » ouvre la gestion (enregistrer l'état courant, supprimer).
+ * Les 4 modes = les 4 touches d'un bouton MOES. Appui : jouer le mode.
+ * Appui long sur un mode 2-4 : le redéfinir. Le mode dont l'état correspond
+ * aux prises est mis en avant.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ConfigsRow(
-    configs: List<RoomConfig>,
-    activeConfigId: String?,
-    onApply: (RoomConfig) -> Unit,
-    onManage: () -> Unit,
+private fun ModesRow(
+    modes: List<Mode>,
+    lights: List<Light>,
+    onApply: (Mode) -> Unit,
+    onEdit: (Mode) -> Unit,
 ) {
     Column {
-        Text(Rooms.Salon.label, style = MaterialTheme.typography.titleLarge)
+        Text("Modes", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(8.dp))
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(configs, key = { it.id }) { config ->
-                FilterChip(
-                    selected = config.id == activeConfigId,
-                    onClick = { onApply(config) },
-                    label = { Text(config.name) },
-                )
-            }
-            item {
-                AssistChip(
-                    onClick = onManage,
-                    label = { Text(if (configs.isEmpty()) "Enregistrer la config" else "Gérer") },
-                    leadingIcon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            modes.forEach { mode ->
+                val active = mode.matches(lights)
+                val onColor = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = when {
+                            active -> MaterialTheme.colorScheme.primary
+                            mode.isDefined -> MaterialTheme.colorScheme.secondaryContainer
+                            else -> MaterialTheme.colorScheme.surfaceVariant
+                        },
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .combinedClickable(
+                            onClick = { onApply(mode) },
+                            onLongClick = { if (mode.isEditable) onEdit(mode) },
+                        ),
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                    ) {
+                        Text(mode.label, style = MaterialTheme.typography.titleSmall, color = onColor)
+                        Text(
+                            when {
+                                mode.isAllToggle -> "tout on/off"
+                                mode.isDefined -> "défini"
+                                else -> "à définir"
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            textAlign = TextAlign.Center,
+                            color = onColor,
+                        )
+                    }
+                }
             }
         }
+        Text(
+            "Appui long sur un mode 2-4 pour le redéfinir.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp),
+        )
     }
 }
 
+/**
+ * Redéfinir un mode : 8 interrupteurs, pré-remplis avec la définition du mode
+ * (ou l'état courant des prises s'il n'en a pas encore). « État actuel »
+ * recopie les prises telles qu'elles sont.
+ */
 @Composable
-private fun ConfigDialog(
-    configs: List<RoomConfig>,
-    onSave: (String) -> Unit,
-    onDelete: (String) -> Unit,
+private fun ModeDialog(
+    mode: Mode,
+    lights: List<Light>,
+    onSave: (Map<String, Boolean>) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var name by rememberSaveable { mutableStateOf("") }
+    val initial = remember(mode.number) {
+        lights.associate { it.entityId to (mode.states?.get(it.entityId) ?: it.isOn) }
+    }
+    var draft by remember(mode.number) { mutableStateOf(initial) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Configs du salon") },
+        title = { Text("Définir ${mode.label}") },
         text = {
             Column {
                 Text(
-                    "Enregistre l'état actuel des 8 prises sous un nom. " +
-                        "La tuile Salon des réglages rapides fait défiler ces configs.",
+                    "Ce que fait la touche ${mode.number} du bouton et le mode ${mode.number} de l'app.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                Spacer(Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Nom (ex. Soirée, Lecture)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                configs.forEach { config ->
+                Spacer(Modifier.height(8.dp))
+                lights.forEach { light ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(config.name, modifier = Modifier.weight(1f))
-                        IconButton(onClick = { onDelete(config.id) }) {
-                            Icon(Icons.Filled.Delete, contentDescription = "Supprimer " + config.name)
-                        }
+                        Text(light.label, modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = draft[light.entityId] == true,
+                            onCheckedChange = { on -> draft = draft + (light.entityId to on) },
+                        )
                     }
+                }
+                TextButton(onClick = { draft = lights.associate { it.entityId to it.isOn } }) {
+                    Text("Prendre l'état actuel")
                 }
             }
         },
-        confirmButton = {
-            TextButton(
-                enabled = name.isNotBlank(),
-                onClick = {
-                    onSave(name)
-                    onDismiss()
-                },
-            ) { Text("Enregistrer") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Fermer") } },
+        confirmButton = { TextButton(onClick = { onSave(draft) }) { Text("Enregistrer") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
     )
 }
 
@@ -222,7 +254,7 @@ private fun QuickSettingsTilesRow() {
     val context = LocalContext.current
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         Text(
-            "Tuiles Salon et Mute TV : à ajouter via le crayon du volet des réglages rapides.",
+            "Tuiles Modes et Mute TV : à ajouter via le crayon du volet des réglages rapides.",
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = 8.dp),
         )
@@ -230,8 +262,8 @@ private fun QuickSettingsTilesRow() {
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         TextButton(onClick = {
-            context.requestTile(SalonConfigTileService::class.java, "Salon", R.drawable.ic_qs_salon)
-        }) { Text("+ Tuile Salon") }
+            context.requestTile(ModesTileService::class.java, "Modes", R.drawable.ic_qs_salon)
+        }) { Text("+ Tuile Modes") }
         TextButton(onClick = {
             context.requestTile(TvMuteTileService::class.java, "Mute TV", R.drawable.ic_qs_mute)
         }) { Text("+ Tuile Mute TV") }

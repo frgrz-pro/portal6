@@ -2,14 +2,19 @@ package com.portal6.haremote
 
 import android.app.Application
 import android.content.Context
+import com.portal6.haremote.data.BackendHolder
 import com.portal6.haremote.data.ConfigStore
+import com.portal6.haremote.data.DelegatingLightsRepository
+import com.portal6.haremote.data.DelegatingModesRepository
 import com.portal6.haremote.data.LightsRepository
-import com.portal6.haremote.data.MockLightsRepository
+import com.portal6.haremote.data.ModesRepository
 import com.portal6.haremote.data.MockTvRepository
+import com.portal6.haremote.data.SettingsStore
 import com.portal6.haremote.data.TvRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Injection manuelle : l'app est trop petite pour Hilt. Le point important est
@@ -17,12 +22,20 @@ import kotlinx.coroutines.SupervisorJob
  * réglages rapides tournent dans le même process et doivent voir le même état.
  */
 class AppContainer(context: Context) {
-    val store = ConfigStore(context)
-    val lights: LightsRepository = MockLightsRepository(store)
-    val tv: TvRepository = MockTvRepository(store)
-
-    /** Portée des actions déclenchées hors UI (tuiles), non liée à un écran. */
+    /** Portée des actions déclenchées hors UI (tuiles, backend), non liée à un écran. */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    val store = ConfigStore(context)
+    val settings = SettingsStore(context)
+
+    private val backends = BackendHolder(settings, store, appScope)
+    val lights: LightsRepository = DelegatingLightsRepository(backends, appScope)
+    val modes: ModesRepository = DelegatingModesRepository(backends, appScope)
+
+    /** État de la liaison avec Home Assistant, pour l'affichage. */
+    val connection: StateFlow<String> = backends.connection
+
+    val tv: TvRepository = MockTvRepository(store)
 }
 
 class Portal6App : Application() {

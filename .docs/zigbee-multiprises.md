@@ -234,20 +234,26 @@ Séquence :
 Disposition des touches (endpoint ZHA = touche) : **1 haut-gauche, 2 haut-droite,
 3 bas-gauche, 4 bas-droite** (la touche d'appairage, bas-gauche, remonte en `ep=3`).
 
-| Bouton (nom ZHA) | IEEE | Simple, touche n | Long (toute touche) | Double | Automatisations HA |
-|---|---|---|---|---|---|
-| **Bouton 1** (`_TZ3000_zgyzgdua`) | `a4:c1:38:a8:8d:be:30:90` | toggle `switch.multiprise_a_prise_n` | éteint les 8 prises | libre | `automation.bouton_1_appui_simple_multiprise_a_prise_n`, `automation.bouton_1_appui_long_tout_eteindre` |
-| Bouton 2 | — | toggle `switch.multiprise_b_prise_n` (prévu) | idem | libre | à créer à l'appairage |
-| Bouton 3 | — | à décider (doublon de A ou B dans une autre pièce ?) | idem | libre | — |
-| Bouton 4 | — | idem | idem | libre | — |
+**Convention définitive (2026-09-07, décision François) : touche n = Mode n**,
+la même sur les 4 boutons — les modes sont ceux de l'app
+([app-remote.md](app-remote.md)) : Mode 1 = tout on/off, Modes 2-4 = scènes
+`scene.mode_2..4` définies depuis l'app.
 
-Les automatisations sont créées **par l'API config de HA** (`POST /api/config/automation/config/<id>`),
-donc visibles/éditables dans l'UI (Paramètres → Automatisations) et stockées dans
-`config/automations.yaml` (hors git). Le déclencheur filtre sur `device_ieee` +
-`command`, l'action cible `switch.multiprise_a_prise_{{ trigger.event.data.endpoint_id }}`
-— une seule automatisation pour les 4 touches. Le script de création n'est pas
-versionné : l'IEEE vit dans `.env` (`ZIGBEE_BOUTON_1_IEEE`) et la recette est
-ci-dessus ; si on en vient à 4 boutons, on l'externalise dans `features/home/ha/`.
+| Bouton (nom ZHA) | IEEE | Touche 1 | Touches 2-4 | Long | Double | Automatisations HA |
+|---|---|---|---|---|---|---|
+| **Bouton 1** (`_TZ3000_zgyzgdua`) | `a4:c1:38:a8:8d:be:30:90` | tout on/off | `scene.turn_on scene.mode_n` | tout éteindre | libre | `automation.bouton_1_touche_n_mode_n`, `automation.bouton_1_appui_long_tout_eteindre` |
+| Bouton 2 | — | idem | idem | idem | libre | à créer à l'appairage (`ha_modes_setup.py`) |
+| Bouton 3 | — | idem | idem | idem | libre | idem |
+| Bouton 4 | — | idem | idem | idem | libre | idem |
+
+Les scènes et automatisations sont créées **par l'API config de HA** par
+`features/home/ha/ha_modes_setup.py` (idempotent, lit `ZIGBEE_BOUTON_n_IEEE`
+dans `.env` ; à relancer après chaque appairage). Visibles/éditables dans l'UI
+HA (Paramètres → Automatisations / Scènes), stockées dans `config/*.yaml` (hors
+git). Une automatisation par bouton pour les 4 touches : déclencheur `zha_event`
+filtré sur `device_ieee` + `command`, `choose` sur `endpoint_id` (1 → si une
+prise est allumée tout éteindre sinon tout allumer ; défaut → `scene.mode_{{ endpoint_id }}`).
+L'ancienne « touche n → prise n » a été supprimée.
 
 Portée : un mesh de 2 multiprises (routers) + coordinateur couvre un appartement
 sans souci ; si un bouton à pile à l'autre bout perd le lien, c'est une
@@ -311,6 +317,11 @@ Shelly native**, Zigbee écarté (bug d'inondation documenté avec exactement de
 Power Strip 4 Gen4, sans correctif). Le dongle/ZHA ne sert qu'aux boutons MOES.
 Doc retitré, architecture posée, questions ouvertes réécrites (Wi-Fi + DHCP
 réservé, ne pas activer le profil Zigbee des Shelly, portée sans routeur).
+
+### 2026-09-07 (decies)
+Convention boutons changée : **touche n = Mode n** (Mode 1 tout on/off, Modes 2-4
+= scènes HA définies depuis l'app). Script `ha_modes_setup.py` : scènes
+`mode_2..4` créées (vides), automatisations du Bouton 1 réécrites.
 
 ### 2026-09-07 (nonies)
 **Bout en bout validé** : touche n → prise n de A en 66–92 ms, appui long → les 8

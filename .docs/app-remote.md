@@ -13,15 +13,15 @@ pénibles et les apps constructeur.
 - [x] ~~Noms des boutons : par lampe ou par prise ?~~ → **génériques, tranché le
   2026-09-07** : A1…A4 / B1…B4 restent les libellés ; le sens est porté par les
   configs de pièce (scènes nommées), pas par les boutons.
-- [ ] **Client HA réel à écrire** (`HaLightsRepository`) : le backend est prêt
-  (cf. [zigbee-multiprises.md](zigbee-multiprises.md)), les 8 entités portent
-  déjà les `entityId` de `DefaultLights`. Choix à faire : OkHttp (REST + WebSocket
-  natif, une seule dépendance) ; URL + token saisis dans un écran Réglages de
-  l'app (le token est une donnée perso, jamais dans le code ni le repo).
-- [ ] Plusieurs pièces ou une seule ? Aujourd'hui « Salon » = les 8 prises. Le
-  découpage réel dépend du mapping des multiprises (question ci-dessus).
-- [ ] Tuile Salon : un appui fait défiler les configs en boucle. Alternative si
-  les configs se multiplient — une tuile par config, ou un menu au long-press.
+- [ ] **Tester sur le téléphone** : installer l'APK, onglet Réglages → URL
+  `http://192.168.0.5:8123` + jeton → « Tester » puis « Enregistrer » ; vérifier
+  que les 8 prises suivent HA en temps réel et que définir un mode dans l'app
+  change bien ce que fait la touche du bouton MOES.
+- [ ] Interprétation « 4 modes ↔ 4 boutons » : retenu **mode n = touche n**, identique
+  sur chacun des 4 MOES (voir Décisions). Si François voulait plutôt « un MOES = un
+  mode », seule l'automatisation HA change (`ha_modes_setup.py`), pas l'app.
+- [ ] Tuile Modes : un appui passe au mode suivant parmi 2-4. Alternative si ça
+  ne colle pas à l'usage : une tuile par mode.
 
 ## Décisions
 
@@ -59,6 +59,25 @@ pénibles et les apps constructeur.
   l'envoi réel de `KEYCODE_VOLUME_MUTE` manque (phase 2, [tv-mute.md](tv-mute.md)).
 - L'état courant des prises est lui aussi persisté, mais c'est une **béquille du
   mock** : avec HA branché, l'état de vérité vient du backend, pas du disque.
+- **Modes (2026-09-07)** — remplace les « configs de pièce ». **4 modes, noms
+  génériques « Mode 1..4 », un par touche du bouton MOES** ; même numéro, même
+  effet depuis le mur ou depuis l'app.
+  - **Mode 1 = tout on/off**, câblé : si une prise est allumée → tout s'éteint,
+    sinon tout s'allume. Pas éditable.
+  - **Modes 2-4 = scènes définies dans l'app** (appui long sur le mode → 8
+    interrupteurs, ou « Prendre l'état actuel »). Elles vivent **côté HA**
+    (`scene.mode_2..4`, écrites par l'API config des scènes) : c'est ce qui
+    permet aux automatisations des boutons physiques de jouer exactement la
+    même chose. Le mode dont l'état correspond aux prises est mis en avant.
+  - Mode démo (HA non configuré) : modes 2-4 en `SharedPreferences`.
+- **Client Home Assistant réel (2026-09-07)** : `data/ha/HaClient` (OkHttp —
+  REST pour états/services/scènes, WebSocket `state_changed` avec reconnexion
+  et resynchro à chaque connexion), `HaLightsRepository`, `HaModesRepository`.
+  Onglet **Réglages** : URL + jeton (stockage privé de l'app, jamais dans le
+  code) avec bouton « Tester ». Un `BackendHolder` reconstruit les dépôts à
+  chaque changement de réglages ; l'UI et les tuiles parlent à des dépôts
+  « délégués » stables. Sans réglages → mode démo (mocks), utile hors LAN.
+  Manifest : `usesCleartextTraffic` (HA en http sur le LAN).
 - ~~Le Mac de dev n'a ni JDK ni Android Studio ni SDK~~ → **poste de dev = PC Windows depuis le 2026-09-06**, outillage complet et wrapper Gradle commité, cf. [setup-dev-windows.md](setup-dev-windows.md). (Ancienne note : build à faire après
   installation d'Android Studio (le wrapper Gradle jar n'est pas commité,
   `gradle wrapper` le génère.)
@@ -80,13 +99,16 @@ pénibles et les apps constructeur.
 ## Architecture cible
 
 ```
-[App Kotlin] --REST/WebSocket--> [Home Assistant (tour Docker)] --Zigbee--> multiprises
+[App Kotlin] --REST/WebSocket--> [Home Assistant (PC Docker)] --Wi-Fi--> multiprises Shelly
+                                        ^-- Zigbee (ZHA) -- boutons MOES : touche n = Mode n
      |
      +--------ADB ou Android TV Remote protocol--> [Shield TV Pro] --CEC--> TV / barre TCL
 ```
 
 - Lights : API REST HA (`POST /api/services/switch/turn_on`, entité par prise) +
-  WebSocket pour l'état temps réel. Auth par long-lived access token.
+  WebSocket pour l'état temps réel. Auth par long-lived access token. **Fait.**
+- Modes : scènes HA `scene.mode_2..4` lues/écrites par `/api/config/scene/config/<id>`,
+  jouées par `scene.turn_on` ; le mode 1 se calcule côté client.
 - TV : cf. [tv-mute.md](tv-mute.md), phase 2.
 - Tout fonctionne **en LAN uniquement** en v1 (cf. [infra-reseau.md](infra-reseau.md)
   — le NordVPN du routeur ne donne pas d'accès entrant).
@@ -125,3 +147,13 @@ expose `switch.multiprise_a_prise_1…4` et `switch.multiprise_b_prise_1…4` �
 identifiants codés dans `DefaultLights` depuis le scaffold, sans rien changer.
 Multiprises = Shelly Wi-Fi (pas Zigbee), sans incidence pour l'app qui ne parle
 qu'à HA. Prochaine étape dev : `HaLightsRepository` + écran Réglages (URL, token).
+
+### 2026-09-07 (bis) — modes + client HA
+Demande François : « 4 modes pour nos 4 boutons, noms génériques ; mode 1 = all
+on/off, modes 2-4 à définir via l'app ». Implémenté : notion de **Mode** (remplace
+les configs de pièce, `RoomConfig`/`Room` supprimés), scènes HA `mode_2..4`
+comme source de vérité partagée avec les boutons MOES, **client HA réel**
+(OkHttp REST + WebSocket), onglet Réglages, tuile « Modes » (cycle 2→3→4).
+Côté HA : `features/home/ha/ha_modes_setup.py` (scènes + automatisations
+touche n → mode n, idempotent). **Build OK** (`assembleDebug`, APK 17 Mo) après
+une correction (fonctions locales mutuellement récursives dans `HaClient`).

@@ -43,5 +43,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.kotlinx.coroutines.android)
+    // Client Home Assistant : REST + WebSocket, une seule dépendance réseau.
+    implementation(libs.okhttp)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
