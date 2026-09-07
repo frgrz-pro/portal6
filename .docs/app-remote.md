@@ -89,7 +89,11 @@ pénibles et les apps constructeur.
   - une rangée de **4 modes** (Mode 1 = tout on/off, Modes 2-4 = scènes ;
     appui = jouer, appui long = redéfinir ; le mode qui correspond à l'état
     des prises est mis en avant) ;
-  - grille **2 colonnes × 4 boutons** (toggle par prise, état on/off visible) ;
+  - grille **4 colonnes × 2 rangées** (rangée A, rangée B) d'**interrupteurs
+    verticaux** `SocketSwitch` (depuis le 2026-09-07, sur maquette de François) :
+    piste sombre, curseur en bas gris + cercle creux = éteint, curseur en haut
+    ambre + icône power = allumé, piste teintée ambre. Couleurs fixes hors thème
+    Material, animation ressort. Libellé A1…B4 sous chaque interrupteur ;
   - un **switch "All"** (tout allumer) ;
   - un bouton **"Turn off"** (tout éteindre d'un coup — le geste du soir) ;
   - la ligne d'état de la liaison HA (connecté / hors ligne / mode démo).
@@ -158,3 +162,9 @@ comme source de vérité partagée avec les boutons MOES, **client HA réel**
 Côté HA : `features/home/ha/ha_modes_setup.py` (scènes + automatisations
 touche n → mode n, idempotent). **Build OK** (`assembleDebug`, APK 17 Mo) après
 une correction (fonctions locales mutuellement récursives dans `HaClient`).
+
+### 2026-09-07 (ter) — test sur téléphone + design des interrupteurs
+L'émulateur gèle → **Galaxy S20 Ultra (Android 13) branché en USB**, APK debug
+installé et lancé via adb sans crash. Puis, sur maquette de François (rocker vertical
+ambre), **`SocketSwitch`** remplace les cartes « ampoule » de la grille des prises ;
+passage en 4 × 2 (rangée A / rangée B) parce que l'interrupteur est haut et étroit.

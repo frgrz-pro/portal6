@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,8 +19,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -72,22 +69,17 @@ fun LightsScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        // Grille 2 colonnes × 4 : colonne gauche = multiprise A, droite = B.
-        // L'ordre de DefaultLights est A1..A4 puis B1..B4 ; la grille remplit
-        // ligne par ligne, donc on entrelace pour garder A à gauche.
-        val interleaved = run {
-            val half = lights.size / 2
-            (0 until half).flatMap { i -> listOf(lights[i], lights[i + half]) }
-        }
-
+        // Grille 4 colonnes × 2 rangées : rangée du haut = multiprise A (A1..A4),
+        // rangée du bas = multiprise B. C'est l'ordre naturel de DefaultLights.
+        // Interrupteurs verticaux (SocketSwitch) : trop hauts pour tenir en 2 × 4.
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            columns = GridCells.Fixed(4),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).padding(top = 4.dp),
         ) {
-            items(interleaved, key = { it.entityId }) { light ->
-                LightButton(light = light, onClick = { viewModel.toggle(light.entityId) })
+            items(lights, key = { it.entityId }) { light ->
+                SocketCell(light = light, onToggle = { viewModel.toggle(light.entityId) })
             }
         }
 
@@ -281,37 +273,17 @@ private fun Context.requestTile(service: Class<*>, label: String, iconRes: Int) 
 }
 
 @Composable
-private fun LightButton(
+private fun SocketCell(
     light: Light,
-    onClick: () -> Unit,
+    onToggle: () -> Unit,
 ) {
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = if (light.isOn) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            },
-        ),
-        modifier = Modifier.aspectRatio(1.6f),
-    ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Icon(
-                imageVector = if (light.isOn) Icons.Filled.Lightbulb else Icons.Outlined.Lightbulb,
-                contentDescription = null,
-                tint = if (light.isOn) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(light.label, style = MaterialTheme.typography.titleMedium)
-        }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        SocketSwitch(checked = light.isOn, onToggle = onToggle, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(6.dp))
+        Text(
+            light.label,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (light.isOn) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
