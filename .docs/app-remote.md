@@ -24,10 +24,10 @@ pénibles et les apps constructeur.
   mode », seule l'automatisation HA change (`ha_modes_setup.py`), pas l'app.
 - [ ] Tuile Modes : un appui passe au mode suivant parmi 2-4. Alternative si ça
   ne colle pas à l'usage : une tuile par mode.
-- [ ] Depuis le mur, touche n = mode n **ON** seulement ; le « mode OFF » (tout
-  éteindre) n'existe que via la touche 1 ou le switch de l'app. Suffisant ?
-- [ ] Le mode sélectionné n'est pas persisté (déduit de l'état des prises au
-  lancement, sinon mode 1). À mémoriser si ça gêne.
+- [x] ~~Touche n = ON seulement~~ → **toggle depuis le 2026-09-07** : 2e appui sur la
+  même touche (mode actif, prises allumées) = tout éteindre.
+- [x] ~~Mode sélectionné non persisté~~ → sans objet : il se déduit de l'état réel des
+  prises (voir UI v1).
 
 ## Décisions
 
@@ -102,6 +102,10 @@ pénibles et les apps constructeur.
     du 2026-09-07) pour le mode sélectionné : ON = jouer le mode (ses prises
     allumées, **les autres éteintes**), OFF = tout éteindre. Plus de switch « All »
     ni de bouton « Turn off » : le switch les remplace ;
+  - **le mode sélectionné se déduit de l'état réel des prises** : si elles
+    correspondent à un mode (joué depuis l'app, un MOES ou HA), c'est lui, switch ON ;
+    sinon le dernier choix de l'utilisateur, switch OFF. L'app suit donc le mur en
+    temps réel (WebSocket HA) ;
   - **appui sur un mode = le sélectionner et le jouer** ; **2e appui** sur le mode
     sélectionné (2-4, ou un mode encore vide) = **édition** : les tuiles deviennent
     des cases à cocher (A1, A3, B2…), Enregistrer (≥ 1 prise) ou Annuler → retour
@@ -126,7 +130,10 @@ pénibles et les apps constructeur.
 - Lights : API REST HA (`POST /api/services/switch/turn_on`, entité par prise) +
   WebSocket pour l'état temps réel. Auth par long-lived access token. **Fait.**
 - Modes : scènes HA `scene.mode_2..4` lues/écrites par `/api/config/scene/config/<id>`,
-  jouées par `scene.turn_on` ; le mode 1 se calcule côté client.
+  jouées par `scene.turn_on` ; le mode 1 se calcule côté client. Côté MOES, la touche n
+  est un **toggle** : « mode n actif » = sa scène est la dernière chose qui a touché
+  aux prises (horodatage de `scene.mode_n` vs `last_changed` des prises, marge 5 s) et
+  au moins une prise est allumée → tout éteindre ; sinon `scene.turn_on`. Aucun helper.
 - TV : cf. [tv-mute.md](tv-mute.md), phase 2.
 - Tout fonctionne **en LAN uniquement** en v1 (cf. [infra-reseau.md](infra-reseau.md)
   — le NordVPN du routeur ne donne pas d'accès entrant).
@@ -188,6 +195,13 @@ mode 2-4 ouvre son édition, les tuiles servent de filtre, Enregistrer → le sw
 pilote ce mode (ON = filtre allumé / reste éteint, OFF = tout éteint). Implémenté
 sans toucher au modèle ni à HA (une scène = un filtre). Retiré : dialogue d'édition,
 switch All, bouton Turn off. Testé sur le S20 Ultra : édition A1+A3+B2, ON, OFF.
+
+### 2026-09-07 (nonies) — toggle MOES + app qui suit le mur
+Demandes François : 2e appui sur une touche MOES = éteindre ; l'app doit refléter un
+appui sur le MOES. HA : automatisation `bouton_n_modes` réécrite (touche n = toggle,
+sans helper, sur les horodatages). App : mode sélectionné déduit de l'état des prises.
+Testé en simulant `zha_event` par l'API : mode 2 → off → mode 2 → off, et l'app passe
+sur Mode 2 / switch ON quand la touche 2 est jouée. APK publié via HA `/local/`.
 
 ### 2026-09-07 (octies) — « le MOES n'est pas synchro »
 Faux positif : le logbook HA montre touche 3/4 → `scene.mode_3/4` activées, mais ces

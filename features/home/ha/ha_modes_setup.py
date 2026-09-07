@@ -5,7 +5,8 @@ Idempotent — à relancer après chaque bouton appairé. Lit dans `.env` :
 
 Convention (cf. .docs/zigbee-multiprises.md, .docs/app-remote.md) :
   touche 1 (endpoint 1) → Mode 1 = tout allumer / tout éteindre
-  touche 2..4           → scene.turn_on scene.mode_<touche>
+  touche 2..4           → scene.turn_on scene.mode_<touche> ; 2e appui sur la même
+                          touche (mode actif, prises allumées) → tout éteindre
   appui long            → tout éteindre
 Les scènes sont créées vides (tout off) si absentes ; l'app les redéfinit.
 """
@@ -23,7 +24,17 @@ env = dotenv_values(ROOT / ".env")
 URL = (env.get("HA_URL") or "http://localhost:8123").rstrip("/")
 H = {"Authorization": f"Bearer {env.get('HA_TOKEN', '')}", "Content-Type": "application/json"}
 ALL8 = [f"switch.multiprise_{m}_prise_{n}" for m in "ab" for n in range(1, 5)]
-ANY_ON = "{{ states.switch | selectattr('entity_id', 'in', %s) | selectattr('state', 'eq', 'on') | list | count > 0 }}" % ALL8
+ANY_ON_EXPR = "states.switch | selectattr('entity_id', 'in', %s) | selectattr('state', 'eq', 'on') | list | count > 0" % ALL8
+ANY_ON = "{{ %s }}" % ANY_ON_EXPR
+# « Le mode de la touche pressée est actif » : sa scène a été jouée (état = horodatage),
+# aucune prise n'a bougé depuis (à 5 s près, le temps que la scène s'applique), et
+# il reste au moins une prise allumée. Pas de helper : tout vient des horodatages HA.
+MODE_ACTIVE = (
+    "{% set ts = states('scene.mode_' ~ trigger.event.data.endpoint_id) %}"
+    "{% if not ts.startswith('20') %}false{% else %}"
+    "{% set since = (expand(ALL8) | map(attribute='last_changed') | max) - as_datetime(ts) %}"
+    "{{ since.total_seconds() < 5 and (ANY_ON_EXPR) }}{% endif %}"
+).replace("ALL8", str(ALL8)).replace("ANY_ON_EXPR", ANY_ON_EXPR)
 
 
 def put(kind: str, obj_id: str, cfg: dict) -> None:
@@ -49,7 +60,7 @@ def main() -> None:
     for n, ieee in sorted(buttons.items()):
         put("automation", f"bouton_{n}_modes", {
             "alias": f"Bouton {n} — touche n → Mode n",
-            "description": "MOES TS0044 : touche 1 = tout on/off, touches 2-4 = scènes mode_2..4. Généré par features/home/ha/ha_modes_setup.py.",
+            "description": "MOES TS0044 : touche 1 = tout on/off, touches 2-4 = scènes mode_2..4 (2e appui = tout éteindre). Généré par features/home/ha/ha_modes_setup.py.",
             "mode": "queued",
             "triggers": [{"trigger": "event", "event_type": "zha_event",
                           "event_data": {"device_ieee": ieee, "command": "remote_button_short_press"}}],
@@ -58,8 +69,10 @@ def main() -> None:
                 "sequence": [{"if": [{"condition": "template", "value_template": ANY_ON}],
                               "then": [{"action": "switch.turn_off", "target": {"entity_id": ALL8}}],
                               "else": [{"action": "switch.turn_on", "target": {"entity_id": ALL8}}]}],
-            }], "default": [{"action": "scene.turn_on",
-                             "target": {"entity_id": "scene.mode_{{ trigger.event.data.endpoint_id }}"}}]}],
+            }], "default": [{"if": [{"condition": "template", "value_template": MODE_ACTIVE}],
+                             "then": [{"action": "switch.turn_off", "target": {"entity_id": ALL8}}],
+                             "else": [{"action": "scene.turn_on",
+                                       "target": {"entity_id": "scene.mode_{{ trigger.event.data.endpoint_id }}"}}]}]}],
         })
         put("automation", f"bouton_{n}_long", {
             "alias": f"Bouton {n} — appui long → tout éteindre",

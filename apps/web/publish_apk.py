@@ -24,19 +24,24 @@ import segno
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "apps" / "ha-remote" / "app" / "build" / "outputs" / "apk" / "debug" / "app-debug.apk"
 DL = Path(__file__).resolve().parent / "dl"
-URL = "http://192.168.0.5:8712/dl/ha-remote.apk"
+WWW = ROOT / "features" / "home" / "ha" / "config" / "www"
+URL = "http://192.168.0.5:8123/local/ha-remote.apk"
 
 
 def main() -> None:
     if not SRC.exists():
         sys.exit(f"APK absent : {SRC}\n-> cd apps/ha-remote ; .\\gradlew.bat assembleDebug")
     DL.mkdir(exist_ok=True)
-    shutil.copy2(SRC, DL / "ha-remote.apk")
+    fresh = not WWW.exists()
+    WWW.mkdir(exist_ok=True)
+    shutil.copy2(SRC, WWW / "ha-remote.apk")
     segno.make(URL, error="m").save(str(DL / "qr.svg"), scale=6, border=2, dark="#1a1d23", light=None)
     built = dt.datetime.fromtimestamp(SRC.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
     info = {"url": URL, "size_mb": round(SRC.stat().st_size / 1e6, 1), "built": built}
     (DL / "apk.js").write_text("window.PORTAL6_APK = " + json.dumps(info, ensure_ascii=False) + ";\n", encoding="utf-8")
-    print(f"publie : {DL / 'ha-remote.apk'} ({info['size_mb']} Mo, build {built})\nQR : {URL}")
+    print(f"publie : {WWW / 'ha-remote.apk'} ({info['size_mb']} Mo, build {built})\nQR : {URL}")
+    if fresh:
+        print("config/www vient d'etre cree : redemarrer HA (docker compose restart) pour que /local soit servi")
 
 
 if __name__ == "__main__":

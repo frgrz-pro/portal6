@@ -71,11 +71,13 @@ fun LightsScreen(
     val modes by viewModel.modes.collectAsStateWithLifecycle()
     val connection by viewModel.connection.collectAsStateWithLifecycle()
 
-    // Mode sélectionné : celui choisi par l'utilisateur, sinon celui qui
-    // correspond à l'état des prises, sinon le mode 1.
+    // Mode sélectionné : l'état réel des prises fait foi — si elles correspondent
+    // à un mode (joué depuis l'app, un bouton MOES ou HA), c'est lui et le switch
+    // est ON. Sinon (tout éteint, mélange manuel) : le dernier choix de
+    // l'utilisateur, switch OFF ; à défaut le mode 1.
     var chosen by rememberSaveable { mutableStateOf<Int?>(null) }
-    val selected: Mode? = modes.firstOrNull { it.number == chosen }
-        ?: modes.firstOrNull { it.matches(lights) }
+    val selected: Mode? = modes.firstOrNull { it.matches(lights) }
+        ?: modes.firstOrNull { it.number == chosen }
         ?: modes.firstOrNull()
 
     // Édition : numéro du mode en cours de définition + filtre en brouillon.

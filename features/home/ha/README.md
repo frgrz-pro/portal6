@@ -67,6 +67,11 @@ appareils appairés.
 
 ## Modes : scènes + automatisations des boutons MOES
 
+Touche 1 = tout on/off ; touches 2-4 = jouer `scene.mode_n`, **2e appui sur la même
+touche = tout éteindre** (mode actif détecté sur les horodatages HA) ; appui long = tout
+éteindre. `config/www/ha-remote.apk` = l'APK de l'app, servi sur `/local/` (publié par
+`apps/web/publish_apk.py`).
+
 `ha_modes_setup.py` (idempotent, à relancer après chaque bouton appairé) crée
 les scènes `mode_2..4` si absentes et, pour chaque `ZIGBEE_BOUTON_<n>_IEEE` de
 `.env`, les automatisations « touche 1 = tout on/off, touches 2-4 =

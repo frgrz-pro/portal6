@@ -20,8 +20,9 @@ ici, les choix et ce qui reste à trancher.
   du plan est fixé côté portail (voir Décisions) ; les scripts sont `--dry-run` par défaut.
 - [ ] Le téléchargement du JSON passe par un `<a download>` : à vérifier dans le
   navigateur de François (le navigateur intégré de Claude bloque les téléchargements).
-- [ ] Autres domaines (home, lieux, hardware, apps) : cartes grisées, à remplir quand
-  il y a une donnée à montrer.
+- [ ] **Portail joignable du téléphone** : servir `apps/web` depuis Windows sur
+  `0.0.0.0:8712` (tâche planifiée comme le pont Zigbee) + règle pare-feu, pour que le
+  launcher soit utilisable ailleurs que sur la tour.
 
 ## Décisions
 
@@ -34,11 +35,12 @@ ici, les choix et ce qui reste à trancher.
   **catégorie** (Home : HA, routeur, TRMNL ; Media : Playlist Manager, AzuraCast, Plex) —
   plus de cartes « domaines à venir », elles ne servaient à rien. `music.html` s'appelle
   **Playlist Manager** dans la nav.
-- **Tuile « HA Remote » avec QR d'installation** (2026-09-07) : `publish_apk.py`
-  copie l'APK debug dans `apps/web/dl/` (non versionné, 17 Mo) et génère un QR
-  (`segno`, pure Python) vers `http://192.168.0.5:8712/dl/ha-remote.apk` — l'IP LAN,
-  parce que c'est le téléphone qui scanne. Pas de QR en JS : ça aurait demandé une
-  lib vendue ou un CDN. À relancer après chaque build.
+- **Tuile « HA Remote » (catégorie Home) avec QR d'installation** (2026-09-07) :
+  `publish_apk.py` copie l'APK debug dans **`features/home/ha/config/www/`** (servi par
+  HA sur `http://192.168.0.5:8123/local/ha-remote.apk`) et génère le QR (`segno`, pure
+  Python) + `apps/web/dl/apk.js` pour la tuile. **Pas via le portail** : le serveur 8712
+  tourne côté WSL et n'écoute que sur `127.0.0.1` (invisible du LAN), alors que HA sur
+  8123 est déjà joint par le téléphone. À relancer après chaque build.
 - **Statique, zéro build, zéro framework.** Node n'est installé nulle part sur ce
   poste (ni Windows ni WSL) — les scripts `npm run` du `package.json` ne tournent
   pas ici. Python sert le dossier (`python -m http.server`).
@@ -102,6 +104,7 @@ catégories Home / Media, section « domaines du repo » supprimée, Music renom
 Playlist Manager. Piège rencontré : `style.css` en cache navigateur → lien versionné.
 
 ### 2026-09-07 (ter) — QR de l'APK
-Catégorie « App » sur l'accueil : tuile HA Remote, QR à scanner depuis le téléphone pour
-télécharger l'APK servi par le portail. `segno` ajouté au venv `portal6-home` et à
-`requirements.txt`. Vérifié dans le navigateur (QR chargé, APK servi en octet-stream).
+Tuile HA Remote dans Home, QR à scanner depuis le téléphone. Premier essai via le portail
+(8712) raté depuis l'iPhone : 8712 = WSL, `127.0.0.1` seulement. Bascule sur HA `/local/`
+(`config/www` créé, HA redémarré une fois). `segno` ajouté au venv `portal6-home` et à
+`requirements.txt`. Vérifié : QR chargé, `/local/ha-remote.apk` → 200, 17 Mo.

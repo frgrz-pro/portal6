@@ -241,7 +241,7 @@ la même sur les 4 boutons — les modes sont ceux de l'app
 
 | Bouton (nom ZHA) | IEEE | Touche 1 | Touches 2-4 | Long | Double | Automatisations HA |
 |---|---|---|---|---|---|---|
-| **Bouton 1** (`_TZ3000_zgyzgdua`) | `a4:c1:38:a8:8d:be:30:90` | tout on/off | `scene.turn_on scene.mode_n` | tout éteindre | libre | `automation.bouton_1_touche_n_mode_n`, `automation.bouton_1_appui_long_tout_eteindre` |
+| **Bouton 1** (`_TZ3000_zgyzgdua`) | `a4:c1:38:a8:8d:be:30:90` | tout on/off | `scene.mode_n`, **2e appui = tout éteindre** | tout éteindre | libre | `automation.bouton_1_touche_n_mode_n`, `automation.bouton_1_appui_long_tout_eteindre` |
 | Bouton 2 | — | idem | idem | idem | libre | à créer à l'appairage (`ha_modes_setup.py`) |
 | Bouton 3 | — | idem | idem | idem | libre | idem |
 | Bouton 4 | — | idem | idem | idem | libre | idem |
@@ -252,7 +252,9 @@ dans `.env` ; à relancer après chaque appairage). Visibles/éditables dans l'U
 HA (Paramètres → Automatisations / Scènes), stockées dans `config/*.yaml` (hors
 git). Une automatisation par bouton pour les 4 touches : déclencheur `zha_event`
 filtré sur `device_ieee` + `command`, `choose` sur `endpoint_id` (1 → si une
-prise est allumée tout éteindre sinon tout allumer ; défaut → `scene.mode_{{ endpoint_id }}`).
+prise est allumée tout éteindre sinon tout allumer ; défaut → si le mode de la touche est
+actif (sa scène = dernière action sur les prises, prises allumées) tout éteindre, sinon
+`scene.turn_on scene.mode_{{ endpoint_id }}` — **depuis le 2026-09-07, la touche est un toggle**).
 L'ancienne « touche n → prise n » a été supprimée.
 
 Portée : un mesh de 2 multiprises (routers) + coordinateur couvre un appartement
@@ -341,3 +343,9 @@ Les 2 Shelly sur le Wi-Fi (`.78`, `.98`), ajoutées dans HA par l'API, verrouill
 (AP/BLE/Matter off), entités renommées `switch.multiprise_{a,b}_prise_{1..4}`,
 on/off réel testé. **Backend lampes opérationnel.** Reste : réservations DHCP,
 A/B physique + noms des lampes, firmware 2.0.0, boutons MOES à appairer.
+
+### 2026-09-07 (nonies)
+Touches 2-4 des MOES = **toggle** : 2e appui sur la même touche éteint tout (détection
+« mode actif » sur les horodatages HA, sans helper). Réappliqué par `ha_modes_setup.py`,
+validé en simulant `zha_event`. `config/www` créé (APK de l'app servi par HA en `/local/`),
+HA redémarré une fois pour ça.

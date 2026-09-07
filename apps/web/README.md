@@ -20,8 +20,8 @@ apps/web/
 ├── data/dedup.js           # GÉNÉRÉ, non versionné — détail des doublons (chemins)
 ├── data/proposals.js       # GÉNÉRÉ, non versionné — détail des propositions (titres)
 ├── build_manifest.py       # produit les trois fichiers data/
-├── publish_apk.py          # copie l'APK ha-remote dans dl/ + QR + dl/apk.js (dl/ non versionné)
-└── dl/                     # GÉNÉRÉ, non versionné : ha-remote.apk, qr.svg, apk.js
+├── publish_apk.py          # APK ha-remote → HA config/www (/local) + QR + dl/apk.js
+└── dl/                     # GÉNÉRÉ, non versionné : qr.svg, apk.js
 ```
 
 ## Lancer
@@ -46,10 +46,11 @@ n'ait pas besoin de `fetch`.
 & "$env:USERPROFILE\.venvs\portal6-home\Scripts\python.exe" apps\web\publish_apk.py
 ```
 
-Copie `apps/ha-remote/.../app-debug.apk` dans `apps/web/dl/`, génère le QR de
-`http://192.168.0.5:8712/dl/ha-remote.apk` (l'IP LAN de la tour — le téléphone ne
-connaît pas `localhost`) et `dl/apk.js` (date, taille) pour la tuile. À relancer après
-chaque build. Sur le téléphone : scanner, télécharger, autoriser « sources inconnues »
+Copie `apps/ha-remote/.../app-debug.apk` dans `features/home/ha/config/www/` (servi par
+Home Assistant sur `http://192.168.0.5:8123/local/ha-remote.apk` — le téléphone joint
+déjà HA, alors que le serveur 8712 côté WSL n'écoute que sur `127.0.0.1`), génère le QR
+et `dl/apk.js` (date, taille) pour la tuile. À relancer après chaque build ; la
+première fois, redémarrer HA (`docker compose restart` dans `features/home/ha`). Sur le téléphone : scanner, télécharger, autoriser « sources inconnues »
 pour le navigateur la première fois.
 
 ## Régénérer les chiffres

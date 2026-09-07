@@ -46,16 +46,11 @@
       </span>
     </a>
 
-  </div>
-
-  <h2>App</h2>
-  <div class="launch">
-
     <div class="app apk" id="apk">
       <span class="ico">📱</span>
       <span class="body">
         <span class="name">HA Remote <i class="dot" id="apk-dot" title="statut"></i></span>
-        <span class="url" id="apk-info">Android · scanner le QR pour installer l'APK</span>
+        <span class="url" id="apk-info">Android · scanner le QR pour installer</span>
       </span>
       <a class="qr" id="apk-qr" href="dl/ha-remote.apk" title="Télécharger l'APK">
         <img src="dl/qr.svg" alt="QR code de l'APK" onerror="this.parentNode.hidden = true">
@@ -116,6 +111,7 @@
   if (apk) {
     apkInfo.textContent = `APK debug du ${apk.built} · ${apk.size_mb} Mo · scanner pour installer`;
     document.getElementById('apk-qr').title = apk.url;
+    document.getElementById('apk-qr').href = apk.url;
     apkDot.className = 'dot ok'; apkDot.title = 'APK publié';
   } else {
     apkInfo.textContent = 'APK non publié — lancer python apps/web/publish_apk.py';
