@@ -481,3 +481,97 @@ Le cadran du Brandt **manque** d'entrées, il n'en a pas trop :
 sur toute la course, on obtient « d'immenses zones mortes et un geste sans récompense ».
 Passer à 8 stations sert donc **deux** objectifs à la fois, et allège la Q5 du poste
 (« que met-on sur l'échelle pour qu'elle ne soit pas vide »).
+
+---
+
+## 10. Architecture d'exécution — qui décide, qui joue
+
+**Vérifié le 2026-09-07 sur l'OpenAPI de l'instance installée** (`http://localhost/api/openapi.yml`,
+170 routes), pas de mémoire — §3 du doc serveur s'applique aussi ici.
+
+### 10.1 Ce qu'AzuraCast sait faire, et ce qu'il ne sait pas
+
+| Besoin (§5, §18) | AzuraCast | Verdict |
+|---|---|---|
+| Créneaux horaires par jour | `schedule_items` sur chaque playlist | ✅ natif |
+| Proportions entre contenus | `weight` (poids relatif entre playlists actives) | ✅ natif |
+| Ordre de lecture | `order` : `random` / `shuffle` / `sequential` | ✅ natif |
+| Sweepers, IDs, jingles | `type: once_per_x_songs` / `once_per_hour` + `is_jingle` | ✅ natif |
+| Anti-répétition courte | `avoid_duplicates` | ⚠️ partiel |
+| **Sélection par contrainte** (« US 90s, E3–E4, pas joué récemment ») | — | ❌ **absent** |
+| **Cooldown 7 jours** (interdit n°3) | — | ❌ **absent** |
+| **Énergie E1–E5** comme critère | — | ❌ **absent** |
+
+Une playlist AzuraCast est une **liste de fichiers explicite**, pas une requête. Il n'existe
+pas de « smart playlist ». Le §17 (« faire mieux que : prends un fichier dans tel dossier »)
+n'est donc **pas** réalisable dans AzuraCast seul.
+
+### 10.2 Décision : le repo décide, AzuraCast exécute
+
+C'est la seule architecture qui satisfait à la fois §18, §21 (« le système exécute une
+intention éditoriale ») et l'interdit n°7 (« ne pas enfermer l'éditorial dans AzuraCast »).
+
+```
+.docs / features/radio/          ← l'INTENTION (versionnée, survit au moteur)
+  grilles *.json  +  métadonnées fichiers
+              ↓
+      générateur (repo)          ← la DÉCISION
+  contraintes → candidats → pondération → cooldown/historique
+              ↓  API
+        AzuraCast                ← l'EXÉCUTION
+  playlists + schedule_items → Liquidsoap → Icecast
+```
+
+Le générateur **remplace périodiquement le contenu** des playlists AzuraCast. La grille et
+les poids restent lisibles côté AzuraCast, mais **aucune décision éditoriale n'y est prise**.
+
+**Endpoints utilisés** (tous présents sur l'instance) :
+
+| Route | Usage |
+|---|---|
+| `POST /station/{id}/playlists` | créer les playlists de la grille |
+| `PUT /station/{id}/playlist/{id}` | poser `weight`, `order`, `schedule_items` |
+| `POST /station/{id}/playlist/{id}/import` | **pousser la sélection calculée** |
+| `DELETE /station/{id}/playlist/{id}/empty` | vider avant repush |
+| `GET /station/{id}/files/list` | lire la médiathèque indexée |
+| `POST /station/{id}/files/bulk` | écrire les métadonnées en masse |
+| `GET /station/{id}/schedule` | relire la grille effective |
+
+### 10.3 Les Custom Fields — comment l'énergie devient visible
+
+`/admin/custom_fields` permet de déclarer des champs maison (`energy`, `era`, `culture`,
+`category`, `type`), chacun avec **`auto_assign`** : un tag ID3v2 dont AzuraCast aspire la
+valeur automatiquement au scan.
+
+Conséquence : si le repo écrit l'énergie **dans les tags ID3** des fichiers, elle remonte
+seule dans AzuraCast, puis dans l'API now-playing. **C'est la réponse à Q5 du présent doc**
+(« comment le serveur publie-t-il l'énergie du créneau en cours ? ») **et au besoin du poste**
+([design-brandt-rk711s.md](design-brandt-rk711s.md) §8) : le visualiseur peut lire l'énergie
+sans qu'on invente une API maison.
+
+### 10.4 Le vrai blocage : aucun fichier n'a d'énergie
+
+Le pipeline ci-dessus est inerte tant que les fichiers ne portent pas de métadonnées :
+
+- **895 fichiers longs** (mixtapes, sets) : **aucun** n'a d'énergie.
+- `enrichment.energy` de `music.db` ne couvre que les ~13 900 tracks venus de Spotify, et
+  c'est une valeur Spotify, pas une décision éditoriale.
+- 52 % des fichiers locaux n'ont même pas d'artiste.
+
+C'est le chantier §6.1, et il conditionne tout le reste.
+
+### 10.5 V1 proposée — une radio qui tourne avant d'être parfaite
+
+**Proposition, à arbitrer.** Attendre le tagging complet, c'est n'avoir aucune station qui
+diffuse avant longtemps. La v1 respecte la **structure** de la grille sans sa granularité
+énergétique :
+
+1. Playlists par **nature de contenu** (mixtapes longues / tracks / interludes) et par
+   famille — ce que les dossiers permettent déjà de distinguer.
+2. Créneaux et poids de la grille **appliqués tels quels** : la forme de la journée
+   (interlude à 04h, signature à 20h, live sets) est respectée.
+3. L'énergie arrive ensuite, **sans refonte** : le générateur filtre déjà sur un champ
+   `energy`, il est simplement vide au départ.
+
+Ce qui est perdu en v1 : la courbe E1→E5 fine et le cooldown 7 jours. Ce qui est gagné :
+des stations qui diffusent, donc de quoi écouter, corriger et tagger **en écoutant**.
