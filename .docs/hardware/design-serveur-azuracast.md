@@ -639,3 +639,31 @@ pour l'ensemble des locations. Supprimée.
 Côté grille, `features/radio/` matérialise le §10 : les grilles Midnight Club et Stage 303
 sont versionnées en JSON et poussées par `push_schedule.py`. La grille Midnight Club est
 **en place et vérifiée** via `/station/1/schedule`.
+
+### 2026-09-07 (bis) — Q3 tranchée, et le piège des permissions de la racine
+
+**Q3 est mesurée : le pont 9p tient ~0,5 fichier/s** (37 → 77 fichiers en 75 s), soit
+**~9 h pour indexer les 17 985 fichiers**. Lent, mais **non rédhibitoire** : c'est un coût
+unique, les scans suivants étant incrémentaux. Le repli SMB/CIFS envisagé n'a pas lieu
+d'être. La prédiction du 2026-09-06 était juste : le coût est sur le **parcours**
+d'arborescence, pas sur la lecture d'un fichier en diffusion.
+
+**Le piège qui a coûté trois tentatives.** Après le passage en `rw`, le scan n'indexait
+toujours que 9 fichiers puis s'arrêtait — en sortant pourtant en succès. Cause :
+`/media/lib` est un **répertoire créé par Docker** pour porter les trois montages, et il
+appartient à `root:root` en `755`. Les *sous-dossiers* montés étaient bien inscriptibles,
+mais AzuraCast crée ses répertoires de travail **à la racine de la storage location**, et
+échouait là. Corrigé par :
+
+```bash
+docker exec -u root azuracast chmod 777 /media/lib
+```
+
+> ⚠️ **Fragilité à connaître : ce `chmod` ne survit pas à un `docker compose up -d`.**
+> Docker recrée le répertoire parent en `root:root` à chaque recréation du conteneur.
+> **Après toute modification de l'override, rejouer le `chmod` puis relancer le scan**,
+> sinon l'indexation s'arrête silencieusement — le symptôme est un scan qui « réussit »
+> en n'indexant presque rien.
+
+Diagnostic à retenir : `docker exec -u azuracast azuracast sh -c "mkdir -p /media/lib/.t"`
+doit réussir. S'il répond `Permission denied`, le scan ne fonctionnera pas.
