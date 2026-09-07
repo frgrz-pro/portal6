@@ -20,7 +20,8 @@ apps/web/
 ├── data/dedup.js           # GÉNÉRÉ, non versionné — détail des doublons (chemins)
 ├── data/proposals.js       # GÉNÉRÉ, non versionné — détail des propositions (titres)
 ├── build_manifest.py       # produit les trois fichiers data/
-├── publish_apk.py          # APK ha-remote → HA config/www (/local) + QR + dl/apk.js
+├── install.html            # page d'installation (copiée dans le www de HA) : Android → APK, iPhone → info
+├── publish_apk.py          # APK + install.html → HA config/www (/local), QR + dl/apk.js
 └── dl/                     # GÉNÉRÉ, non versionné : qr.svg, apk.js
 ```
 
@@ -47,9 +48,10 @@ n'ait pas besoin de `fetch`.
 ```
 
 Copie `apps/ha-remote/.../app-debug.apk` dans `features/home/ha/config/www/` (servi par
-Home Assistant sur `http://192.168.0.5:8123/local/ha-remote.apk` — le téléphone joint
-déjà HA, alors que le serveur 8712 côté WSL n'écoute que sur `127.0.0.1`), génère le QR
-et `dl/apk.js` (date, taille) pour la tuile. À relancer après chaque build ; la
+Home Assistant — le téléphone joint déjà HA, alors que le serveur 8712 côté WSL n'écoute
+que sur `127.0.0.1`), copie `install.html` à côté, génère le QR de
+`http://192.168.0.5:8123/local/install.html` (la page aiguille : Android → APK, iPhone
+→ message « pas d'app iOS ») et `dl/apk.js` (date, taille) pour la tuile. À relancer après chaque build ; la
 première fois, redémarrer HA (`docker compose restart` dans `features/home/ha`). Sur le téléphone : scanner, télécharger, autoriser « sources inconnues »
 pour le navigateur la première fois.
 

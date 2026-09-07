@@ -6,8 +6,11 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
 
 ## Questions ouvertes
 
-- [ ] Le téléphone est-il Android ? (supposé oui vu le profil Kotlin — à confirmer,
-  si iPhone dans le foyer → argument KMP)
+- [ ] ~~Le téléphone est-il Android ?~~ → **les deux** (2026-09-08) : le S20 Ultra sert
+  au dev, mais François a scanné le QR d'installation avec **un iPhone**. Ça relance
+  l'argument KMP (cœur HA/modes partagé, UI SwiftUI) — mais un build iOS installable
+  par lien demande Mac + Xcode + compte développeur Apple + HTTPS. À arbitrer : est-ce
+  que l'iPhone doit vraiment avoir l'app, ou l'app HA officielle suffit-elle ?
 - [x] ~~Mapping exact des 8 boutons~~ → **2 multiprises × 4 prises, confirmé
   (Shelly Power Strip 4 Gen4)** ; la grille 2 × 4 est la bonne.
 - [x] ~~Noms des boutons : par lampe ou par prise ?~~ → **génériques, tranché le

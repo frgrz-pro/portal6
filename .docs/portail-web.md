@@ -41,6 +41,12 @@ ici, les choix et ce qui reste à trancher.
   Python) + `apps/web/dl/apk.js` pour la tuile. **Pas via le portail** : le serveur 8712
   tourne côté WSL et n'écoute que sur `127.0.0.1` (invisible du LAN), alors que HA sur
   8123 est déjà joint par le téléphone. À relancer après chaque build.
+- **Le QR pointe sur une page d'installation, pas sur l'APK** (`install.html`, copiée
+  dans le `www` de HA) : elle détecte l'appareil — Android → téléchargement immédiat de
+  l'APK ; iPhone → « pas encore d'app iOS » (HA Remote est Android-only) ; ordinateur →
+  les deux. Le bouton iOS s'activera tout seul le jour où `www/ios/manifest.plist`
+  existe (`itms-services://`, qui exige HTTPS + IPA signé ad hoc + Mac/Xcode + compte
+  développeur Apple — rien de tout ça n'existe aujourd'hui).
 - **Statique, zéro build, zéro framework.** Node n'est installé nulle part sur ce
   poste (ni Windows ni WSL) — les scripts `npm run` du `package.json` ne tournent
   pas ici. Python sert le dossier (`python -m http.server`).
@@ -108,3 +114,9 @@ Tuile HA Remote dans Home, QR à scanner depuis le téléphone. Premier essai vi
 (8712) raté depuis l'iPhone : 8712 = WSL, `127.0.0.1` seulement. Bascule sur HA `/local/`
 (`config/www` créé, HA redémarré une fois). `segno` ajouté au venv `portal6-home` et à
 `requirements.txt`. Vérifié : QR chargé, `/local/ha-remote.apk` → 200, 17 Mo.
+
+### 2026-09-08 — page d'installation par appareil
+François a scanné le QR avec son iPhone et reçu l'APK. Le QR pointe désormais sur
+`install.html` (servie par HA), qui aiguille selon l'appareil ; côté iOS, message honnête :
+pas d'app iOS, et ce qu'il faudrait pour en installer une par lien. Vérifié dans le
+navigateur (page servie, détection UA testée sur un UA iPhone et un UA Android).
