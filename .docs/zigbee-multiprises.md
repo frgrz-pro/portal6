@@ -18,13 +18,17 @@ multiprises Shelly ──Wi-Fi (LAN)──▶ intégration Shelly ───┘  
 
 ## Questions ouvertes
 
-- [ ] **Mettre les 2 Shelly sur le Wi-Fi** (app Shelly ou AP `ShellyPowerStrip4G4-xxxx`
-  → web UI 192.168.33.1), puis **réservation DHCP** sur le Mercusys
-  ([infra-reseau.md](infra-reseau.md), procédure déjà écrite) : HA en Docker
-  sans mDNS les ajoute **par IP**, elles ne doivent pas bouger.
-- [ ] Profil radio des Shelly : ils sortent d'usine en **Matter** (le mode Zigbee
-  = Bouton 1 maintenu + 5 appuis Bouton 4). Ne **pas** activer Zigbee ; Matter
-  inutile ici ; cloud Shelly à désactiver dans la web UI.
+- [ ] **Réservations DHCP** pour les 2 Shelly (`.78` / `.98`, MAC dans
+  [infra-reseau.md](infra-reseau.md)) : HA les joint par IP, si le bail change
+  les 8 prises passent « unavailable » jusqu'à correction de l'hôte dans HA.
+- [ ] **Firmware Shelly** : 1.7.99 installé, **2.0.0 stable** proposé (entité
+  `update.multiprise_x_firmware` dans HA). Majeure → faire une multiprise
+  d'abord, vérifier que HA la retrouve, puis l'autre. Pas urgent.
+- [ ] **A / B = laquelle physiquement ?** Provisoire : A = `.78` (la première
+  connectée), B = `.98`. À confirmer, puis nommer les prises par lampe.
+- [ ] Mot de passe sur la web UI des Shelly (`auth`) : l'AP et le BLE sont coupés,
+  il reste l'accès HTTP local sans auth depuis le LAN. Acceptable en LAN privé ;
+  si on met un mot de passe, le renseigner aussi dans HA (option de l'entrée).
 - [ ] **Qui pilote quoi** : quel bouton (et quel geste) commande quelle prise ?
   (tableau dans la section Boutons, à remplir une fois les prises nommées).
 - [ ] **Latence ZHA sur les TS0044** : des retours communauté signalent ~1 s entre
@@ -99,17 +103,34 @@ Conséquence : **le Zigbee ne sert qu'aux boutons MOES**. Les Shelly ne sont
 jamais mis en mode Zigbee (la combinaison Bouton 1 + 5 × Bouton 4 bascule
 Matter ↔ Zigbee : ne pas y toucher).
 
-Mise en route côté HA (Docker Desktop, sans mDNS → ajout manuel) :
+Mise en route côté HA (Docker Desktop, sans mDNS → ajout manuel) — **fait le
+2026-09-07** :
 
-1. Shelly sur le Wi-Fi 2,4 GHz (app Shelly, ou AP du device → 192.168.33.1),
-   réservation DHCP sur le Mercusys, firmware à jour depuis la web UI.
-2. HA → Paramètres → Appareils et services → Ajouter → **Shelly** → hôte = IP
-   de la multiprise. HA configure lui-même le *outbound websocket* du Shelly vers
-   `ws://192.168.0.5:8123/api/shelly/ws` (IP réservée du PC, port publié par le
-   compose — OK sans host networking).
-3. Renommer les 4 prises par usage (`switch.salon_lampe_bureau`…), désactiver
-   les prises inutilisées.
-4. Idem pour la 2e multiprise.
+1. ✅ Shelly sur le Wi-Fi 2,4 GHz. Piège rencontré : le QR code sur la
+   multiprise est le code **Matter** (Apple Home), pas la mise sur Wi-Fi.
+   L'AP n'était pas actif d'usine → **Boutons 1 + 4 maintenus 5 s** (LED bleue),
+   puis téléphone sur `ShellyPStripG4-xxxx` → http://192.168.33.1 → Wi-Fi.
+2. ✅ Ajout dans HA par l'API (config flow `shelly`, hôte + port 80) :
+
+   | | Multiprise A | Multiprise B |
+   |---|---|---|
+   | IP | `192.168.0.78` | `192.168.0.98` |
+   | id Shelly | `shellypstripg4-48f6eedd4148` | `shellypstripg4-d885aceb742c` |
+   | modèle / fw | S4PL-00416EU, 1.7.99 | idem |
+   | RSSI | −65 dBm | −71 dBm |
+
+3. ✅ **Verrouillage** (François : « quelqu'un qui passe peut se connecter à mes
+   prises ») : AP Wi-Fi ouvert **désactivé**, Bluetooth (+ RPC BLE) **désactivé**,
+   Matter **désactivé** (reboot), cloud déjà off. Il ne reste que l'API HTTP
+   locale sur le LAN, celle que HA utilise. Pour récupérer l'AP un jour (nouveau
+   Wi-Fi) : Boutons 1 + 4, 5 s.
+4. ✅ Renommage dans le registre HA (WebSocket `config/entity_registry/update`) :
+   devices « Multiprise A/B », entités `switch.multiprise_a_prise_1…4` et
+   `switch.multiprise_b_prise_1…4` — **exactement les `entityId` déjà codés dans
+   l'app** (`DefaultLights`). Capteurs : `sensor.multiprise_a_prise_1_power` /
+   `_energy`, `update.multiprise_a_firmware`, etc.
+5. ✅ Test réel : `switch.turn_on` puis `turn_off` sur A prise 1 par l'API HA,
+   état renvoyé cohérent. À faire ensuite : nommer chaque prise par lampe.
 
 ## Plan retenu (option B) — historique, coordinateur pour les boutons
 
@@ -275,3 +296,9 @@ Shelly native**, Zigbee écarté (bug d'inondation documenté avec exactement de
 Power Strip 4 Gen4, sans correctif). Le dongle/ZHA ne sert qu'aux boutons MOES.
 Doc retitré, architecture posée, questions ouvertes réécrites (Wi-Fi + DHCP
 réservé, ne pas activer le profil Zigbee des Shelly, portée sans routeur).
+
+### 2026-09-07 (septies)
+Les 2 Shelly sur le Wi-Fi (`.78`, `.98`), ajoutées dans HA par l'API, verrouillées
+(AP/BLE/Matter off), entités renommées `switch.multiprise_{a,b}_prise_{1..4}`,
+on/off réel testé. **Backend lampes opérationnel.** Reste : réservations DHCP,
+A/B physique + noms des lampes, firmware 2.0.0, boutons MOES à appairer.

@@ -8,11 +8,15 @@ pénibles et les apps constructeur.
 
 - [ ] Le téléphone est-il Android ? (supposé oui vu le profil Kotlin — à confirmer,
   si iPhone dans le foyer → argument KMP)
-- [ ] Mapping exact des 8 boutons : 2 colonnes = 2 multiprises ? Combien de prises
-  pilotables par multiprise (2 ? 4 ?) et combien de lampes par prise ?
+- [ ] ~~Mapping exact des 8 boutons~~ → **2 multiprises × 4 prises, confirmé
+  (Shelly Power Strip 4 Gen4)** ; la grille 2 × 4 est la bonne. Reste : quelle
+  lampe sur quelle prise, et A/B = laquelle physiquement.
 - [ ] Noms des boutons : par lampe ("Salon", "Biblio"…) ou par prise physique ?
-- [ ] Backend lights : Home Assistant (cf. [zigbee-multiprises.md](zigbee-multiprises.md))
-  — dépend de l'identification des multiprises.
+- [ ] **Client HA réel à écrire** (`HaLightsRepository`) : le backend est prêt
+  (cf. [zigbee-multiprises.md](zigbee-multiprises.md)), les 8 entités portent
+  déjà les `entityId` de `DefaultLights`. Choix à faire : OkHttp (REST + WebSocket
+  natif, une seule dépendance) ; URL + token saisis dans un écran Réglages de
+  l'app (le token est une donnée perso, jamais dans le code ni le repo).
 - [ ] Plusieurs pièces ou une seule ? Aujourd'hui « Salon » = les 8 prises. Le
   découpage réel dépend du mapping des multiprises (question ci-dessus).
 - [ ] Tuile Salon : un appui fait défiler les configs en boucle. Alternative si
@@ -113,3 +117,10 @@ lui, n'a pas changé.
 (`ConfigStore`), dépôts en singletons de process, tuiles « Salon » (défilement des
 configs) et « Mute TV », `TvRepository` mocké, onglet TV rendu vivant. Build OK,
 non encore testé sur device.
+
+### 2026-09-07
+**Backend réel disponible** : Home Assistant (`http://192.168.0.5:8123` sur le LAN)
+expose `switch.multiprise_a_prise_1…4` et `switch.multiprise_b_prise_1…4` — les
+identifiants codés dans `DefaultLights` depuis le scaffold, sans rien changer.
+Multiprises = Shelly Wi-Fi (pas Zigbee), sans incidence pour l'app qui ne parle
+qu'à HA. Prochaine étape dev : `HaLightsRepository` + écran Réglages (URL, token).

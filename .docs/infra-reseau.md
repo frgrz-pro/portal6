@@ -40,6 +40,8 @@ routeur lui-même.
 |---|---|---|---|---|
 | **Tour DevLab** (Wi-Fi) | `R2D2` | `192.168.0.5` | `EC-3A-56-BD-04-5A` | ✅ **réservée** (bail *Permanent*) |
 | **Shield TV Pro** | `Android` | `192.168.0.52` | `AC-3A-E2-E8-74-6A` | ✅ **réservée** (bail *Permanent*) |
+| **Multiprise A** (Shelly Power Strip 4 Gen4) | `shellypstripg4-48f6eedd4148` | `192.168.0.78` | `48-F6-EE-DD-41-48` | 🔴 **à réserver** — HA la joint par IP |
+| **Multiprise B** (Shelly Power Strip 4 Gen4) | `shellypstripg4-d885aceb742c` | `192.168.0.98` | `D8-85-AC-EB-74-2C` | 🔴 **à réserver** — idem |
 
 **Constaté le 2026-09-06 : les deux réservations étaient déjà posées.** Vérifié côté tour
 (`192.168.0.5` effective) et côté routeur (bail *Permanent* dans la liste des clients DHCP).
@@ -125,3 +127,9 @@ Device relevé : `TRMNL-OG-RT97Q4` → `192.168.0.117`, MAC `A4-CB-8F-2B-34-BC`,
 dynamique. Le nom du client **confirme le modèle OG** (indépendamment de la fiche
 produit). Décidé : **pas de réservation DHCP** — le TRMNL est pull-only, son IP n'est
 jamais composée. À rouvrir seulement le jour où on passera en BYOS.
+
+### 2026-09-07 — Shelly sur le LAN
+Deux Shelly Power Strip 4 Gen4 rejoignent le Wi-Fi : `.78` (A) et `.98` (B), bail
+dynamique. **Réservation à poser** (procédure ci-dessus) : Home Assistant les
+adresse par IP, pas par mDNS (Docker Desktop). AP ouvert, Bluetooth et Matter
+désactivés sur les deux ([zigbee-multiprises.md](zigbee-multiprises.md)).
