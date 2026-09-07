@@ -24,7 +24,7 @@ plus. `hardware/` contient les notes de design de la radio Brandt (BOM détaill�
 ## Index
 
 - [app-remote.md](app-remote.md) — l'app télécommande (Kotlin) : UI, stack, architecture
-- [zigbee-multiprises.md](zigbee-multiprises.md) — les 2 multiprises Zigbee : comment ça marche, comment les piloter
+- [zigbee-multiprises.md](zigbee-multiprises.md) — domotique lampes : 2 multiprises Shelly (Wi-Fi) + 4 boutons MOES (Zigbee, dongle Sonoff + pont TCP), le tout dans Home Assistant
 - [tv-mute.md](tv-mute.md) — couper le son de la TV : Shield / TCL soundbar / télé (phase 2)
 - [infra-reseau.md](infra-reseau.md) — réseau domestique : Mercusys, OpenVPN/NordVPN, IPs
 - [trmnl.md](trmnl.md) — setup du premier TRMNL : comptes `.sport` / `.case`, plugin Google Calendar, ordre de mise en route

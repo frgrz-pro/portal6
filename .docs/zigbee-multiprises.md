@@ -1,29 +1,40 @@
-# Multiprises Zigbee — comprendre et piloter
+# Multiprises Shelly + boutons Zigbee — piloter les lampes depuis HA
 
-2 multiprises Zigbee, plusieurs lampes branchées sur chaque prise. Objectif : les
-piloter depuis l'app remote ([app-remote.md](app-remote.md)). Depuis le
-2026-09-07, le même réseau accueille aussi **4 interrupteurs physiques Zigbee**
-(section dédiée plus bas).
+*(fichier historiquement nommé `zigbee-multiprises.md` : les multiprises se sont
+révélées être des Shelly Wi-Fi, le nom est resté pour ne pas casser les liens)*
+
+2 multiprises **Shelly Power Strip 4 Gen4** (Wi-Fi, 4 prises + mesure de conso
+par prise) et 4 boutons **MOES TS0044** (Zigbee, à pile), plusieurs lampes
+branchées sur chaque prise. Objectif : tout piloter depuis Home Assistant, donc
+depuis l'app remote ([app-remote.md](app-remote.md)) et les boutons.
+
+Architecture retenue le 2026-09-07 :
+
+```
+boutons MOES ──Zigbee──▶ dongle Sonoff ──pont TCP──▶ ZHA ┐
+                                                          ├─ Home Assistant ──▶ app remote / TRMNL
+multiprises Shelly ──Wi-Fi (LAN)──▶ intégration Shelly ───┘         (automatisations bouton → prise)
+```
 
 ## Questions ouvertes
 
-- [ ] **Qui pilote quoi** : quel bouton (et quel geste) commande quelle prise/lampe ?
-  (tableau à remplir dans la section Interrupteurs une fois les multiprises
-  appairées et leurs prises nommées).
+- [ ] **Mettre les 2 Shelly sur le Wi-Fi** (app Shelly ou AP `ShellyPowerStrip4G4-xxxx`
+  → web UI 192.168.33.1), puis **réservation DHCP** sur le Mercusys
+  ([infra-reseau.md](infra-reseau.md), procédure déjà écrite) : HA en Docker
+  sans mDNS les ajoute **par IP**, elles ne doivent pas bouger.
+- [ ] Profil radio des Shelly : ils sortent d'usine en **Matter** (le mode Zigbee
+  = Bouton 1 maintenu + 5 appuis Bouton 4). Ne **pas** activer Zigbee ; Matter
+  inutile ici ; cloud Shelly à désactiver dans la web UI.
+- [ ] **Qui pilote quoi** : quel bouton (et quel geste) commande quelle prise ?
+  (tableau dans la section Boutons, à remplir une fois les prises nommées).
 - [ ] **Latence ZHA sur les TS0044** : des retours communauté signalent ~1 s entre
   appui et action sous ZHA, instantané sous Zigbee2MQTT. À mesurer sur le
   premier bouton appairé ; si c'est gênant, c'est LE déclencheur pour basculer
   sur Z2M (déjà prêt en commentaire dans le compose).
-
-- [ ] **Marque et modèle exacts des multiprises** (étiquette dessous / boîte).
-  C'est LA question bloquante : elle détermine la compatibilité et le nombre de
-  prises pilotables individuellement.
-- [ ] Vendues avec un hub/passerelle constructeur (Tuya, etc.) ou nues ?
-- [ ] Chaque prise est-elle commutable individuellement, ou la multiprise
-  s'allume/s'éteint en bloc ? (+ ports USB pilotables ?)
-- [ ] **Appairer les 2 multiprises** : bouton d'appairage (5 s, LED clignote) →
-  ZHA « Ajouter un appareil ». La fiche ZHA donnera enfin marque/modèle et le
-  nombre de prises pilotables — ça tranche les 3 premières questions.
+- [ ] Portée Zigbee sans routeur : le réseau n'a que le coordinateur + 4 boutons à
+  pile (les Shelly ne relaient pas puisqu'ils restent en Wi-Fi). Si un bouton
+  décroche à l'autre bout de l'appartement : rallonge USB pour le dongle, puis
+  une prise Zigbee routeur à ~10 € (ligne au BOM) — pas les Shelly en Zigbee.
 - [ ] Firmware du dongle : Z-Stack **rev 20210708** d'usine. Fonctionne avec ZHA ;
   Koenkk recommande ≥ 20211217 (stabilité, plus de routes). Mise à jour possible
   plus tard via le bootloader série (cc2538-bsl), **pas avant** que le réseau
@@ -72,10 +83,37 @@ Candidats hôte, par ordre de préférence :
 | Raspberry Pi 4/5 dédié + HA OS | Plan B si la tour tarde — ~80-120 € tout compris, la solution HA la plus documentée |
 | Mini-PC N100 d'occasion/neuf | Plan B' — ~120-150 €, plus costaud qu'un Pi, pourrait même remplacer la tour |
 
-## Plan retenu (option B)
+## Multiprises : Shelly Power Strip 4 Gen4, en Wi-Fi (tranché le 2026-09-07)
 
-1. Identifier les multiprises → vérifier sur [zigbee2mqtt.io/supported-devices](https://www.zigbee2mqtt.io/supported-devices/)
-   et la liste ZHA.
+Identifiées le 2026-09-07 : **Shelly Power Strip 4 Gen4** — 4 prises commutables
+individuellement, mesure de conso par prise, 16 A total / 12 A par prise,
+radios Wi-Fi + Bluetooth + Zigbee + Matter (profil Matter par défaut, Zigbee en
+remplacement de Matter, Wi-Fi toujours actif).
+
+| Mode | Ce qu'on a | Verdict |
+|---|---|---|
+| **Wi-Fi + intégration Shelly native de HA** | 4 `switch.*` + capteurs puissance/énergie par prise, MAJ firmware depuis HA, API RPC locale, webhooks, web UI embarquée ; indépendant du dongle et du pont | **Retenu** |
+| Zigbee via ZHA | On/Off par prise, et le Shelly relaie le mesh | **Écarté** : bug connu — deux Power Strip 4 Gen4 en Zigbee inondent le réseau (0,5–1,5 msg/s au repos, coordinateur CC2652 qui décroche), aucune correction Shelly à janv. 2026, les utilisateurs touchés sont repassés en Wi-Fi. Perte du BTHome et pas de garantie sur la conso par prise |
+
+Conséquence : **le Zigbee ne sert qu'aux boutons MOES**. Les Shelly ne sont
+jamais mis en mode Zigbee (la combinaison Bouton 1 + 5 × Bouton 4 bascule
+Matter ↔ Zigbee : ne pas y toucher).
+
+Mise en route côté HA (Docker Desktop, sans mDNS → ajout manuel) :
+
+1. Shelly sur le Wi-Fi 2,4 GHz (app Shelly, ou AP du device → 192.168.33.1),
+   réservation DHCP sur le Mercusys, firmware à jour depuis la web UI.
+2. HA → Paramètres → Appareils et services → Ajouter → **Shelly** → hôte = IP
+   de la multiprise. HA configure lui-même le *outbound websocket* du Shelly vers
+   `ws://192.168.0.5:8123/api/shelly/ws` (IP réservée du PC, port publié par le
+   compose — OK sans host networking).
+3. Renommer les 4 prises par usage (`switch.salon_lampe_bureau`…), désactiver
+   les prises inutilisées.
+4. Idem pour la 2e multiprise.
+
+## Plan retenu (option B) — historique, coordinateur pour les boutons
+
+1. ~~Identifier les multiprises~~ Fait : Shelly Wi-Fi, voir section précédente.
 2. ~~Acheter le coordinateur~~ **Acheté le 2026-09-07 : Sonoff Zigbee 3.0 USB
    Dongle Plus « Dongle-P »** (CC2652P + CP2102N, firmware Z-Stack coordinateur
    d'usine, supporté nativement par ZHA via zigpy-znp). Le Dongle Max Ethernet
@@ -159,8 +197,8 @@ Comment on câble dans HA (une fois les entités nommées) :
 
 Séquence :
 
-1. Appairer les **multiprises d'abord** (routers, elles solidifient le mesh) et
-   nommer chaque prise (`switch.salon_lampe_bureau`…).
+1. Multiprises Shelly intégrées en Wi-Fi et prises nommées
+   (`switch.salon_lampe_bureau`…) — section Multiprises.
 2. Appairer les 4 boutons **à moins de 2 m du dongle**, un par un (bas-gauche
    10 s), nommés par emplacement : `bouton_canape`, `bouton_entree`…
 3. Tester : Outils de développement → Événements → écouter `zha_event` et
@@ -229,3 +267,11 @@ ZHA ~1 s rapportée, Z2M en plan B.
 position Bretagne — l'onboarding recréé l'a bien prise). ZHA n'a encore que le
 coordinateur (zéro entité). `ha_probe.py` corrigé : il cherchait `.env` un
 niveau trop haut depuis le déplacement dans `features/`.
+
+### 2026-09-07 (sexies)
+**Multiprises identifiées : Shelly Power Strip 4 Gen4** — pas des devices
+Zigbee-only mais du Wi-Fi avec Zigbee en option. **Tranché : Wi-Fi + intégration
+Shelly native**, Zigbee écarté (bug d'inondation documenté avec exactement deux
+Power Strip 4 Gen4, sans correctif). Le dongle/ZHA ne sert qu'aux boutons MOES.
+Doc retitré, architecture posée, questions ouvertes réécrites (Wi-Fi + DHCP
+réservé, ne pas activer le profil Zigbee des Shelly, portée sans routeur).

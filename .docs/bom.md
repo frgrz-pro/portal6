@@ -11,7 +11,8 @@ Statuts : ✅ possédé · 🛒 à acheter · ⏸ bloqué (voir « Débloqué pa
 
 | Article | Statut | Prix | Débloqué par |
 |---|---|---|---|
-| Multiprises Zigbee ×2 | ✅ possédé | — | ❓ marque/modèle à identifier ([zigbee-multiprises.md](zigbee-multiprises.md)) |
+| Multiprises ×2 — **Shelly Power Strip 4 Gen4** (Wi-Fi, 4 prises, conso par prise) | ✅ possédé, identifié 2026-09-07 | — | En **Wi-Fi** + intégration Shelly HA, jamais en Zigbee (bug d'inondation connu) ([zigbee-multiprises.md](zigbee-multiprises.md)) |
+| Prise Zigbee routeur (ex. Sonoff S26R2ZB / ZBMINI) | ⏸ seulement si besoin | ~10 € | Si un bouton MOES décroche par manque de portée — les Shelly ne relaient pas en Wi-Fi |
 | **Coordinateur Zigbee** — **Sonoff Zigbee 3.0 USB Dongle Plus « Dongle-P »** (CC2652P, USB) | ✅ acheté 2026-09-07 | ~25 € | Branché sur le PC Windows Docker ; reste à installer le pilote CP210x + lancer le pont TCP ([zigbee-multiprises.md](zigbee-multiprises.md)) |
 | *(le Dongle Max Ethernet pressenti le 2026-08-30 n'a pas été retenu : l'hôte Docker est à portée d'USB, moitié moins cher)* | — | — | — |
 | Boutons Zigbee ×4 — **MOES ESZ-0ZAA-EU** (Tuya TS0044, 4 touches, pile CR2430) | ✅ reçus 2026-09-07 | — | Automatisations HA (pas de binding direct) ([zigbee-multiprises.md](zigbee-multiprises.md)) |
@@ -61,4 +62,6 @@ maintenant » : les deux private plugins sont écrits, l'addon est le seul bloca
 
 ### 2026-09-07
 Coordinateur Zigbee ✅ : Sonoff Dongle-P (USB) acheté à la place du Dongle Max.
-« Tour Docker » = le PC Windows, de fait.
+« Tour Docker » = le PC Windows, de fait. Boutons MOES TS0044 ×4 reçus.
+Multiprises identifiées = Shelly Power Strip 4 Gen4, en Wi-Fi ; prise Zigbee
+routeur en réserve si portée insuffisante pour les boutons.
