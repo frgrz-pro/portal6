@@ -6,7 +6,7 @@ Backend domotique de l'app remote (design : [`.docs/zigbee-multiprises.md`](../.
 ## Dev local (PC Windows, Docker Desktop)
 
 ```powershell
-cd home\ha
+cd features\home\ha
 docker compose up -d
 ```
 
@@ -22,7 +22,7 @@ commité) sous `HA_URL` / `HA_TOKEN`.
 Test rapide de l'API depuis le venv :
 
 ```powershell
-& "$env:USERPROFILE\.venvs\portal6-home\Scripts\python.exe" home\ha\ha_probe.py
+& "$env:USERPROFILE\.venvs\portal6-home\Scripts\python.exe" features\home\ha\ha_probe.py
 ```
 
 ## Zigbee : Sonoff Dongle-P sur le PC Windows

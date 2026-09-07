@@ -1,6 +1,6 @@
 """Sonde Home Assistant : vérifie l'URL/token de .env et liste les switch/light.
 
-Usage : python home/ha/ha_probe.py [entity_id à basculer]
+Usage : python features/home/ha/ha_probe.py [entity_id à basculer]
 Lit HA_URL (défaut http://localhost:8123) et HA_TOKEN dans .env à la racine.
 """
 from __future__ import annotations
@@ -11,7 +11,7 @@ from pathlib import Path
 import requests
 from dotenv import dotenv_values
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]  # features/home/ha/ -> racine du repo
 env = dotenv_values(ROOT / ".env")
 url = (env.get("HA_URL") or "http://localhost:8123").rstrip("/")
 token = env.get("HA_TOKEN")

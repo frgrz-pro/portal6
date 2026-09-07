@@ -21,8 +21,6 @@ piloter depuis l'app remote ([app-remote.md](app-remote.md)). Depuis le
 - [ ] Vendues avec un hub/passerelle constructeur (Tuya, etc.) ou nues ?
 - [ ] Chaque prise est-elle commutable individuellement, ou la multiprise
   s'allume/s'éteint en bloc ? (+ ports USB pilotables ?)
-- [ ] **Jeton longue durée HA → `.env` `HA_TOKEN`** : sans lui Claude ne peut ni
-  sonder les entités (`ha_probe.py`), ni corriger la localisation, ni brancher l'app.
 - [ ] **Appairer les 2 multiprises** : bouton d'appairage (5 s, LED clignote) →
   ZHA « Ajouter un appareil ». La fiche ZHA donnera enfin marque/modèle et le
   nombre de prises pilotables — ça tranche les 3 premières questions.
@@ -225,3 +223,9 @@ Modèle identifié dans la foulée : **MOES ESZ-0ZAA-EU = Tuya TS0044** (à pile
 4 × 3 gestes, appairage bas-gauche 10 s). Binding direct impossible (commandes
 Tuya propriétaires) → automatisations HA, tranché. Risque à mesurer : latence
 ZHA ~1 s rapportée, Z2M en plan B.
+
+### 2026-09-07 (quinquies)
+`HA_TOKEN` + `HA_URL` posés dans `.env` : l'API répond (2026.9.1, tz Paris, FR,
+position Bretagne — l'onboarding recréé l'a bien prise). ZHA n'a encore que le
+coordinateur (zéro entité). `ha_probe.py` corrigé : il cherchait `.env` un
+niveau trop haut depuis le déplacement dans `features/`.
