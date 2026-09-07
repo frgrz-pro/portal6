@@ -22,14 +22,15 @@ data class Mode(
     val label: String get() = "Mode $number"
     val isAllToggle: Boolean get() = number == 1
     val isEditable: Boolean get() = !isAllToggle
-    val isDefined: Boolean get() = isAllToggle || !states.isNullOrEmpty()
+    /** Défini = au moins une prise allumée ; une scène « tout off » vaut « à définir ». */
+    val isDefined: Boolean get() = isAllToggle || states?.any { it.value } == true
 
     /** Vrai si l'état courant des prises est celui du mode (mode 1 : tout allumé). */
     fun matches(lights: List<Light>): Boolean {
         if (lights.isEmpty()) return false
         if (isAllToggle) return lights.all { it.isOn }
         val s = states ?: return false
-        return s.isNotEmpty() && lights.all { s[it.entityId] == it.isOn }
+        return isDefined && lights.all { s[it.entityId] == it.isOn }
     }
 
     companion object {

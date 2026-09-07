@@ -16,7 +16,9 @@ pénibles et les apps constructeur.
 - [x] ~~Tester sur le téléphone~~ → **fait le 2026-09-07** : S20 Ultra branché sur
   HA (`192.168.0.5:8123`), Mode 2 défini depuis l'app = `scene.mode_2` (A2, A3, B3)
   vérifié par l'API. Reste à tester depuis le MOES : touche 2 → ces 3 prises.
-- [ ] Définir les modes 3 et 4 depuis l'app (scènes HA encore vides).
+- [ ] **Définir les modes 3 et 4 depuis l'app** : leurs scènes HA sont vides (tout
+  off) parce qu'ils avaient été définis en mode démo, donc stockés sur le téléphone
+  seulement. Le MOES joue bien `scene.mode_3/4` (logbook HA) → il éteint tout.
 - [ ] Interprétation « 4 modes ↔ 4 boutons » : retenu **mode n = touche n**, identique
   sur chacun des 4 MOES (voir Décisions). Si François voulait plutôt « un MOES = un
   mode », seule l'automatisation HA change (`ha_modes_setup.py`), pas l'app.
@@ -186,6 +188,12 @@ mode 2-4 ouvre son édition, les tuiles servent de filtre, Enregistrer → le sw
 pilote ce mode (ON = filtre allumé / reste éteint, OFF = tout éteint). Implémenté
 sans toucher au modèle ni à HA (une scène = un filtre). Retiré : dialogue d'édition,
 switch All, bouton Turn off. Testé sur le S20 Ultra : édition A1+A3+B2, ON, OFF.
+
+### 2026-09-07 (octies) — « le MOES n'est pas synchro »
+Faux positif : le logbook HA montre touche 3/4 → `scene.mode_3/4` activées, mais ces
+scènes étaient vides (modes définis en mode démo, jamais poussés dans HA). Corrigé dans
+l'app : une scène « tout off » est affichée « à définir » (et n'est plus « sélectionnée »
+automatiquement quand tout est éteint).
 
 ### 2026-09-07 (septies) — app branchée sur le vrai HA
 Jeton poussé par adb, app connectée : Mode 2 défini sur le téléphone se retrouve
