@@ -279,7 +279,7 @@ dialog.plan-dialog pre { margin: 12px 24px; }
 dialog.plan-dialog > form > p { padding: 0 24px; }
 
 /* --- launcher (accueil) : une tuile par app --------------------------------- */
-.launch { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-top: 8px; }
+.launch { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-top: 12px; }
 .app {
   display: flex; gap: 14px; align-items: center;
   padding: 16px 18px;

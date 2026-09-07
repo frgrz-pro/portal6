@@ -30,8 +30,10 @@ ici, les choix et ce qui reste à trancher.
   AzuraCast `:80`, Plex `:32400`), ouverte dans un nouvel onglet, avec un témoin
   vert/rouge par `fetch` en `no-cors` (réponse opaque = ça répond, erreur réseau =
   arrêté). Aucune donnée lue. Ajouter une app = une tuile dans `index.html`, pas de
-  config séparée tant qu'il y en a moins d'une dizaine. Les cartes de domaine
-  restent en dessous.
+  config séparée tant qu'il y en a moins d'une dizaine. Les tuiles sont rangées par
+  **catégorie** (Home : HA, routeur, TRMNL ; Media : Playlist Manager, AzuraCast, Plex) —
+  plus de cartes « domaines à venir », elles ne servaient à rien. `music.html` s'appelle
+  **Playlist Manager** dans la nav.
 - **Statique, zéro build, zéro framework.** Node n'est installé nulle part sur ce
   poste (ni Windows ni WSL) — les scripts `npm run` du `package.json` ne tournent
   pas ici. Python sert le dossier (`python -m http.server`).
@@ -90,4 +92,6 @@ occupé par le serveur WSL).
 François se perdait entre les URLs : `index.html` devient le hub de redirection vers
 les six apps (HA, routeur, TRMNL, Music, AzuraCast, Plex) avec témoin de disponibilité.
 Vérifié dans le navigateur : les six répondent, le témoin passe au rouge sur un port
-fermé.
+fermé. Puis nettoyage à la demande de François : plus de texte d'intro, tuiles en deux
+catégories Home / Media, section « domaines du repo » supprimée, Music renommé
+Playlist Manager. Piège rencontré : `style.css` en cache navigateur → lien versionné.

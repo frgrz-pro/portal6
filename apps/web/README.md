@@ -5,8 +5,8 @@ sans framework. Une entrée par domaine ; seule **Music** est remplie pour l'ins
 
 ```
 apps/web/
-├── index.html              # LAUNCHER : une tuile par app (HA, routeur, TRMNL, Music, AzuraCast, Plex) + cartes de domaine
-├── music.html              # MEDIACENTER : playlists × plateformes, groupes, push
+├── index.html              # LAUNCHER : une tuile par app, catégories Home / Media
+├── music.html              # PLAYLIST MANAGER : playlists × plateformes, groupes, push
 ├── music-dedup.html        # DOUBLONS : résolution façon dupeGuru (local, Spotify intra/inter)
 ├── music-proposals.html    # PROPOSITIONS : découpes des monolithes, déplacements de titres
 ├── music-data.html         # inventaire brut de la donnée musique (vault, scans, DB, trous)

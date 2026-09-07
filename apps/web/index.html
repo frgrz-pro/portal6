@@ -13,7 +13,7 @@
     <h1><a href="index.html">Portal6</a></h1>
     <nav>
       <a href="index.html" aria-current="page">Accueil</a>
-      <a href="music.html">Music</a>
+      <a href="music.html">Playlist Manager</a>
       <a href="music-dedup.html">Doublons</a>
       <a href="music-proposals.html">Propositions</a>
       <a href="music-data.html">Données</a>
@@ -22,17 +22,8 @@
 </header>
 
 <main class="wrap">
-  <p class="lede">
-    Le point d'entrée : toutes les apps de la maison au même endroit. Une tuile =
-    une app, le témoin dit si elle répond. Chaque tuile s'ouvre dans un nouvel onglet.
-  </p>
 
-  <h2>Mes apps</h2>
-  <p class="hint">
-    Les services <code>localhost</code> ne répondent que depuis la tour ; le routeur
-    et TRMNL depuis n'importe où sur le réseau.
-  </p>
-
+  <h2>Home</h2>
   <div class="launch">
 
     <a class="app" href="http://localhost:8123/home/overview" target="_blank" rel="noopener"
@@ -62,12 +53,17 @@
       </span>
     </a>
 
+  </div>
+
+  <h2>Media</h2>
+  <div class="launch">
+
     <a class="app" href="music.html" target="_blank" rel="noopener"
        data-ping="http://localhost:8712/music.html">
       <span class="ico">🎧</span>
       <span class="body">
-        <span class="name">Music <i class="dot" title="statut"></i></span>
-        <span class="url">localhost:8712 · mediacenter du portail (playlists, sync)</span>
+        <span class="name">Playlist Manager <i class="dot" title="statut"></i></span>
+        <span class="url">localhost:8712 · playlists, doublons, sync</span>
       </span>
     </a>
 
@@ -91,52 +87,8 @@
 
   </div>
 
-  <h2>Domaines du repo</h2>
-  <p class="hint">
-    Ce que le portail sait lui-même — vues en lecture seule sur la donnée du repo.
-  </p>
-
-  <div class="grid">
-    <div class="card">
-      <span class="tag">actif</span>
-      <h3><a href="music.html">Music</a></h3>
-      <p>Mediacenter : playlists par plateforme (Spotify / local / iTunes), groupes,
-         sync. <a href="music-dedup.html">Doublons</a>,
-         <a href="music-proposals.html">Propositions</a>,
-         <a href="music-data.html">Données</a>.</p>
-    </div>
-
-    <div class="card disabled">
-      <span class="tag">à venir</span>
-      <h3>Home</h3>
-      <p>Domotique (Home Assistant, Shield), affichage TRMNL, calendriers
-         sport / eSport. Voir <code>features/home/</code>.</p>
-    </div>
-
-    <div class="card disabled">
-      <span class="tag">à venir</span>
-      <h3>Lieux</h3>
-      <p>Vault My Maps (2 237 points), KMZ, bases <code>places*.db</code>.
-         Voir <code>.docs/lieux.md</code>.</p>
-    </div>
-
-    <div class="card disabled">
-      <span class="tag">à venir</span>
-      <h3>Hardware</h3>
-      <p>Web-radio Brandt RK 711S, serveur AzuraCast. Notes de design dans
-         <code>.docs/hardware/</code>.</p>
-    </div>
-
-    <div class="card disabled">
-      <span class="tag">à venir</span>
-      <h3>Apps</h3>
-      <p>Télécommande Android (Kotlin/Compose) dans <code>apps/ha-remote/</code>.</p>
-    </div>
-  </div>
-
   <footer>
     <span id="generated"></span>
-    · Site statique, zéro build. Ajouter une app = une tuile dans <code>index.html</code>.
   </footer>
 </main>
 
