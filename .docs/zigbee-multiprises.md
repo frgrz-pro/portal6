@@ -7,15 +7,13 @@ piloter depuis l'app remote ([app-remote.md](app-remote.md)). Depuis le
 
 ## Questions ouvertes
 
-- [ ] **Interrupteurs ×4 : marque/modèle**, et surtout **à pile ou filaire** ?
-  À pile (bouton sans fil type Sonoff SNZB-01, Tuya, Aqara) = *end device*, ne
-  relaie pas le mesh, s'appaire près du coordinateur. Filaire (module encastré
-  avec neutre) = *router*, renforce le mesh. La fiche ZHA le dira à l'appairage.
-- [ ] **Qui pilote quoi** : quel interrupteur commande quelle prise/lampe ?
+- [ ] **Qui pilote quoi** : quel bouton (et quel geste) commande quelle prise/lampe ?
   (tableau à remplir dans la section Interrupteurs une fois les multiprises
   appairées et leurs prises nommées).
-- [ ] Liaison **directe Zigbee (binding)** interrupteur → prise, ou tout passer
-  par des automatisations HA ? Voir la section Interrupteurs pour l'arbitrage.
+- [ ] **Latence ZHA sur les TS0044** : des retours communauté signalent ~1 s entre
+  appui et action sous ZHA, instantané sous Zigbee2MQTT. À mesurer sur le
+  premier bouton appairé ; si c'est gênant, c'est LE déclencheur pour basculer
+  sur Z2M (déjà prêt en commentaire dans le compose).
 
 - [ ] **Marque et modèle exacts des multiprises** (étiquette dessous / boîte).
   C'est LA question bloquante : elle détermine la compatibilité et le nombre de
@@ -129,48 +127,55 @@ Séquence de mise en route :
 Détails électriques notés dans le script : sur le Dongle-P les lignes DTR/RTS
 pilotent reset et bootloader, on les laisse basses à l'ouverture du port.
 
-## Interrupteurs physiques ×4 (reçus le 2026-09-07)
+## Interrupteurs physiques ×4 — MOES « Zigbee Wireless 12 » ESZ-0ZAA-EU (reçus le 2026-09-07)
 
 Rôle dans le plan : la commande **au mur / sur la table**, en complément de l'app.
-Objectif final : un interrupteur = une prise (ou un groupe de lampes), avec
-l'app remote et le TRMNL qui reflètent l'état quoi qu'il arrive.
+Objectif final : un bouton = une prise (ou un groupe de lampes), avec l'app
+remote et le TRMNL qui reflètent l'état quoi qu'il arrive.
 
-Ce qu'un interrupteur Zigbee est, selon le type :
+Fiche (identifié le 2026-09-07) :
 
-| Type | Ce que ZHA en fait | Conséquences |
-|---|---|---|
-| **Bouton sans fil à pile** (SNZB-01, Tuya « scene switch », Aqara…) | Pas d'entité `switch` : il émet des **événements** (`zha_event` : simple / double / long) + un capteur batterie | Ne commande rien tout seul → il faut une automatisation HA **ou** un binding direct ; end device, à appairer près du coordinateur, il ne relaie pas |
-| **Module / interrupteur filaire** (avec neutre) | Une entité `switch.xxx` par voie, comme une prise | Il coupe sa propre ligne ; il peut *aussi* émettre des événements pour commander autre chose ; router, renforce le mesh |
+| | |
+|---|---|
+| Identité Zigbee | **TS0044**, fabricant `_TZ3000_wkai4ga5` (ou `_TZ3000_vp6clf9d`) — plateforme Tuya, produit Eardatek vendu sous MOES, Girier, Lonsonho, Aubess… |
+| Type | **Bouton sans fil à pile** (CR2430) → *end device* : ne relaie pas le mesh, s'appaire près du coordinateur |
+| Touches | 4 touches × 3 gestes (simple / double / long) = les « 12 scènes » du nom commercial |
+| Dans ZHA | Supporté (quirk Tuya intégré). Pas d'entité `switch` : un capteur batterie + des **événements `zha_event`**, un par geste, avec `endpoint_id` 1–4 = la touche et `command` `remote_button_short_press` / `remote_button_double_press` / `remote_button_long_press` |
+| Appairage | **Touche en bas à gauche, 10 s**, jusqu'à ce que les 4 LED clignotent |
+| **Binding direct** | **Non** : le TS0044 envoie des commandes Tuya propriétaires (pas un On/Off standard) → une prise ne peut pas l'écouter en direct. Tout passe par HA |
+| Point d'attention | Latence ~1 s signalée sous ZHA par certains utilisateurs (instantané sous Z2M) — voir question ouverte |
 
-Deux façons de relier interrupteur → prise, **à arbitrer après appairage** :
+Conséquence sur l'arbitrage binding vs automatisation : **tranché, automatisation
+HA obligatoire** pour ces boutons. Donc : PC/HA/pont éteints = boutons morts.
+C'est acceptable (les boutons physiques des multiprises restent la roue de
+secours), et ça renforce le « pont en tâche planifiée + HA `restart: unless-stopped` ».
 
-| Voie | Principe | Verdict pressenti |
-|---|---|---|
-| **Automatisation HA** | `zha_event` du bouton → `switch.toggle` de la prise | Simple, visible dans l'UI, n'importe quelle combinaison ; **dépend de HA + du pont** : si le PC/HA est éteint, le bouton est mort |
-| **Binding Zigbee direct** | ZHA → fiche du bouton → *Manage Zigbee device* → Bindings → lier le cluster On/Off à la prise (ou à un groupe Zigbee) | Marche **sans HA** (radio à radio), latence minimale ; HA voit quand même l'état changer ; mais tous les boutons ne supportent pas le binding (Tuya souvent non) |
+Comment on câble dans HA (une fois les entités nommées) :
 
-Reco : **binding direct quand le bouton le permet** (résilience : la lumière
-marche même PC éteint), automatisation HA pour le reste (double-clic = « tout
-éteindre », etc.).
+- **Blueprint** communautaire « MOES 12 scene switch — easy button mapping »
+  (ZHA + Z2M) : une automatisation par bouton, 12 champs « geste → action ».
+  Ou une automatisation maison par bouton : déclencheur *Événement* `zha_event`
+  avec `device_ieee` + `endpoint_id` + `command`, action `switch.toggle`.
+- Convention proposée : **simple** = toggle la prise associée à la touche,
+  **long** = éteindre tout le groupe, **double** = libre (scène TV, etc.).
 
 Séquence :
 
 1. Appairer les **multiprises d'abord** (routers, elles solidifient le mesh) et
    nommer chaque prise (`switch.salon_lampe_bureau`…).
-2. Appairer les 4 interrupteurs **à moins de 2 m du dongle**, un par un
-   (pile : appui long 5 s sur le bouton d'appairage ; les nommer par
-   emplacement : `bouton_canape`, `bouton_entree`…).
-3. Tester l'événement : Outils de développement → Événements → écouter `zha_event`
-   et appuyer → on voit `command: toggle / on / off` et l'`ieee`.
-4. Remplir le tableau « qui pilote quoi » ci-dessous, puis binding ou
-   automatisation par ligne.
+2. Appairer les 4 boutons **à moins de 2 m du dongle**, un par un (bas-gauche
+   10 s), nommés par emplacement : `bouton_canape`, `bouton_entree`…
+3. Tester : Outils de développement → Événements → écouter `zha_event` et
+   appuyer → noter `device_ieee`, `endpoint_id`, `command`. Mesurer la latence
+   à l'œil (appui → log).
+4. Remplir le tableau « qui pilote quoi », puis une automatisation par bouton.
 
-| Interrupteur (nom ZHA) | Emplacement | Pilote | Voie (binding / HA) |
-|---|---|---|---|
-| — | — | — | — |
-| — | — | — | — |
-| — | — | — | — |
-| — | — | — | — |
+| Bouton (nom ZHA) | Emplacement | Touche 1 | Touche 2 | Touche 3 | Touche 4 |
+|---|---|---|---|---|---|
+| — | — | — | — | — | — |
+| — | — | — | — | — | — |
+| — | — | — | — | — | — |
+| — | — | — | — | — | — |
 
 Portée : un mesh de 2 multiprises (routers) + coordinateur couvre un appartement
 sans souci ; si un bouton à pile à l'autre bout perd le lien, c'est une
@@ -216,3 +221,7 @@ jeton `HA_TOKEN`, appairage des multiprises.
 (bouton à pile = événements `zha_event`, filaire = `switch.*`), arbitrage
 binding direct vs automatisation HA (reco : binding quand supporté), ordre
 d'appairage multiprises → boutons, tableau « qui pilote quoi » à remplir.
+Modèle identifié dans la foulée : **MOES ESZ-0ZAA-EU = Tuya TS0044** (à pile,
+4 × 3 gestes, appairage bas-gauche 10 s). Binding direct impossible (commandes
+Tuya propriétaires) → automatisations HA, tranché. Risque à mesurer : latence
+ZHA ~1 s rapportée, Z2M en plan B.
