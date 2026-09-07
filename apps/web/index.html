@@ -80,16 +80,9 @@
 
   </div>
 
-  <footer>
-    <span id="generated"></span>
-  </footer>
 </main>
 
-<script src="data/manifest.js" onerror="window.PORTAL6_MISSING = true"></script>
 <script>
-  const g = window.PORTAL6 && window.PORTAL6.generated;
-  document.getElementById('generated').textContent =
-    g ? `Données arrêtées au ${g}` : 'Manifeste absent — lancer python apps/web/build_manifest.py';
 
   // Témoin de disponibilité : fetch no-cors → réponse opaque si le service répond,
   // erreur réseau sinon. Aucune donnée lue, juste « ça répond ou pas ».
