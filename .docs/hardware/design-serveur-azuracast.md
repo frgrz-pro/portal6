@@ -555,6 +555,10 @@ teste sur des flux publics.
 6. **Ne pas** dupliquer les MP3 par station.
 7. **Ne pas** lancer un déploiement sans avoir vérifié les conflits de ports (Phase 3).
 8. **Ne pas** considérer une étape comme acquise sans sa vérification.
+9. **Ne JAMAIS utiliser les fonctions de gestion de fichiers d'AzuraCast** (déplacer,
+   renommer, supprimer, uploader) sur `/media/lib`. Depuis le 2026-09-07, ces montages sont
+   en **lecture/écriture** — contraints, voir §4.2 — donc une manipulation dans l'UI
+   **modifierait réellement `M:`**. Les jingles et openers se déposent depuis Windows.
 
 ---
 
@@ -608,3 +612,30 @@ mesurés, Phase 4 passée d'une à **trois storage locations**.
 Enseignement : la cause racine était l'absence de script npm de scan — la racine était
 passée à la main, d'où une dérive silencieuse du périmètre. Corrigé par `npm run scan`
 ([../musique.md](../musique.md)).
+
+### 2026-09-07 — la lecture seule n'était pas tenable, et le montage a été restructuré
+Trois enseignements, tous obtenus par l'expérience et non par supposition.
+
+**1. Une station n'a qu'UNE storage location média** (`media_storage_location` est un
+scalaire). Or les mixtapes (`M:\radio`) et les tracks (`M:\music\library`) sont sur deux
+racines différentes : montées séparément, **une station ne pouvait pas jouer les deux**.
+Montage restructuré en arborescence sous un parent commun `/media/lib` — une seule storage
+location y donne accès. Au passage, `M:\music\workspace` (67 763 fichiers de brouillon) est
+**sorti du périmètre** : le scan passe de 85 040 à ~17 985 fichiers.
+
+**2. Le `:ro` est impossible.** Le scan échoue net :
+`Unable to create a directory at /media/music. mkdir(): Permission denied`. AzuraCast crée
+ses répertoires de travail à la racine d'une storage location, et il n'existe pas d'option
+« lecture seule ». Les montages sont donc passés en **rw**.
+**Conséquence à assumer** : le principe §4 (« la bibliothèque n'appartient pas aux radios »)
+n'est plus garanti par le système de fichiers — il repose désormais sur la discipline, d'où
+le nouvel **interdit n°9**. C'est un affaiblissement réel du garde-fou, acté faute
+d'alternative : sans écriture, aucune station ne peut diffuser.
+
+**3. Une storage location orpheline bloque tout le scan.** L'ancienne `/media/music`, qui
+n'était plus assignée à aucune station, faisait quand même échouer la tâche `check_media`
+pour l'ensemble des locations. Supprimée.
+
+Côté grille, `features/radio/` matérialise le §10 : les grilles Midnight Club et Stage 303
+sont versionnées en JSON et poussées par `push_schedule.py`. La grille Midnight Club est
+**en place et vérifiée** via `/station/1/schedule`.
