@@ -187,6 +187,12 @@ pilote ce mode (ON = filtre allumé / reste éteint, OFF = tout éteint). Implé
 sans toucher au modèle ni à HA (une scène = un filtre). Retiré : dialogue d'édition,
 switch All, bouton Turn off. Testé sur le S20 Ultra : édition A1+A3+B2, ON, OFF.
 
+### 2026-09-07 (sexies) — skill `android`
+Skill projet `.claude/skills/android/` : adb (détection, install, lancement, capture,
+tap) et **pousser du texte dans un champ** via `input text` pour éviter la saisie au
+clavier. Règle : un secret (jeton HA) n'est jamais lu/tapé par Claude — François lance
+lui-même la commande qui lit `.env`.
+
 ### 2026-09-07 (quinquies)
 Ajustements François : 1er appui sur un mode = le jouer (et le sélectionner), 2e appui
 = éditer ; switch horizontal centré avec le label dessous. Corrigé : switch ON du mode 1
