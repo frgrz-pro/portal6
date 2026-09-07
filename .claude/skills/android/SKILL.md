@@ -46,6 +46,12 @@ Crash ? `& $ADB -s R5CN404Q81Z logcat -d -t 300 | Select-String "FATAL|AndroidRu
 & $ADB -s R5CN404Q81Z shell input tap 412 272                          # coordonnées en pixels écran 1080×2400
 ```
 
+⚠️ Lancer `screencap` **depuis bash, pas PowerShell** : la redirection `>` de
+PowerShell 5.1 réencode le flux (BOM + UTF-8) et le PNG est illisible.
+Téléphone verrouillé / volet ouvert ? `shell cmd statusbar collapse`, puis
+`shell input keyevent KEYCODE_WAKEUP`, puis `shell wm dismiss-keyguard` (sans code PIN).
+Onglets de la bottom bar (4 tabs) : y ≈ 2160 ; x ≈ 135 / 405 / 676 / 952.
+
 L'image lue est affichée réduite (900×2000) : **multiplier les coordonnées par 1,2**.
 Deux taps à la suite → mettre ~0,7 s entre, sinon le second est avalé.
 
@@ -86,6 +92,13 @@ n'est pas la tour), jeton longue durée HA (Profil → Sécurité → Jetons d'a
 durée), **Tester** puis **Enregistrer**. La ligne du bas de l'onglet Lights passe de
 « Mode démo » à « connecté ». Tant qu'elle dit « Mode démo », les modes définis dans
 l'app restent locaux (pas écrits dans les scènes HA, donc pas vus par les MOES).
+
+## Radio (AzuraCast)
+
+Onglet **Radio** : URL du serveur dans Réglages (défaut `http://192.168.0.5`). Tant
+que le serveur de la maison n'a pas de station, tester avec `https://demo.azuracast.com`.
+Vérifier que ça joue sans écouter : `shell dumpsys media_session | grep -A3 haremote`
+(→ `state=PLAYING`) ; au premier Play, Android 13 demande la permission notifications.
 
 ## Quick Settings tiles
 

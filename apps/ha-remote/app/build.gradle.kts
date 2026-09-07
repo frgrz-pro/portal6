@@ -46,5 +46,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     // Client Home Assistant : REST + WebSocket, une seule dépendance réseau.
     implementation(libs.okhttp)
+    // Mini player radio (flux AzuraCast) : ExoPlayer + session média (notification, arrière-plan).
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.session)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

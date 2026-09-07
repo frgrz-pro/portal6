@@ -29,6 +29,16 @@ class SettingsStore(context: Context) {
         _settings.value = load()
     }
 
+    /** Base du serveur AzuraCast (API publique `/api/nowplaying`, pas de jeton). */
+    private val _azuracastUrl = MutableStateFlow(prefs.getString(KEY_AZURACAST, DEFAULT_AZURACAST) ?: DEFAULT_AZURACAST)
+    val azuracastUrl: StateFlow<String> = _azuracastUrl
+
+    fun saveAzuracastUrl(url: String) {
+        val clean = url.trim().trimEnd('/').ifBlank { DEFAULT_AZURACAST }
+        prefs.edit().putString(KEY_AZURACAST, clean).apply()
+        _azuracastUrl.value = clean
+    }
+
     private fun load() = HaSettings(
         url = prefs.getString(KEY_URL, "") ?: "",
         token = prefs.getString(KEY_TOKEN, "") ?: "",
@@ -37,5 +47,7 @@ class SettingsStore(context: Context) {
     private companion object {
         const val KEY_URL = "ha_url"
         const val KEY_TOKEN = "ha_token"
+        const val KEY_AZURACAST = "azuracast_url"
+        const val DEFAULT_AZURACAST = "http://192.168.0.5"
     }
 }

@@ -41,6 +41,9 @@ class SettingsViewModel(
 ) : ViewModel() {
 
     val settings: StateFlow<HaSettings> = store.settings
+    val azuracastUrl: StateFlow<String> = store.azuracastUrl
+
+    fun saveAzuracastUrl(url: String) = store.saveAzuracastUrl(url)
 
     private val _testResult = MutableStateFlow<String?>(null)
     val testResult: StateFlow<String?> = _testResult
@@ -79,6 +82,8 @@ fun SettingsScreen(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val connection by viewModel.connection.collectAsStateWithLifecycle()
     val testResult by viewModel.testResult.collectAsStateWithLifecycle()
+    val azuracastUrl by viewModel.azuracastUrl.collectAsStateWithLifecycle()
+    var radioUrl by rememberSaveable(azuracastUrl) { mutableStateOf(azuracastUrl) }
     var url by rememberSaveable(settings.url) { mutableStateOf(settings.url.ifBlank { "http://192.168.0.5:8123" }) }
     var token by rememberSaveable(settings.token) { mutableStateOf(settings.token) }
 
@@ -117,6 +122,28 @@ fun SettingsScreen(
         Spacer(Modifier.height(24.dp))
         Text("Liaison", style = MaterialTheme.typography.titleMedium)
         Text(connection, style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(24.dp))
+        Text("Radio (AzuraCast)", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = radioUrl,
+                onValueChange = { radioUrl = it },
+                label = { Text("URL du serveur") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(8.dp))
+            Button(
+                enabled = radioUrl.isNotBlank() && radioUrl.trim().trimEnd('/') != azuracastUrl,
+                onClick = { viewModel.saveAzuracastUrl(radioUrl) },
+            ) { Text("OK") }
+        }
+        Text(
+            "API publique, pas de jeton. Pour essayer sans station : https://demo.azuracast.com",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Spacer(Modifier.height(24.dp))
         Text(
             "Vider l'URL ou le jeton et enregistrer = retour au mode démo (prises simulées).",

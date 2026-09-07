@@ -1,8 +1,8 @@
 # App remote — télécommande à tout faire
 
-Petite app mobile perso : piloter les lampes (multiprises Zigbee) et, en phase 2,
-couper le son de la TV. Une seule app, minimale, qui remplace les télécommandes
-pénibles et les apps constructeur.
+Petite app mobile perso : piloter les lampes (multiprises Zigbee), écouter les
+web-radios AzuraCast de la maison et, en phase 2, couper le son de la TV. Une seule
+app, minimale, qui remplace les télécommandes pénibles et les apps constructeur.
 
 ## Questions ouvertes
 
@@ -111,13 +111,25 @@ pénibles et les apps constructeur.
   - Architecture : `data/trmnl/TrmnlClient` (OkHttp, même style que `HaClient`),
     `TrmnlRepository` (mock sans clé), clé `user_…` dans Réglages. Le device n'est
     pas choisi en v1 (un seul TRMNL) mais le code garde le `device_id`.
+- **Mini player radio (2026-09-07)** : onglet **Radio** qui consomme les flux
+  AzuraCast. Source = l'API publique `GET /api/nowplaying` (aucun jeton : liste
+  des stations publiques, mount par défaut = URL du flux, artiste/titre/pochette,
+  live, auditeurs). Lecture par **Media3** (ExoPlayer + `MediaSessionService`
+  `player/RadioService`) : le flux survit à l'écran éteint, notification média
+  standard, coupure au débranchement du casque, focus audio géré. L'UI ne parle au
+  lecteur que via un `MediaController` — une seule vérité, la même pour la
+  notification. Un flux live ne se « pause » pas : Stop arrête et libère le flux.
+  URL du serveur dans Réglages (défaut `http://192.168.0.5`, testable sur
+  `https://demo.azuracast.com`). Pochette chargée à la main via OkHttp — pas de lib
+  d'images pour une vignette. Permission `POST_NOTIFICATIONS` demandée au premier
+  Play (sans elle, la lecture marche mais la notification n'apparaît pas).
 - ~~Le Mac de dev n'a ni JDK ni Android Studio ni SDK~~ → **poste de dev = PC Windows depuis le 2026-09-06**, outillage complet et wrapper Gradle commité, cf. [setup-dev-windows.md](setup-dev-windows.md). (Ancienne note : build à faire après
   installation d'Android Studio (le wrapper Gradle jar n'est pas commité,
   `gradle wrapper` le génère.)
 
 ## UI v1
 
-- **Bottom bar, 3 tabs : Lights / TV / Réglages** (depuis le 2026-09-07).
+- **Bottom bar, 4 tabs : Lights / TV / Radio / Réglages** (depuis le 2026-09-07).
 - **Tab Lights** :
   - une rangée de **4 modes** (Mode 1 = tout on/off, Modes 2-4 = scènes ;
     appui = jouer, appui long = redéfinir ; le mode qui correspond à l'état
@@ -143,13 +155,20 @@ pénibles et les apps constructeur.
   - la ligne d'état de la liaison HA (connecté / hors ligne / mode démo).
 - **Tab TV** : placeholder en v1, spec dans [tv-mute.md](tv-mute.md) — le bouton
   central sera un gros **MUTE**.
-- **Tab Réglages** : URL + jeton HA, « Tester », « Enregistrer ». Pas de login.
+- **Tab Radio** : carte « en cours » (pochette, station, artiste — titre, LIVE ·
+  streamer, bouton Stop / spinner de connexion) + liste des stations (Play/Stop,
+  titre en cours, nombre d'auditeurs). Un appui sur une station la joue, un appui
+  sur celle qui joue l'arrête, une autre station bascule le flux.
+- **Tab Réglages** : URL + jeton HA, « Tester », « Enregistrer » ; URL du serveur
+  AzuraCast + « OK ». Pas de login.
 
 ## Architecture cible
 
 ```
 [App Kotlin] --REST/WebSocket--> [Home Assistant (PC Docker)] --Wi-Fi--> multiprises Shelly
                                         ^-- Zigbee (ZHA) -- boutons MOES : touche n = Mode n
+     |
+     +--HTTP /api/nowplaying + flux MP3/Icecast--> [AzuraCast (PC Docker, :80)]
      |
      +--------ADB ou Android TV Remote protocol--> [Shield TV Pro] --CEC--> TV / barre TCL
 ```
@@ -161,6 +180,9 @@ pénibles et les apps constructeur.
   est un **toggle** : « mode n actif » = sa scène est la dernière chose qui a touché
   aux prises (horodatage de `scene.mode_n` vs `last_changed` des prises, marge 5 s) et
   au moins une prise est allumée → tout éteindre ; sinon `scene.turn_on`. Aucun helper.
+- Radio : `GET /api/nowplaying` (public) toutes les 15 s tant que l'onglet est
+  affiché ; lecture ExoPlayer du mount par défaut. AzuraCast tourne sur la tour
+  (`:80`, Docker WSL), cf. [hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md). **Fait.**
 - TV : cf. [tv-mute.md](tv-mute.md), phase 2.
 - Tout fonctionne **en LAN uniquement** en v1 (cf. [infra-reseau.md](infra-reseau.md)
   — le NordVPN du routeur ne donne pas d'accès entrant).
@@ -256,3 +278,13 @@ Demande : piloter la rotation des écrans TRMNL depuis l'app. Vérifié que l'AP
 le permet (playlist visible/order/schedule, refresh du device) → onglet TRMNL cadré
 (switch par écran, ordre, refresh, « uniquement celui-ci »). Pas encore codé ; reste à
 trancher schedule-ou-pas en v1 et la 2e clé dans Réglages (Questions ouvertes).
+
+### 2026-09-07 (decies) — mini player AzuraCast
+Demande François : « consommer les flux AzuraCast depuis l'app ». Onglet Radio,
+`AzuraClient` (`/api/nowplaying`), `RadioService` Media3 (ExoPlayer + session média),
+`RadioViewModel` (sondage 15 s + `MediaController`), URL AzuraCast dans Réglages.
+Deux dépendances ajoutées (`media3-exoplayer`, `media3-session`), APK 20 Mo. Le serveur
+de la maison n'a pas encore de station → **testé sur `demo.azuracast.com` depuis le
+S20 Ultra** : liste, pochette, titre en cours, lecture (décodeur MP3 + notification
+média vus dans logcat), Play/Stop alternés. Piège adb : rediriger `screencap` depuis
+PowerShell corrompt le PNG (BOM) → passer par bash ; `wm dismiss-keyguard` déverrouille.

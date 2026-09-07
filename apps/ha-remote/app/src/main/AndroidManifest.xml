@@ -3,6 +3,11 @@
 
     <!-- Client Home Assistant sur le LAN (http://192.168.0.5:8123 : pas de TLS, donc cleartext) -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Mini player radio : lecture en arrière-plan (service média au premier plan + notification). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".Portal6App"
@@ -39,6 +44,16 @@
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- Lecture des flux AzuraCast : survit à la fermeture de l'écran, pilotable depuis la notification. -->
+        <service
+            android:name=".player.RadioService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
             </intent-filter>
         </service>
     </application>

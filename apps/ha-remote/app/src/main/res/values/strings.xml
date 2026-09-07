@@ -3,4 +3,5 @@
     <string name="app_name">Portal6 HA Remote</string>
     <string name="tile_modes">Modes</string>
     <string name="tile_tv_mute">Mute TV</string>
+    <string name="radio_channel">Radio</string>
 </resources>
