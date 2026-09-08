@@ -36,12 +36,15 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
   outillé (JDK 21 + SDK 35 en ligne de commande, sans Android Studio) et
   `assembleDebug` y passe. Détail et pièges dans [setup-dev-mac.md](setup-dev-mac.md).
   Reste la question du poste de référence, portée par ce doc-là.
-- [ ] **L'app ne détecte pas les radios de la maison** → **cause serveur, pas app
-  (2026-09-08)**. Deux étapes faites : station publiée (`enable_public_page`) et diffusion
-  redémarrée → **Midnight Club apparaît maintenant dans `/api/nowplaying`, donc dans
-  l'onglet Radio**. Mais elle y est « Station Offline » : ses playlists sont vides
-  (scan média incomplet + `--fill` à jouer). Bloquant restant côté AzuraCast, cf.
-  [hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md) Q8/Q9.
+- [x] ~~L'app ne détecte pas les radios de la maison~~ → **réglé le 2026-09-08, côté
+  serveur uniquement** : station publiée (`enable_public_page`), diffusion redémarrée,
+  playlists remplies. **Midnight Club s'affiche et se joue dans l'onglet Radio**, pochette
+  et titre en cours compris. Aucune ligne de code de l'app n'a bougé. Détail dans
+  [hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md).
+- [ ] **Réglages à ressaisir sur le téléphone** : la réinstallation depuis le Mac a effacé
+  les préférences (signatures de debug différentes, cf.
+  [setup-dev-mac.md](setup-dev-mac.md)). L'app est en **mode démo** — jeton HA et clé TRMNL
+  à remettre dans Réglages. L'URL AzuraCast, elle, est bonne par défaut (`192.168.0.5`).
 
 - [ ] **Onglet TRMNL : v1 = interrupteurs de playlist, ou aussi les créneaux ?**
   Cadré le 2026-09-07 (voir Décisions). À trancher par l'usage : si François veut
@@ -312,6 +315,14 @@ PowerShell corrompt le PNG (BOM) → passer par bash ; `wm dismiss-keyguard` dé
 (switch par écran, ▲▼, refresh 5 min/15 min/1 h/6 h, « Uniquement celui-ci »), clé
 dans Réglages avec Tester (`GET /api/me`). Réglages passés en scroll. Build OK,
 installé sur le S20 Ultra, vérifié en démo. Reste : pousser la clé et tester en réel.
+
+### 2026-09-08 (ter) — l'app tourne, la radio se joue
+S20 Ultra branché sur le Mac : `unauthorized` levé par `adb kill-server/start-server` +
+popup accepté ; install refusée (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, keystore de debug
+différent de celui du PC) → désinstallation/réinstallation assumée par François. Écran
+vérifié par capture : 5 onglets, **onglet Radio → « Midnight Club », titre en cours,
+lecture OK** (pochette affichée, décodeur `c2.sec.mp3.decoder` actif dans logcat). L'app est
+repartie en mode démo côté HA : jeton à ressaisir.
 
 ### 2026-09-08 (bis) — le Mac builde, la station est publiée
 Outillage Android posé sur le Mac (JDK 21 brew, cmdline-tools, SDK 35, build-tools 35.0.0,

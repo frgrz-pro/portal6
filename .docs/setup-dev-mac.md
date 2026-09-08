@@ -43,6 +43,14 @@ Installé le 2026-09-08, **sans Android Studio** — les outils en ligne de comm
   le bit exécutable. Corrigé une fois pour toutes dans le repo (`git update-index --chmod=+x`).
 - **`sdkmanager` affiche un avertissement de dépréciation** (« use Android CLI instead ») :
   cosmétique, l'outil fonctionne. Les licences s'acceptent en pipant `yes |`.
+- **`INSTALL_FAILED_UPDATE_INCOMPATIBLE` à la première install.** L'APK déjà sur le
+  téléphone était signé par le `debug.keystore` du PC Windows ; le Mac génère le sien au
+  premier build, donc signatures différentes. Deux issues : copier
+  `%USERPROFILE%\.android\debug.keystore` du PC vers `~/.android/` (les deux postes
+  signent pareil, mise à jour sans perte), ou **désinstaller/réinstaller** — choix de
+  François le 2026-09-08, l'app repart vierge (jeton HA et clé TRMNL à ressaisir).
+- **`adb` a listé le téléphone en `unauthorized`** : ce Mac est un hôte inconnu du S20.
+  `adb kill-server && adb start-server` puis accepter le popup sur le téléphone.
 - **Premier build = 12 min** (téléchargement des dépendances Gradle/AGP compris), APK debug
   de 19 Mo. Les suivants sont incrémentaux.
 
