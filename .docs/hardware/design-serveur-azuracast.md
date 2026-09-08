@@ -711,3 +711,26 @@ les **9 playlists ont 0 fichier** — le scan média n'a jamais atteint `library
 prévu pour un lancement depuis la tour) — la ligne est désormais dans le `.env` du Mac, le
 script tourne donc aussi depuis ici (`--dry-run` vérifié : 8 playlists, 42 créneaux).
 
+### 2026-09-08 (ter) — Midnight Club diffuse
+**La station est en ligne et joue** : `/api/nowplaying` → `is_online: true`, playlist
+« MC · Signature », et le mount sert bien du **MPEG layer III 192 kbps 44,1 kHz** (vérifié
+en tirant 64 Ko de `http://192.168.0.5:8000/radio.mp3`). L'onglet Radio de l'app a donc
+enfin une station à afficher.
+
+Chemin parcouru : Q9 tranchée (sources par genre) → `push_schedule.py --fill` → `restart`.
+Remplissage obtenu : Signature 167, Replay Signature 147, Mixtape Vaporwave 76, Phonk 49,
+Liquid DnB 41. Les trois playlists `Tracks *` restent à **0** — elles pointent sur
+`library/`, non indexé (Q8).
+
+**Bug corrigé dans `push_schedule.py` : `--fill` n'avait jamais pu fonctionner.** Il postait
+une liste d'ids sur `POST /station/{id}/playlist/{pid}/import`, qui répond
+`500 No "playlist_file" provided` — cet endpoint attend un **fichier M3U en multipart**, pas
+du JSON. La seule voie API pour assigner des médias à une playlist est l'action batch :
+
+```
+PUT /api/station/{id}/files/batch
+{"do": "playlist", "files": ["<chemins relatifs>"], "dirs": [], "playlists": [<pid>]}
+```
+
+Le script envoie désormais ça, par paquets de 200 chemins, après le `DELETE …/empty`.
+

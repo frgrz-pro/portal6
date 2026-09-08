@@ -14,7 +14,7 @@
     "mixtape_phonk": {
       "title": "MC · Mixtape Phonk",
       "kind": "mixtape",
-      "sources": ["radio/"],
+      "sources": ["radio/Radio-Library/Mixtapes/Phonk/"],
       "order": "shuffle",
       "weight": 3,
       "energy": [3, 5]
@@ -22,7 +22,7 @@
     "mixtape_vaporwave": {
       "title": "MC · Mixtape Vaporwave",
       "kind": "mixtape",
-      "sources": ["radio/"],
+      "sources": ["radio/Radio-Library/Mixtapes/Synthwave/", "radio/Radio-Library/Mixtapes/Cyber Funk/"],
       "order": "shuffle",
       "weight": 3,
       "energy": [1, 3]
@@ -30,7 +30,7 @@
     "mixtape_liquiddnb": {
       "title": "MC · Mixtape Liquid DnB",
       "kind": "mixtape",
-      "sources": ["radio/"],
+      "sources": ["radio/Radio-Library/Mixtapes/DnB/"],
       "order": "shuffle",
       "weight": 3,
       "energy": [3, 4]
@@ -62,7 +62,7 @@
     "signature": {
       "title": "MC · Signature",
       "kind": "signature",
-      "sources": ["radio/"],
+      "sources": ["radio/Radio-Library/Live/Cercle Shows/"],
       "order": "shuffle",
       "weight": 5,
       "energy": [3, 5],
@@ -72,7 +72,7 @@
     "replay_signature": {
       "title": "MC · Replay Signature",
       "kind": "replay",
-      "sources": ["radio/"],
+      "sources": ["radio/Radio-Library/Live/Humano Sound/", "radio/Radio-Library/Live/Panic Room/", "radio/Radio-Library/Live/Everybody Loves To Boogie/", "radio/Radio-Library/Live/Login.jp/", "radio/Radio-Library/Live/JPool/"],
       "order": "shuffle",
       "weight": 2,
       "energy": [3, 4]

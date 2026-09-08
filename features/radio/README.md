@@ -49,6 +49,12 @@ partir des préfixes `sources`, et exige des médias indexés.
 
 Le script est **idempotent** : il retrouve les playlists par leur titre et les met à jour.
 
+`--fill` vide la playlist (`DELETE …/playlist/{id}/empty`) puis assigne les médias par
+**l'action batch** (`PUT …/files/batch` avec `{"do": "playlist", "files": [...],
+"playlists": [id]}`), par paquets de 200 chemins. Ne pas revenir à
+`POST …/playlist/{id}/import` : cet endpoint attend un fichier M3U en multipart et répond
+`500 No "playlist_file" provided` sur une liste d'ids (constaté le 2026-09-08).
+
 Prérequis : `AZURACAST_API_KEY` dans le `.env` à la racine (jamais commité).
 
 ## Détail vérifié empiriquement

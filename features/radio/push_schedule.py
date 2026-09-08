@@ -172,12 +172,16 @@ def main():
         if not pid:
             continue
         prefixes = tuple(pdef.get("sources", []))
-        ids = [r["id"] for r in rows if r.get("path", "").startswith(prefixes)]
-        print(f"  [{pdef['title']}] {len(ids)} fichiers correspondent a {prefixes}")
-        if args.dry_run or not ids:
+        paths = [r["path"] for r in rows if r.get("path", "").startswith(prefixes)]
+        print(f"  [{pdef['title']}] {len(paths)} fichiers correspondent a {prefixes}")
+        if args.dry_run or not paths:
             continue
         az.call(f"/station/{sid}/playlist/{pid}/empty", "DELETE")
-        az.call(f"/station/{sid}/playlist/{pid}/import", "POST", {"playlist_file": ids})
+        # L'action batch « playlist » est la seule voie API pour assigner des medias :
+        # /playlist/{id}/import attend un fichier M3U en multipart, pas une liste d'ids.
+        for chunk in (paths[i:i + 200] for i in range(0, len(paths), 200)):
+            az.call(f"/station/{sid}/files/batch", "PUT",
+                    {"do": "playlist", "files": chunk, "dirs": [], "playlists": [pid]})
 
 
 if __name__ == "__main__":
