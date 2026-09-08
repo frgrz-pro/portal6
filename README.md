@@ -41,9 +41,10 @@ Bootstrap automatisé dans `setup/` (idempotent, relançable) :
 - **Windows** : `powershell -ExecutionPolicy Bypass -File setup\bootstrap.ps1`
   → installe WSL2 + Ubuntu si absents, la fonction PowerShell `p6`, puis enchaîne sur le `.sh` dans Ubuntu.
 - **macOS / Ubuntu** : `./setup/bootstrap.sh`
-  → brew (mac), zsh + oh-my-zsh, venv Python `~/.venvs/portal6` + dépendances, node, alias `portal6`.
+  → brew (mac), zsh + oh-my-zsh, venv Python `~/.venvs/portal6` + dépendances, node, raccourci `p6`.
 
-Raccourcis obtenus : `p6` (PowerShell → Ubuntu, dans le projet, venv activé) et `portal6` (dans zsh/bash).
+Raccourci obtenu : **`p6`** — se poser dans le repo avec le venv activé. Sous Windows c'est une
+fonction PowerShell (→ Ubuntu WSL), sous macOS/Ubuntu une fonction zsh/bash (`portal6` reste comme alias).
 
 Le venv vit dans le home Linux, jamais dans le repo (un venv sur `/mnt/c` casse `ensurepip` sous WSL).
 Le task runner est npm — les scripts restent en Python.

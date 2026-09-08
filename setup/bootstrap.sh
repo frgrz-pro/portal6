@@ -7,7 +7,7 @@
 #   WSL    : lancé automatiquement par setup/bootstrap.ps1 (ou à la main depuis Ubuntu)
 #
 # Installe : brew (mac), zsh + oh-my-zsh, python + venv ~/.venvs/portal6,
-# dépendances Python du projet, node (task runner npm), alias `portal6`.
+# dépendances Python du projet, node (task runner npm), raccourci `p6`.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -52,12 +52,29 @@ log "Venv Python : $VENV"
 "$VENV/bin/pip" install --upgrade pip -q
 "$VENV/bin/pip" install -q -r "$REPO/requirements.txt" mutagen openpyxl
 
-# --- 4. Alias portal6 --------------------------------------------------------
+# --- 4. Raccourci shell p6 ---------------------------------------------------
+# `p6` = se poser dans le repo avec le venv activé (même nom que la fonction
+# PowerShell côté Windows). `portal6` reste comme alias historique.
+SNIPPET=$(cat <<EOF
+
+# --- portal6 ---------------------------------------------------------------
+# p6 : ouvre la console dans le repo avec le venv du projet activé.
+p6() {
+  cd $REPO || return 1
+  if [ -f "\$HOME/.venvs/portal6/bin/activate" ]; then
+    source "\$HOME/.venvs/portal6/bin/activate"
+  else
+    echo "venv absent : lance ./setup/bootstrap.sh"
+  fi
+}
+alias portal6=p6
+EOF
+)
 for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
   [ -f "$rc" ] || continue
-  if ! grep -q "alias portal6=" "$rc"; then
-    echo "alias portal6='cd $REPO && source $VENV/bin/activate'" >> "$rc"
-    log "alias portal6 ajouté à $rc"
+  if ! grep -q "^p6() {" "$rc"; then
+    printf '%s\n' "$SNIPPET" >> "$rc"
+    log "raccourci p6 ajouté à $rc"
   fi
 done
 
@@ -66,4 +83,4 @@ log "Vérification"
 "$VENV/bin/python" -c "import mutagen, pandas, openpyxl; print('Python + dépendances OK')"
 command -v node >/dev/null 2>&1 && echo "node $(node --version) OK"
 
-printf '\nTerminé. Ouvre un nouveau shell puis tape : portal6\n'
+printf '\nTerminé. Ouvre un nouveau shell puis tape : p6\n'

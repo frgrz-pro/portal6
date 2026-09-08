@@ -540,6 +540,12 @@ teste sur des flux publics.
 6. **Q6 — Que fait-on du clone `C:\docker\media\azuracast` ?** Il ne sert à rien dans la
    procédure officielle et entretient la confusion qui a produit l'impasse initiale.
    Proposition : le supprimer une fois la Phase 3 passée (pas avant, par prudence).
+7. **Q7 — Midnight Club n'est pas publique.** `is_public: false` sur la station 1 :
+   conséquence directe, `GET /api/nowplaying` et `GET /api/stations` renvoient `[]`, la
+   page `/public/midnight_club` répond 404, et **tout client public (dont l'app remote)
+   ne voit aucune radio**. Le réglage est dans *Station → Profil → Modifier → « Activer
+   les pages publiques »*. À faire quand la station est prête à diffuser — c'est aussi
+   ce qui décide si la maison peut l'écouter.
 
 ---
 
@@ -667,3 +673,17 @@ docker exec -u root azuracast chmod 777 /media/lib
 
 Diagnostic à retenir : `docker exec -u azuracast azuracast sh -c "mkdir -p /media/lib/.t"`
 doit réussir. S'il répond `Permission denied`, le scan ne fonctionnera pas.
+
+### 2026-09-08 — pourquoi l'app remote ne voit aucune radio
+Constat depuis le Mac : `http://192.168.0.5/api/nowplaying` → `[]`, `/api/stations` → `[]`,
+alors que `/api/status` répond `{"online":true}` et que `/api/station/1` retourne bien
+Midnight Club. Cause : **`is_public: false`** sur la station (Q7) — l'API publique et les
+pages publiques n'exposent que les stations publiques. Rien à corriger dans l'app, qui
+consomme la bonne URL.
+
+Second constat : le mount `http://192.168.0.5:8000/radio.mp3` **ne répond pas** (réponse
+vide, le port accepte pourtant le TCP — artefact du portproxy WSL). Icecast n'est donc pas
+en diffusion : la station n'est pas démarrée (ou n'a rien à jouer, le scan des ~18 000
+fichiers à 0,5 fichier/s n'étant pas forcément terminé). **Les deux points sont à traiter
+sur la tour** : publier la station *et* la faire diffuser.
+

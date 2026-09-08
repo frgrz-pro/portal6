@@ -32,6 +32,17 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
 - [x] ~~Mode sélectionné non persisté~~ → sans objet : il se déduit de l'état réel des
   prises (voir UI v1).
 
+- [ ] **Poste de dev : le Mac ou le PC Windows ?** Reprise sur le Mac le 2026-09-08, mais
+  il n'a ni JDK, ni SDK Android, ni `adb` (le PC Windows a tout, cf.
+  [setup-dev-windows.md](setup-dev-windows.md)). Builder ici demande `brew install --cask
+  temurin@21 android-commandlinetools` (~quelques Go) — à arbitrer avant la prochaine
+  session de code.
+- [x] ~~L'app ne détecte pas les radios de la maison~~ → **cause serveur, pas app
+  (2026-09-08)** : la station Midnight Club est en `is_public: false`, donc absente de
+  `GET /api/nowplaying`, la seule source de l'onglet Radio. Action côté AzuraCast
+  (« Activer les pages publiques » + station démarrée), cf.
+  [hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md) Q7.
+
 - [ ] **Onglet TRMNL : v1 = interrupteurs de playlist, ou aussi les créneaux ?**
   Cadré le 2026-09-07 (voir Décisions). À trancher par l'usage : si François veut
   surtout « ce soir je veux l'écran X », les interrupteurs suffisent ; si c'est
@@ -301,3 +312,11 @@ PowerShell corrompt le PNG (BOM) → passer par bash ; `wm dismiss-keyguard` dé
 (switch par écran, ▲▼, refresh 5 min/15 min/1 h/6 h, « Uniquement celui-ci »), clé
 dans Réglages avec Tester (`GET /api/me`). Réglages passés en scroll. Build OK,
 installé sur le S20 Ultra, vérifié en démo. Reste : pousser la clé et tester en réel.
+
+### 2026-09-08 — reprise sur le Mac, radios invisibles
+« Je ne détecte toujours pas nos radios » : diagnostic fait depuis le Mac par l'API
+publique — **rien à corriger dans l'app**, la station AzuraCast n'est pas publique
+(`is_public: false`) et ne diffuse pas (mount `:8000` muet). Détail et remède dans
+[hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md) (journal du
+jour + Q7). Noté au passage : ce Mac n'a aucun outillage Android (question ouverte).
+
