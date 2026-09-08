@@ -18,6 +18,19 @@ multiprises Shelly ──Wi-Fi (LAN)──▶ intégration Shelly ───┘  
 
 ## Questions ouvertes
 
+- [ ] **Multiprise B décrochée à son emplacement définitif (2026-09-08)** : après
+  débranchement/rebranchement, LED rouge clignotante + AP `ShellyPStripG4-xxxx`
+  visible, `.98` ne ping plus et sa MAC est absente du LAN. Diagnostic : pas un
+  reset (un débranchement ne remet pas un Gen4 à zéro ; reset = bouton 10 s),
+  mais le **repli AP de Shelly** : si la station ne joint pas le Wi-Fi configuré,
+  l'AP se rallume tout seul même désactivé. B avait déjà le pire RSSI (−71 dBm)
+  à l'ancien emplacement → couverture 2,4 GHz insuffisante au nouveau. À
+  vérifier : rebrancher B à l'ancienne place (retour à `.98` = couverture) ; via
+  l'AP (http://192.168.33.1) contrôler que le SSID `R2D2` est toujours
+  configuré. Remèdes possibles : déplacer B/le routeur, ou **A en
+  « range extender »** Shelly (A est à −40 dBm ; suppose de rallumer l'AP de A
+  avec mot de passe — à arbitrer vs le verrouillage). Une fois reconnectée, B
+  reprend `.98` (bail réservé) et HA la retrouve seul.
 - [ ] **Firmware Shelly** : 1.7.99 installé, **2.0.0 stable** proposé (entité
   `update.multiprise_x_firmware` dans HA). Majeure → faire une multiprise
   d'abord, vérifier que HA la retrouve, puis l'autre. Pas urgent.
@@ -349,3 +362,8 @@ Touches 2-4 des MOES = **toggle** : 2e appui sur la même touche éteint tout (d
 « mode actif » sur les horodatages HA, sans helper). Réappliqué par `ha_modes_setup.py`,
 validé en simulant `zha_event`. `config/www` créé (APK de l'app servi par HA en `/local/`),
 HA redémarré une fois pour ça.
+
+### 2026-09-08
+B débranchée pour rejoindre sa prise murale définitive → LED rouge + AP visible.
+Sondé depuis le Mac : A répond (`.78`, −40 dBm), B absente du LAN. Verdict : repli
+AP faute de couverture Wi-Fi, pas de reset. Question ouverte + remèdes notés.
