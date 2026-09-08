@@ -32,16 +32,16 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
 - [x] ~~Mode sélectionné non persisté~~ → sans objet : il se déduit de l'état réel des
   prises (voir UI v1).
 
-- [ ] **Poste de dev : le Mac ou le PC Windows ?** Reprise sur le Mac le 2026-09-08, mais
-  il n'a ni JDK, ni SDK Android, ni `adb` (le PC Windows a tout, cf.
-  [setup-dev-windows.md](setup-dev-windows.md)). Builder ici demande `brew install --cask
-  temurin@21 android-commandlinetools` (~quelques Go) — à arbitrer avant la prochaine
-  session de code.
-- [x] ~~L'app ne détecte pas les radios de la maison~~ → **cause serveur, pas app
-  (2026-09-08)** : la station Midnight Club est en `is_public: false`, donc absente de
-  `GET /api/nowplaying`, la seule source de l'onglet Radio. Action côté AzuraCast
-  (« Activer les pages publiques » + station démarrée), cf.
-  [hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md) Q7.
+- [x] ~~Poste de dev : le Mac ou le PC Windows ?~~ → **les deux (2026-09-08)** : le Mac est
+  outillé (JDK 21 + SDK 35 en ligne de commande, sans Android Studio) et
+  `assembleDebug` y passe. Détail et pièges dans [setup-dev-mac.md](setup-dev-mac.md).
+  Reste la question du poste de référence, portée par ce doc-là.
+- [ ] **L'app ne détecte pas les radios de la maison** → **cause serveur, pas app
+  (2026-09-08)**. Deux étapes faites : station publiée (`enable_public_page`) et diffusion
+  redémarrée → **Midnight Club apparaît maintenant dans `/api/nowplaying`, donc dans
+  l'onglet Radio**. Mais elle y est « Station Offline » : ses playlists sont vides
+  (scan média incomplet + `--fill` à jouer). Bloquant restant côté AzuraCast, cf.
+  [hardware/design-serveur-azuracast.md](hardware/design-serveur-azuracast.md) Q8/Q9.
 
 - [ ] **Onglet TRMNL : v1 = interrupteurs de playlist, ou aussi les créneaux ?**
   Cadré le 2026-09-07 (voir Décisions). À trancher par l'usage : si François veut
@@ -312,6 +312,14 @@ PowerShell corrompt le PNG (BOM) → passer par bash ; `wm dismiss-keyguard` dé
 (switch par écran, ▲▼, refresh 5 min/15 min/1 h/6 h, « Uniquement celui-ci »), clé
 dans Réglages avec Tester (`GET /api/me`). Réglages passés en scroll. Build OK,
 installé sur le S20 Ultra, vérifié en démo. Reste : pousser la clé et tester en réel.
+
+### 2026-09-08 (bis) — le Mac builde, la station est publiée
+Outillage Android posé sur le Mac (JDK 21 brew, cmdline-tools, SDK 35, build-tools 35.0.0,
+`adb` 37.0.1) → `assembleDebug` **BUILD SUCCESSFUL en 12 min**, APK 19 Mo, sans Android
+Studio ([setup-dev-mac.md](setup-dev-mac.md)). Corrigé au passage : `gradlew` n'avait pas le
+bit exécutable (commité depuis Windows).
+Côté radios, débloqué par l'API : station publiée + diffusion relancée → elle **apparaît
+dans l'onglet Radio**. Elle reste muette (playlists vides), ce qui est un sujet AzuraCast.
 
 ### 2026-09-08 — reprise sur le Mac, radios invisibles
 « Je ne détecte toujours pas nos radios » : diagnostic fait depuis le Mac par l'API

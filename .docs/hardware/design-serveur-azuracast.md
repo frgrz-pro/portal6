@@ -540,7 +540,9 @@ teste sur des flux publics.
 6. **Q6 — Que fait-on du clone `C:\docker\media\azuracast` ?** Il ne sert à rien dans la
    procédure officielle et entretient la confusion qui a produit l'impasse initiale.
    Proposition : le supprimer une fois la Phase 3 passée (pas avant, par prudence).
-7. **Q7 — Midnight Club n'est pas publique.** `is_public: false` sur la station 1 :
+7. ~~**Q7 — Midnight Club n'est pas publique.**~~ **Réglé le 2026-09-08** par l'API
+   (`PUT /api/admin/station/1 {"enable_public_page": true}`). Contexte : `is_public: false`
+   sur la station 1 :
    conséquence directe, `GET /api/nowplaying` et `GET /api/stations` renvoient `[]`, la
    page `/public/midnight_club` répond 404, et **tout client public (dont l'app remote)
    ne voit aucune radio**. Le réglage est dans *Station → Profil → Modifier → « Activer
@@ -686,4 +688,26 @@ vide, le port accepte pourtant le TCP — artefact du portproxy WSL). Icecast n'
 en diffusion : la station n'est pas démarrée (ou n'a rien à jouer, le scan des ~18 000
 fichiers à 0,5 fichier/s n'étant pas forcément terminé). **Les deux points sont à traiter
 sur la tour** : publier la station *et* la faire diffuser.
+
+### 2026-09-08 (bis) — station publiée et en diffusion, mais sans contenu
+Tout fait par l'API depuis le Mac (`AZURACAST_API_KEY` + `AZURACAST_BASE_URL` dans le `.env`) :
+
+1. `enable_public_page` → `true` (Q7). `GET /api/stations` liste enfin Midnight Club.
+2. **Frontend et backend étaient tous les deux arrêtés** (`{"backendRunning": false,
+   "frontendRunning": false}`). `POST …/frontend/start` et `…/backend/start` échouent en 500
+   `BadNameException: not recognized as a service` — **c'est `POST /api/station/1/restart`
+   qu'il faut** (il enregistre les services dans Supervisor). Après ça les deux tournent et
+   Icecast répond 200 sur `http://192.168.0.5:8000/radio.mp3`.
+3. `/api/nowplaying` restait vide : le cache n'est reconstruit que par la tâche périodique.
+   `PUT /api/admin/debug/station/1/nowplaying` le force → la station **apparaît enfin dans
+   l'API publique**, donc dans l'app.
+
+Reste le vrai manque : **la station est `is_online: false` / « Station Offline »** parce que
+les **9 playlists ont 0 fichier** — le scan média n'a jamais atteint `library/` (Q8) et le
+`--fill` n'a pas été joué (Q9 à trancher avant). Ordre de résolution : Q8 (scan) → Q9
+(sources) → `push_schedule.py --fill` → la radio est audible.
+
+À noter pour l'outillage : `push_schedule.py` lit `AZURACAST_BASE_URL` (défaut `localhost`,
+prévu pour un lancement depuis la tour) — la ligne est désormais dans le `.env` du Mac, le
+script tourne donc aussi depuis ici (`--dry-run` vérifié : 8 playlists, 42 créneaux).
 
