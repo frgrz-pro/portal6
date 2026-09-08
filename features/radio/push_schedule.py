@@ -78,6 +78,36 @@ def find_station(az, shortcode):
     return None
 
 
+def create_station(az, meta):
+    """Cree la station decrite par le bloc `station` du JSON.
+
+    La storage location media est *reprise d'une station existante* : toutes les
+    stations lisent les memes fichiers physiques, aucune copie (cf. le doc §4).
+    Le port du frontend est laisse a AzuraCast, qui alloue dans la plage 8000-8496.
+    """
+    storage = None
+    for s in az.call("/admin/stations"):
+        storage = az.call(f"/admin/station/{s['id']}").get("media_storage_location")
+        if storage:
+            break
+    payload = {
+        "name": meta["name"],
+        "short_name": meta["shortcode"],
+        "description": meta.get("identity", ""),
+        "genre": ", ".join(meta.get("genres", [])),
+        "timezone": meta.get("timezone", "Europe/Paris"),
+        "frontend_type": "icecast",
+        "backend_type": "liquidsoap",
+        "is_enabled": True,
+        "enable_public_page": True,
+        "enable_requests": False,
+        "enable_streamers": False,
+    }
+    if storage:
+        payload["media_storage_location"] = storage
+    return az.call("/admin/stations", "POST", payload)
+
+
 def build_schedule_items(grid, key):
     """Agrege tous les creneaux de la grille qui pointent sur cette playlist."""
     items = []
@@ -100,6 +130,8 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("station_file", help="Chemin du JSON de grille (relatif a features/radio/ ou absolu)")
     ap.add_argument("--fill", action="store_true", help="Remplit aussi le contenu des playlists")
+    ap.add_argument("--create", action="store_true",
+                    help="Cree la station dans AzuraCast si elle n'existe pas (bloc `station` du JSON)")
     ap.add_argument("--dry-run", action="store_true", help="N'ecrit rien")
     args = ap.parse_args()
 
@@ -122,8 +154,14 @@ def main():
 
     station = find_station(az, meta["shortcode"])
     if not station:
-        sys.exit(f"Station '{meta['shortcode']}' introuvable dans AzuraCast — "
-                 f"la creer d'abord (nom : {meta['name']}).")
+        if not args.create:
+            sys.exit(f"Station '{meta['shortcode']}' introuvable dans AzuraCast — "
+                     f"la creer d'abord (nom : {meta['name']}), ou relancer avec --create.")
+        if args.dry_run:
+            print(f"[CREE] station {meta['name']} ({meta['shortcode']}) — dry-run, rien d'ecrit")
+            return
+        station = create_station(az, meta)
+        print(f"[CREE] station {meta['name']} ({meta['shortcode']}) -> id {station['id']}")
     sid = station["id"]
     print(f"Station {sid} — {station.get('name')}  ({len(playlists)} playlists, {len(grid)} creneaux)")
 

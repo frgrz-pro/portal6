@@ -365,6 +365,12 @@ Monter `M:\music` **sans que les stations n'y imposent leur arborescence**, et s
 
 > **STOP / VÉRIFIER (Phase 4) :** deux stations différentes lisent le **même fichier
 > physique** · aucun MP3 dupliqué dans les répertoires d'AzuraCast · `M:\music` inchangé.
+>
+> ✅ **Coché le 2026-09-08.** Les 5 stations partagent la storage location `/media/lib`.
+> `Mixtapes/DnB/` alimente à la fois « MC · Mixtape Liquid DnB » (station 1) et « PR · Tout »
+> (station 3), `Live/Cercle Shows/` à la fois « MC · Signature » et « CE · Tout » — les
+> compteurs des deux stations restent justes après assignation, donc **l'association
+> fichier→playlist est par station et ne déplace rien sur le disque**.
 
 **🟡 Phase 4 — partie infrastructure FAITE le 2026-09-06 ; partie applicative à finir.**
 
@@ -733,4 +739,32 @@ PUT /api/station/{id}/files/batch
 ```
 
 Le script envoie désormais ça, par paquets de 200 chemins, après le `DELETE …/empty`.
+
+### 2026-09-08 (quater) — quatre radios « un dossier en boucle »
+Demande François : des stations supplémentaires, **un dossier qui tourne en boucle, sans
+programmation horaire**. Créées et en diffusion :
+
+| Station | Dossiers | Titres | Flux |
+|---|---|---|---|
+| Panic Room | `Live/Panic Room/` + `Mixtapes/DnB/` | 89 | `:8020/radio.mp3` |
+| Cercle | `Live/Cercle Shows/` | 167 | `:8030/radio.mp3` |
+| Block Party | `Mixtapes/Hip-Hop/` | 56 | `:8040/radio.mp3` |
+| LoFi Desk | `Mixtapes/LoFi/` | 28 | `:8050/radio.mp3` |
+
+Les cinq stations répondent `is_online: true` dans `/api/nowplaying` et servent du MP3
+192 kbps ; l'app les liste toutes.
+
+**Ce que « en boucle » veut dire ici** : une seule playlist, `schedule: []`, donc **aucun
+créneau**. Une playlist `default` sans créneau est en rotation permanente — c'est le
+comportement natif d'AzuraCast, il n'y a rien à inventer. Le fichier de grille garde la
+même forme que `midnight_club.json` : la différence entre une radio programmée et une radio
+en boucle tient au seul contenu de `schedule`.
+
+**Ports** : AzuraCast alloue lui-même dans la plage 8000-8496 (8020, 8030, 8040, 8050), il
+ne faut donc pas les figer dans le repo — `listen_url` de l'API fait foi.
+
+Reste inutilisé côté médias : `Live/Humano Sound` (61), `Live/Everybody Loves To Boogie`
+(24), `Live/Login.jp` (12), `Mixtapes/Organic House` (5), `Live/JPool` (2), et les 146
+fichiers de `downloads/` (fourre-tout, non éditorialisé). De quoi faire une 6e station
+house/boogie si l'envie vient.
 

@@ -1,0 +1,22 @@
+{
+  "_comment": "Radio « un dossier en boucle » : aucune programmation horaire, une seule playlist sans creneau, donc en rotation permanente. Source de verite editoriale : ce fichier, pas AzuraCast.",
+  "station": {
+    "name": "Block Party",
+    "shortcode": "block_party",
+    "timezone": "Europe/Paris",
+    "identity": "Mixtapes hip-hop : 90s, 00s, boom bap, RnB. Le dossier tourne en boucle.",
+    "genres": ["hip-hop", "rnb", "boom bap"],
+    "principle": "un dossier en boucle"
+  },
+  "playlists": {
+    "tout": {
+      "title": "BP · Tout",
+      "kind": "mixtape",
+      "sources": ["radio/Radio-Library/Mixtapes/Hip-Hop/"],
+      "order": "shuffle",
+      "weight": 5,
+      "energy": [1, 5]
+    }
+  },
+  "schedule": []
+}

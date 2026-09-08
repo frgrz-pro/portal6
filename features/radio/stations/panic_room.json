@@ -1,0 +1,22 @@
+{
+  "_comment": "Radio « un dossier en boucle » : aucune programmation horaire, une seule playlist sans creneau, donc en rotation permanente. Source de verite editoriale : ce fichier, pas AzuraCast.",
+  "station": {
+    "name": "Panic Room",
+    "shortcode": "panic_room",
+    "timezone": "Europe/Paris",
+    "identity": "Drum & bass et jungle : les sets Panic Room plus les mixtapes DnB, en boucle.",
+    "genres": ["drum and bass", "jungle", "liquid dnb"],
+    "principle": "un dossier en boucle"
+  },
+  "playlists": {
+    "tout": {
+      "title": "PR · Tout",
+      "kind": "mixtape",
+      "sources": ["radio/Radio-Library/Live/Panic Room/", "radio/Radio-Library/Mixtapes/DnB/"],
+      "order": "shuffle",
+      "weight": 5,
+      "energy": [1, 5]
+    }
+  },
+  "schedule": []
+}

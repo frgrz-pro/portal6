@@ -1,0 +1,22 @@
+{
+  "_comment": "Radio « un dossier en boucle » : aucune programmation horaire, une seule playlist sans creneau, donc en rotation permanente. Source de verite editoriale : ce fichier, pas AzuraCast.",
+  "station": {
+    "name": "Cercle",
+    "shortcode": "cercle",
+    "timezone": "Europe/Paris",
+    "identity": "Les sets Cercle : electronique live, filmes en pleine nature. Longues plages.",
+    "genres": ["electronic", "live set", "melodic techno"],
+    "principle": "un dossier en boucle"
+  },
+  "playlists": {
+    "tout": {
+      "title": "CE · Tout",
+      "kind": "mixtape",
+      "sources": ["radio/Radio-Library/Live/Cercle Shows/"],
+      "order": "shuffle",
+      "weight": 5,
+      "energy": [1, 5]
+    }
+  },
+  "schedule": []
+}

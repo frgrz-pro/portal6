@@ -16,6 +16,10 @@ ce dossier n'est que l'outillage.
 |---|---|
 | `stations/midnight_club.json` | Grille Midnight Club — 8 playlists, 42 créneaux |
 | `stations/stage_303.json` | Grille Stage 303 — 6 playlists, 42 créneaux |
+| `stations/panic_room.json` | Radio en boucle — sets Panic Room + mixtapes DnB |
+| `stations/cercle.json` | Radio en boucle — sets Cercle |
+| `stations/block_party.json` | Radio en boucle — mixtapes hip-hop |
+| `stations/lofi_desk.json` | Radio en boucle — mixtapes LoFi |
 | `push_schedule.py` | Traduit une grille en playlists + créneaux AzuraCast |
 
 ## Format d'une grille
@@ -35,13 +39,29 @@ grille, pas une autre logique.
   `end < start` sur un même jour. C'est pourquoi la signature Full Boost 23h–02h apparaît
   en `23:00→23:59` le vendredi et `00:00→02:00` le samedi.
 
+## Radio programmée vs radio « un dossier en boucle »
+
+La forme du fichier est la même ; seul `schedule` change.
+
+- **Programmée** (`midnight_club.json`) : des créneaux `days/start/end` pointent sur les
+  playlists, AzuraCast suit la grille.
+- **En boucle** (`panic_room.json`, `cercle.json`, `block_party.json`, `lofi_desk.json`) :
+  une seule playlist et **`"schedule": []`**. Une playlist sans créneau est en rotation
+  permanente — c'est le comportement natif, il n'y a pas de mode « boucle » à activer.
+
 ## Usage
 
 ```bash
 python features/radio/push_schedule.py stations/midnight_club.json --dry-run
 python features/radio/push_schedule.py stations/midnight_club.json
 python features/radio/push_schedule.py stations/midnight_club.json --fill
+python features/radio/push_schedule.py stations/cercle.json --create --fill   # station absente
 ```
+
+`--create` crée la station à partir du bloc `station` du JSON si elle n'existe pas encore
+(pages publiques activées, **même storage location média que les stations existantes** :
+zéro copie de fichier). Le port du flux est alloué par AzuraCast dans la plage 8000-8496 —
+ne pas le figer ici, lire `listen_url` de l'API.
 
 Le mode par défaut pose **playlists et créneaux** : il est indépendant des médias et
 fonctionne même scan non terminé. `--fill` remplit en plus le contenu des playlists à

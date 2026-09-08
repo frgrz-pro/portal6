@@ -1,0 +1,22 @@
+{
+  "_comment": "Radio « un dossier en boucle » : aucune programmation horaire, une seule playlist sans creneau, donc en rotation permanente. Source de verite editoriale : ce fichier, pas AzuraCast.",
+  "station": {
+    "name": "LoFi Desk",
+    "shortcode": "lofi_desk",
+    "timezone": "Europe/Paris",
+    "identity": "LoFi pour travailler : rien qui attire l'attention, jamais de silence.",
+    "genres": ["lofi", "chillhop"],
+    "principle": "un dossier en boucle"
+  },
+  "playlists": {
+    "tout": {
+      "title": "LD · Tout",
+      "kind": "mixtape",
+      "sources": ["radio/Radio-Library/Mixtapes/LoFi/"],
+      "order": "shuffle",
+      "weight": 5,
+      "energy": [1, 5]
+    }
+  },
+  "schedule": []
+}
