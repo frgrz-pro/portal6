@@ -1,8 +1,10 @@
 # Food — `apps/food/`
 
 Le frigo et les placards dans une DB, et des recettes proposées façon Tinder selon le
-moment de la journée. Le code et le mode d'emploi sont dans
-[apps/food/README.md](../apps/food/README.md) ; ici, les choix et ce qui reste à trancher.
+moment de la journée. **App mobile Kotlin/Compose avec DB embarquée** (même modèle que
+`ha-remote`) : code et mode d'emploi dans [apps/food/README.md](../apps/food/README.md).
+Le prototype web de la première passe est conservé dans `apps/food-web/` (même logique,
+même catalogue). Ici, les choix et ce qui reste à trancher.
 
 ## Questions ouvertes
 
@@ -14,9 +16,16 @@ moment de la journée. Le code et le mode d'emploi sont dans
   Le serveur sait déjà créer une recette (`POST /api/recipes`), il manque l'écran.
 - [ ] **Péremption** : le stock n'a pas de date. Utile pour le frigo (yaourts, viande),
   inutile pour le placard. À ajouter seulement si le besoin se fait sentir.
-- [ ] **Accès depuis le téléphone** : le serveur écoute sur `0.0.0.0:8714`. Sur le Mac ça
-  suffit (`http://<ip-mac>:8714`) ; côté tour Windows/WSL, même problème que le portail
-  (127.0.0.1 seulement) — cf. [portail-web.md](portail-web.md).
+- [ ] **iPhone : quelle voie ?** François veut du cross-platform ; l'app est Android
+  (Compose) avec la logique métier en Kotlin pur (`domain/`) et le schéma SQLDelight, tous
+  deux réutilisables en Kotlin Multiplatform. Passer en KMP/Compose Multiplatform exige
+  **Xcode** sur le Mac (absent : seuls les Command Line Tools sont installés) + un compte
+  Apple pour installer sur l'iPhone. À trancher : installer Xcode (~12 Go) et tenter la
+  cible iOS, ou rester Android + proto web pour l'iPhone.
+- [ ] **Vérifier sur le S20** : vérifié sur l'émulateur Pixel 6 / Android 15 du Mac, pas
+  encore sur le vrai téléphone (pas branché). Brancher, `adb install -r`, cf. skill `android`.
+- [ ] **Garder le proto web ?** `apps/food-web/` (Python stdlib) marche et sert de banc
+  d'essai ; à supprimer si l'app mobile suffit.
 - [ ] **Partage depuis l'iPhone (phase 2)** : François veut « partager » une recette
   (page web, ou photo d'un bouquin) vers l'app. Piste retenue, à construire : un
   **Raccourci iOS** dans la feuille de partage (voir Décisions). À trancher : où tourne
@@ -31,14 +40,19 @@ moment de la journée. Le code et le mode d'emploi sont dans
 
 ## Décisions
 
-- **Serveur Python stdlib, zéro dépendance** (`http.server` + `sqlite3`) : premier
-  domaine du repo qui écrit en DB depuis le navigateur — le portail est resté statique
-  parce qu'il ne fait que lire. Pas de Flask/FastAPI tant qu'une seule app en a besoin ;
-  si un deuxième domaine a besoin d'un backend, on factorisera.
-- **DB dans le vault** : `data/food/food.db` (gitignoré comme tout `data/`). Le
-  **catalogue** (ingrédients + recettes) est versionné dans `apps/food/seed/*.json` et
-  injecté au premier lancement ; les recettes seed manquantes sont ajoutées à chaque
-  démarrage, **sans écraser** celles que François a ajustées (source `user`).
+- **App mobile, DB embarquée** (2026-09-11, pivot) : la première passe était un serveur
+  web Python + page ; François voulait une app mobile Kotlin avec DB interne. Refait sur le
+  modèle de `ha-remote` : Kotlin + Compose + Material 3, un module `app/`, Gradle 8.10.2 /
+  AGP 8.7.3 / Kotlin 2.0.21, sans Android Studio. **SQLDelight** plutôt que Room : le
+  schéma `.sq` et la logique `domain/` (Kotlin pur) sont réutilisables tels quels en KMP
+  si la cible iOS arrive. Dialecte SQLite 3.18 (Android 8) → pas d'UPSERT.
+- **Catalogue versionné en JSON** (`apps/food/seed/`), source de vérité partagée entre
+  l'app et le proto web ; `tools/gen_seed.py` le transforme en `Seed.kt` commité (le build
+  Gradle n'a pas besoin de Python). Injecté au premier lancement, complété ensuite
+  **sans écraser** les recettes ajustées (source `user`).
+- **Proto web conservé** dans `apps/food-web/` (serveur stdlib, DB `data/food/food.db`,
+  port 8714) : même règles, utile pour tester vite dans un navigateur et comme fallback
+  iPhone en attendant une vraie cible iOS.
 - **Quantités par personne** dans la recette ; le slider « personnes » (1–8) multiplie.
   L'ajustement des quotas édite la recette en DB (pas une copie) : la recette devient
   « la mienne ».
@@ -56,7 +70,7 @@ moment de la journée. Le code et le mode d'emploi sont dans
   sort des validées, un historique `cooks` est gardé. Manger un reste = −1 part.
 - **Unités du catalogue** : `g`, `ml`, `pièce`, `tranche`, `cas`, `cac`. Sel, poivre,
   eau ne sont pas suivis (toujours là).
-- Port **8714** (8712 = portail WSL, 8713 = preview du portail). `npm run food`.
+- Port **8714** pour le proto web (8712 = portail WSL, 8713 = preview). `npm run food`.
 - **Partage iPhone = Raccourci iOS, pas une app native** (2026-09-11) : une PWA ne peut
   pas s'inscrire dans la feuille de partage iOS (pas de Web Share Target sur Safari), et
   une app native = Xcode + compte développeur (cf. [portail-web.md](portail-web.md), même
@@ -68,6 +82,19 @@ moment de la journée. Le code et le mode d'emploi sont dans
   reçues à trier » avec le texte brut. Le parsing en recette structurée = phase 2.
 
 ## Journal
+
+### 2026-09-11 (bis) — pivot app mobile
+François : « c'était une app mobile cross-platform Kotlin avec DB interne que je voulais »,
+« sur le même modèle que ha-remote ». Refait en `apps/food/` : Kotlin/Compose, SQLDelight,
+mêmes écrans et règles que le proto (deck swipe animé, fiche en bottom sheet, ajustement,
+Je cuisine, restes, stock). `./gradlew assembleDebug` : **BUILD SUCCESSFUL**, APK 16,6 Mo ;
+5 tests JVM de la logique (couverture, deck, moments, formats) au vert. Téléphone non
+branché → **émulateur Android installé sur le Mac** (cf. setup-dev-mac.md) et parcours
+complet vérifié dessus via adb : stock +/−, recherche, jauge jaune, fiche, Je cuisine
+(œufs 4 → 1, chocolat 100 → 0, 1 part en reste, historique), carte reste, swipe droite /
+gauche, tap = fiche, Ajuster. Piège corrigé : deux détecteurs de gestes (tap + drag)
+se marchaient dessus sur un swipe rapide → un seul détecteur manuel. Proto web déplacé
+en `apps/food-web/`.
 
 ### 2026-09-11
 Création à la demande de François : stock frigo/placards en DB, recettes en swipe

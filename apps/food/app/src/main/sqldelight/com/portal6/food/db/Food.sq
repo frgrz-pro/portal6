@@ -1,0 +1,158 @@
+-- Food — schéma de la DB embarquée. Quantités de recette PAR PERSONNE.
+-- Les listes (moments, étapes) sont stockées en texte séparé par U+001F (pas de dépendance JSON).
+
+CREATE TABLE ingredient (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  unit TEXT NOT NULL,
+  category TEXT NOT NULL,
+  sort INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE stock (
+  ingredient_id TEXT NOT NULL PRIMARY KEY,
+  qty REAL NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE recipe (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  emoji TEXT NOT NULL,
+  moments TEXT NOT NULL,
+  minutes INTEGER NOT NULL DEFAULT 0,
+  steps TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT 'seed',
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE recipe_ingredient (
+  recipe_id TEXT NOT NULL,
+  ingredient_id TEXT NOT NULL,
+  qty REAL NOT NULL,
+  PRIMARY KEY (recipe_id, ingredient_id)
+);
+
+CREATE TABLE swipe (
+  recipe_id TEXT NOT NULL PRIMARY KEY,
+  verdict TEXT NOT NULL,
+  at INTEGER NOT NULL
+);
+
+CREATE TABLE cook (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  recipe_id TEXT NOT NULL,
+  persons REAL NOT NULL,
+  eaten REAL NOT NULL,
+  at INTEGER NOT NULL
+);
+
+CREATE TABLE leftover (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  recipe_id TEXT NOT NULL,
+  portions REAL NOT NULL,
+  cooked_at INTEGER NOT NULL
+);
+
+-- ---------------------------------------------------------------- ingrédients / stock
+
+selectIngredients:
+SELECT * FROM ingredient ORDER BY category, sort, name;
+
+selectStock:
+SELECT * FROM stock;
+
+countIngredients:
+SELECT COUNT(*) FROM ingredient;
+
+ingredientExists:
+SELECT COUNT(*) FROM ingredient WHERE id = ?;
+
+-- Dialecte SQLite 3.18 (Android 8) : pas d'UPSERT, donc insert-or-ignore + update séparés.
+insertIngredientIgnore:
+INSERT OR IGNORE INTO ingredient (id, name, unit, category, sort) VALUES (?, ?, ?, ?, ?);
+
+updateIngredientSort:
+UPDATE ingredient SET sort = ? WHERE id = ?;
+
+insertIngredient:
+INSERT INTO ingredient (id, name, unit, category, sort) VALUES (?, ?, ?, ?, ?);
+
+maxIngredientSort:
+SELECT COALESCE(MAX(sort), 0) FROM ingredient;
+
+deleteIngredient:
+DELETE FROM ingredient WHERE id = ?;
+
+ensureStock:
+INSERT OR IGNORE INTO stock (ingredient_id, qty, updated_at) VALUES (?, 0, ?);
+
+setStock:
+INSERT OR REPLACE INTO stock (ingredient_id, qty, updated_at) VALUES (?, ?, ?);
+
+deltaStock:
+UPDATE stock SET qty = MAX(0, qty + ?), updated_at = ? WHERE ingredient_id = ?;
+
+consumeStock:
+UPDATE stock SET qty = MAX(0, qty - ?), updated_at = ? WHERE ingredient_id = ?;
+
+-- ---------------------------------------------------------------- recettes
+
+selectRecipes:
+SELECT * FROM recipe ORDER BY name;
+
+selectRecipeIngredients:
+SELECT ri.recipe_id, ri.ingredient_id, ri.qty
+FROM recipe_ingredient ri JOIN ingredient i ON i.id = ri.ingredient_id
+ORDER BY ri.recipe_id, i.sort;
+
+recipeExists:
+SELECT COUNT(*) FROM recipe WHERE id = ?;
+
+insertRecipe:
+INSERT INTO recipe (id, name, emoji, moments, minutes, steps, source, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+updateRecipe:
+UPDATE recipe SET name = ?, minutes = ?, source = 'user' WHERE id = ?;
+
+deleteRecipe:
+DELETE FROM recipe WHERE id = ?;
+
+insertRecipeIngredient:
+INSERT OR REPLACE INTO recipe_ingredient (recipe_id, ingredient_id, qty) VALUES (?, ?, ?);
+
+deleteRecipeIngredients:
+DELETE FROM recipe_ingredient WHERE recipe_id = ?;
+
+selectIngredientsOfRecipe:
+SELECT ingredient_id, qty FROM recipe_ingredient WHERE recipe_id = ?;
+
+-- ---------------------------------------------------------------- swipes / cuisine / restes
+
+selectSwipes:
+SELECT * FROM swipe;
+
+upsertSwipe:
+INSERT OR REPLACE INTO swipe (recipe_id, verdict, at) VALUES (?, ?, ?);
+
+deleteSwipe:
+DELETE FROM swipe WHERE recipe_id = ?;
+
+insertCook:
+INSERT INTO cook (recipe_id, persons, eaten, at) VALUES (?, ?, ?, ?);
+
+selectLeftovers:
+SELECT * FROM leftover ORDER BY cooked_at;
+
+insertLeftover:
+INSERT INTO leftover (recipe_id, portions, cooked_at) VALUES (?, ?, ?);
+
+leftoverPortions:
+SELECT portions FROM leftover WHERE id = ?;
+
+updateLeftover:
+UPDATE leftover SET portions = ? WHERE id = ?;
+
+deleteLeftover:
+DELETE FROM leftover WHERE id = ?;

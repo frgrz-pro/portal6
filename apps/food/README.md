@@ -1,56 +1,52 @@
-# apps/food — le frigo, les placards et les recettes
+# apps/food — Food, l'app Android du frigo et des recettes
 
-Stock d'ingrédients en DB, recettes proposées en **swipe** selon le moment de la journée,
-slider « personnes » + jauge « j'ai tout ? », et « Je cuisine » qui décrémente le stock.
-Les choix de design sont dans [.docs/food.md](../../.docs/food.md).
+App Android (Kotlin + Jetpack Compose, Material 3, **DB SQLite embarquée** via SQLDelight),
+même modèle que [`apps/ha-remote/`](../ha-remote/README.md). Design et décisions dans
+[`.docs/food.md`](../../.docs/food.md). Un prototype web de la même logique vit dans
+[`apps/food-web/`](../food-web/README.md).
 
 ```
 apps/food/
-├── server.py           # serveur stdlib (http.server + sqlite3) : API JSON + statique, port 8714
-├── seed/
-│   ├── ingredients.json  # catalogue d'ingrédients (id, nom, unité, catégorie)
-│   └── recipes.json      # recettes seed : quantités PAR PERSONNE, moments, étapes
-└── static/
-    ├── index.html       # une page, trois onglets : Idées / Validées / Stock
-    ├── app.js           # deck swipe, jauge, dialogue recette (slider, ajustement, cuisine), stock
-    └── style.css
+├── seed/                    # SOURCE DE VÉRITÉ du catalogue (partagée avec le proto web)
+│   ├── ingredients.json     #   73 ingrédients : id, nom, unité, catégorie
+│   └── recipes.json         #   38 recettes : quantités PAR PERSONNE, moments, étapes
+├── tools/gen_seed.py        # JSON → data/Seed.kt (commité : le build n'a pas besoin de Python)
+└── app/src/main/
+    ├── sqldelight/…/Food.sq # schéma + requêtes typées (SQLDelight génère FoodDatabase)
+    └── java/com/portal6/food/
+        ├── FoodApp.kt / MainActivity.kt    # singleton de process + Scaffold 3 onglets
+        ├── domain/Models.kt                # Kotlin pur : couverture, deck, moments, formats
+        ├── data/FoodRepository.kt          # DB : flows de lecture, écritures en transaction, seed
+        ├── data/Seed.kt                    # GÉNÉRÉ
+        └── ui/                             # FoodViewModel, IdeasScreen (swipe), RecipeSheet,
+                                            # LikedScreen, StockScreen, Theme
 ```
 
-La DB est `data/food/food.db` (vault, non versionnée), créée et remplie depuis `seed/`
-au premier lancement. Les recettes seed manquantes sont ajoutées à chaque démarrage sans
-écraser celles déjà ajustées.
+## Ce que fait l'app
 
-## Lancer
+- **Idées** : une carte = une recette du moment (auto selon l'heure : matin 6–10, midi 11–14,
+  goûter 15–17, soir 18–22 ; chips pour forcer). Glisser à droite / ♥ = validée, à gauche / ✕ =
+  passée 3 jours, toucher = fiche. Les **restes** passent en premier (→ = j'en mange une part).
+- **Fiche** : slider personnes (1–8), quantités recalculées, **jauge jaune** = tout en stock,
+  sinon « manque X ». **Ajuster** édite les quantités par personne (la recette devient
+  « ajustée », source `user`). **Je cuisine** : parts mangées maintenant → stock décrémenté
+  (jamais sous 0), le reste des parts va dans Restes, la recette sort des validées.
+- **Validées** : restes (−1 part) + recettes gardées avec leur jauge.
+- **Stock** : par catégorie, +/− (50 g, 100 ml, 1 pièce), saisie directe, recherche, filtre
+  « en stock », ajout d'ingrédient. Le slider 👥 de la barre du haut pilote toutes les jauges.
+
+Tout est local : aucune permission, aucune connexion. La DB `food.db` est dans le stockage
+privé de l'app ; le catalogue seed est injecté au premier lancement et complété ensuite
+sans écraser les recettes ajustées.
+
+## Build & install (Mac, sans Android Studio — cf. `.docs/setup-dev-mac.md`)
 
 ```bash
-npm run food            # ou : python3 apps/food/server.py [--port 8714] [--reset]
+cd apps/food
+./gradlew assembleDebug            # APK : app/build/outputs/apk/debug/app-debug.apk (≈ 17 Mo)
+./gradlew testDebugUnitTest        # tests JVM de la logique (domain/)
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Puis <http://localhost:8714> (ou `http://<ip-du-mac>:8714` depuis le téléphone — le
-serveur écoute sur `0.0.0.0`). `--reset` supprime la DB et repart du seed.
-
-## Utiliser
-
-- **Idées** : une carte = une recette du moment (auto selon l'heure, chips pour forcer).
-  → droite / ♥ = validée ; ← / ✕ = passée 3 jours ; toucher = détail. Les **restes** passent
-  en premier (→ = j'en mange une part).
-- **Détail** : slider personnes, jauge (jaune = tout est en stock), ligne par ligne
-  « manque X ». **Ajuster** édite les quantités par personne (la recette devient la tienne).
-  **Je cuisine** : parts mangées maintenant → stock décrémenté, le reste en Restes.
-- **Stock** : par catégorie, +/− par pas (50 g, 100 ml, 1 pièce), saisie directe, ajout
-  d'ingrédient.
-
-## API (JSON)
-
-| Route | Effet |
-|---|---|
-| `GET /api/state` | tout l'état (ingrédients, stock, recettes, swipes, restes, cuisines, inbox) |
-| `PUT /api/stock/{id}` `{qty}` ou `{delta}` | fixe ou décale le stock (jamais < 0) |
-| `POST /api/ingredients` `{name, unit, category}` | nouvel ingrédient |
-| `POST /api/recipes` · `PUT /api/recipes/{id}` | crée / ajuste (nom, minutes, moments, étapes, `ingredients: [{ingredient_id, qty}]` par personne) |
-| `POST /api/swipes` `{recipe_id, verdict: like\|skip}` · `DELETE /api/swipes/{id}` | verdict Tinder |
-| `POST /api/cook` `{recipe_id, persons, eaten}` | décrémente le stock, crée le reste, retire des validées |
-| `POST /api/leftovers/{id}/eat` `{portions}` | mange une part de reste |
-| `POST /api/inbox` `{kind, text, url}` | dépôt brut (cible du Raccourci iOS — phase 2) |
-
-Toute écriture renvoie le nouvel état complet.
+Catalogue modifié ? `python3 tools/gen_seed.py` puis rebuild. Le `.sq` est en dialecte
+SQLite 3.18 (Android 8) : pas d'`UPSERT`, on fait insert-or-ignore + update.

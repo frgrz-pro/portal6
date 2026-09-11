@@ -9,8 +9,8 @@ Installé le 2026-09-08, **sans Android Studio** — les outils en ligne de comm
 - [ ] **Deux postes de build, un seul repo** : le PC Windows et le Mac ont chacun leur
   outillage. Rien ne les synchronise à part git. Faut-il désigner un poste de référence
   (ex. le Mac pour l'app, la tour pour HA/AzuraCast qui y tournent de toute façon) ?
-- [ ] Émulateur : rien d'installé (`system-images` non téléchargées). Le test se fait sur
-  le S20 Ultra en USB (skill `android`), comme sous Windows.
+- [ ] Émulateur installé le 2026-09-11 (voir tableau) : il marche sans fenêtre pour les
+  vérifs de Claude ; le test « pour de vrai » reste le S20 Ultra en USB (skill `android`).
 
 ## Ce qui est installé
 
@@ -22,6 +22,7 @@ Installé le 2026-09-08, **sans Android Studio** — les outils en ligne de comm
 | Build-tools | 35.0.0 | idem | `sdkmanager "build-tools;35.0.0"` |
 | platform-tools (`adb`) | 37.0.1 | idem | `sdkmanager "platform-tools"` |
 | venv Python | 3.14.4 | `~/.venvs/portal6` | `setup/bootstrap.sh` |
+| Émulateur + image | emulator 37.1.11, `android-35;google_apis;arm64-v8a` | idem, AVD `food` dans `~/.android/avd/` | `sdkmanager "emulator" "system-images;android-35;google_apis;arm64-v8a"` puis `avdmanager create avd -n food -k … -d pixel_6` |
 
 `~/.zshrc` porte trois blocs : le raccourci `p6` (repo + venv), `JAVA_HOME`, et
 `ANDROID_HOME` + `platform-tools` dans le `PATH`.
@@ -54,7 +55,24 @@ Installé le 2026-09-08, **sans Android Studio** — les outils en ligne de comm
 - **Premier build = 12 min** (téléchargement des dépendances Gradle/AGP compris), APK debug
   de 19 Mo. Les suivants sont incrémentaux.
 
+## Émulateur (sans fenêtre)
+
+```bash
+$ANDROID_HOME/emulator/emulator -avd food -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -memory 2048 &
+adb -e shell getprop sys.boot_completed      # « 1 » au bout de ~35 s (M1, 8 Go)
+adb -e install -r app/build/outputs/apk/debug/app-debug.apk
+adb -e exec-out screencap -p > /tmp/emu.png  # capture ; input tap/swipe/text comme sur le S20
+adb -e emu kill
+```
+
+`avdmanager create` râle sur un `devices.xml` absent de l'image : cosmétique, l'AVD est créé.
+Un `input swipe` de moins de ~300 ms est un bon test de robustesse des gestes.
+
 ## Journal
+
+### 2026-09-11
+Émulateur + image arm64 android-35 installés (~1,5 Go) pour vérifier l'app Food sans le
+téléphone. Boot en 35 s sans fenêtre, screencap/tap/swipe via adb suffisent à Claude.
 
 ### 2026-09-08
 Reprise de l'app sur le Mac. Installé JDK 21, cmdline-tools, SDK 35, build-tools 35.0.0,

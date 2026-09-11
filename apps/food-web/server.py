@@ -23,7 +23,7 @@ from urllib.parse import urlparse
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 STATIC = HERE / "static"
-SEED = HERE / "seed"
+SEED = HERE.parent / "food" / "seed"  # source de vérité partagée avec l'app Kotlin
 DB_PATH = ROOT / "data" / "food" / "food.db"
 
 SCHEMA = """

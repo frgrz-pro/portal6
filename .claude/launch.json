@@ -14,10 +14,10 @@
       "port": 8713
     },
     {
-      "name": "food",
+      "name": "food-web",
       "runtimeExecutable": "python3",
       "runtimeArgs": [
-        "apps/food/server.py",
+        "apps/food-web/server.py",
         "--port",
         "8714"
       ],

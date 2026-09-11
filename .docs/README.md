@@ -35,5 +35,5 @@ plus. `hardware/` contient les notes de design de la radio Brandt (BOM détaill�
 - [setup-dev-mac.md](setup-dev-mac.md) — poste de dev macOS : JDK 21 + SDK Android en ligne de commande (sans Android Studio), venv, raccourci `p6`
 - [plex-docker.md](plex-docker.md) — migration de Plex de l'install native Windows vers Docker (inventaire, réécriture des chemins, plan en 6 phases)
 - [portail-web.md](portail-web.md) — le portail web statique `apps/web/` : entrée Music (mediacenter + inventaire de la donnée), choix techniques
-- [food.md](food.md) — l'app Food (`apps/food/`) : stock frigo/placards en DB, recettes en swipe selon l'heure, slider personnes + jauge, « Je cuisine » décrémente le stock et crée des restes
+- [food.md](food.md) — l'app Food (`apps/food/`, Android Kotlin/Compose + SQLDelight ; proto web `apps/food-web/`) : stock frigo/placards en DB, recettes en swipe selon l'heure, slider personnes + jauge, « Je cuisine » décrémente le stock et crée des restes
 - [bom.md](bom.md) — **BOM central** : tout le hardware de tous les projets (statuts, prix, déblocages)
