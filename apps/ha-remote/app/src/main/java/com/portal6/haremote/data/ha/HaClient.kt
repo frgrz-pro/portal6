@@ -5,7 +5,9 @@ import com.portal6.haremote.data.HaSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
@@ -20,6 +22,7 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -52,6 +55,19 @@ class HaClient(private val settings: HaSettings) {
     /** Une ligne lisible pour l'UI : connecté / hors ligne / jeton refusé. */
     val connection: StateFlow<String> = _connection
 
+    private val wakeups = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    /**
+     * Rouvre le WebSocket tout de suite, sans attendre qu'OkHttp constate la
+     * coupure (ping 20 s + pong manquant = jusqu'à 40 s). À appeler au retour
+     * au premier plan : après une mise en veille, le socket est souvent un
+     * zombie qui affiche encore « Connecté ». La (re)connexion relit tous les
+     * états ([RESYNC]).
+     */
+    fun reconnect() {
+        wakeups.tryEmit(Unit)
+    }
+
     private fun request(path: String) = Request.Builder()
         .url(settings.baseUrl + path)
         .header("Authorization", "Bearer ${settings.token}")
@@ -61,8 +77,23 @@ class HaClient(private val settings: HaSettings) {
         return body?.string().orEmpty()
     }
 
+    /**
+     * Tout appel REST passe par là : une erreur réseau (HA injoignable, Wi-Fi
+     * pas encore revenu) se voit dans [connection] et relance le WebSocket, au
+     * lieu de mourir en silence dans un `Log.w`.
+     */
+    private suspend fun <T> restCall(block: () -> T): T = withContext(Dispatchers.IO) {
+        try {
+            block()
+        } catch (e: IOException) {
+            _connection.value = "Hors ligne — ${e.message ?: "erreur réseau"}"
+            reconnect()
+            throw e
+        }
+    }
+
     /** `GET /api/` — vérifie URL + jeton. Renvoie le message de HA. */
-    suspend fun ping(): String = withContext(Dispatchers.IO) {
+    suspend fun ping(): String = restCall {
         rest.newCall(request("/api/").get().build()).execute().use { r ->
             when (r.code) {
                 401 -> throw HaException("Jeton refusé (401)")
@@ -72,7 +103,7 @@ class HaClient(private val settings: HaSettings) {
     }
 
     /** `GET /api/states` — entityId → état (`on`/`off`/…). */
-    suspend fun states(): Map<String, String> = withContext(Dispatchers.IO) {
+    suspend fun states(): Map<String, String> = restCall {
         rest.newCall(request("/api/states").get().build()).execute().use { r ->
             val array = JSONArray(r.bodyOrThrow())
             buildMap {
@@ -85,7 +116,7 @@ class HaClient(private val settings: HaSettings) {
     }
 
     suspend fun callService(domain: String, service: String, data: JSONObject) {
-        withContext(Dispatchers.IO) {
+        restCall {
             rest.newCall(
                 request("/api/services/$domain/$service")
                     .post(data.toString().toRequestBody(jsonType))
@@ -95,7 +126,7 @@ class HaClient(private val settings: HaSettings) {
     }
 
     /** Config d'une scène (`/api/config/scene/config/<id>`), `null` si elle n'existe pas. */
-    suspend fun getSceneConfig(id: String): JSONObject? = withContext(Dispatchers.IO) {
+    suspend fun getSceneConfig(id: String): JSONObject? = restCall {
         rest.newCall(request("/api/config/scene/config/$id").get().build()).execute().use { r ->
             if (r.code == 404) null else JSONObject(r.bodyOrThrow())
         }
@@ -103,7 +134,7 @@ class HaClient(private val settings: HaSettings) {
 
     /** Crée ou remplace une scène de commutateurs : entityId → on/off. */
     suspend fun setSceneConfig(id: String, name: String, entities: Map<String, Boolean>) {
-        withContext(Dispatchers.IO) {
+        restCall {
             val body = JSONObject()
                 .put("id", id)
                 .put("name", name)
@@ -121,30 +152,37 @@ class HaClient(private val settings: HaSettings) {
     /**
      * Changements d'état poussés par HA : (entityId, nouvel état). Émet
      * [RESYNC] à chaque (re)connexion réussie pour que l'abonné relise tout.
-     * Se reconnecte tout seul tant que le flux est collecté.
+     * Se reconnecte tout seul tant que le flux est collecté : après une
+     * coupure (3 s de délai), et immédiatement sur [reconnect].
      */
     fun stateChanges(): Flow<Pair<String, String>> = callbackFlow {
         var closed = false
         var socket: WebSocket? = null
+        // Numéro de la connexion courante : les callbacks d'un ancien socket
+        // (annulé par une reconnexion forcée) sont ignorés grâce à lui.
+        var generation = 0
         // Les deux fonctions locales s'appellent mutuellement : `connect` est
         // déclarée en variable pour être visible avant sa définition.
         var connect: () -> Unit = {}
 
-        fun scheduleReconnect(reason: String) {
-            if (closed) return
+        fun scheduleReconnect(gen: Int, reason: String) {
+            if (closed || gen != generation) return
             _connection.value = "Hors ligne — $reason"
             launch {
                 delay(RECONNECT_DELAY_MS)
-                if (!closed) connect()
+                if (!closed && gen == generation) connect()
             }
         }
 
         connect = {
+            val gen = ++generation
+            socket?.cancel()
             val url = settings.baseUrl.replaceFirst("http", "ws") + "/api/websocket"
             socket = ws.newWebSocket(
                 Request.Builder().url(url).build(),
                 object : WebSocketListener() {
                     override fun onMessage(webSocket: WebSocket, text: String) {
+                        if (gen != generation) return
                         val msg = runCatching { JSONObject(text) }.getOrNull() ?: return
                         when (msg.optString("type")) {
                             "auth_required" -> webSocket.send(
@@ -172,18 +210,34 @@ class HaClient(private val settings: HaSettings) {
                     }
 
                     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                        if (gen != generation) return
                         Log.w(TAG, "WebSocket : ${t.message}")
-                        scheduleReconnect(t.message ?: "erreur réseau")
+                        scheduleReconnect(gen, t.message ?: "erreur réseau")
+                    }
+
+                    // HA ferme de son côté (client endormi trop longtemps, redémarrage) :
+                    // il faut répondre au close, sinon OkHttp n'appelle jamais onClosed
+                    // et le socket reste un zombie jusqu'au prochain ping raté.
+                    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                        webSocket.close(code, null)
                     }
 
                     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                        scheduleReconnect("fermé ($code)")
+                        if (gen != generation) return
+                        scheduleReconnect(gen, "fermé ($code)")
                     }
                 },
             )
         }
 
         connect()
+        launch {
+            wakeups.collect {
+                if (closed) return@collect
+                _connection.value = "Reconnexion à Home Assistant…"
+                connect()
+            }
+        }
         awaitClose {
             closed = true
             socket?.cancel()

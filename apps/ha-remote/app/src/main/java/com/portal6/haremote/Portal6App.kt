@@ -1,7 +1,9 @@
 package com.portal6.haremote
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.os.Bundle
 import com.portal6.haremote.data.BackendHolder
 import com.portal6.haremote.data.ConfigStore
 import com.portal6.haremote.data.DelegatingLightsRepository
@@ -37,6 +39,13 @@ class AppContainer(context: Context) {
     /** État de la liaison avec Home Assistant, pour l'affichage. */
     val connection: StateFlow<String> = backends.connection
 
+    /**
+     * L'utilisateur regarde l'app (Activity reprise, tuile affichée) : on rouvre
+     * le WebSocket HA tout de suite. Après une mise en veille, l'ancien socket
+     * est un zombie qu'OkHttp ne détecte qu'au ping suivant (jusqu'à 40 s).
+     */
+    fun wake() = backends.wake()
+
     val tv: TvRepository = MockTvRepository(store)
 
     /** Rotation des écrans du TRMNL — parle directement à trmnl.com, pas via HA. */
@@ -51,6 +60,15 @@ class Portal6App : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityResumed(activity: Activity) = container.wake()
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
+            override fun onActivityStarted(activity: Activity) = Unit
+            override fun onActivityPaused(activity: Activity) = Unit
+            override fun onActivityStopped(activity: Activity) = Unit
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+            override fun onActivityDestroyed(activity: Activity) = Unit
+        })
     }
 }
 

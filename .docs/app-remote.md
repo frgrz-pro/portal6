@@ -46,6 +46,11 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
   [setup-dev-mac.md](setup-dev-mac.md)). L'app est en **mode démo** — jeton HA et clé TRMNL
   à remettre dans Réglages. L'URL AzuraCast, elle, est bonne par défaut (`192.168.0.5`).
 
+- [ ] **Vérifier la reprise après veille sur le S20** (correctif du 2026-09-11, cf.
+  Décisions « Liaison HA et cycle de vie ») : app ouverte → écran éteint 5 min →
+  rallumer → la ligne d'état doit passer par « Reconnexion… » puis « Connecté », et un
+  toggle doit suivre. Si ça retombe : `adb logcat -s HaClient HaLights` pendant la reprise.
+
 - [ ] **Onglet TRMNL : v1 = interrupteurs de playlist, ou aussi les créneaux ?**
   Cadré le 2026-09-07 (voir Décisions). À trancher par l'usage : si François veut
   surtout « ce soir je veux l'écran X », les interrupteurs suffisent ; si c'est
@@ -148,6 +153,23 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
   installation d'Android Studio (le wrapper Gradle jar n'est pas commité,
   `gradle wrapper` le génère.)
 
+- **Liaison HA et cycle de vie (2026-09-11).** Symptôme : app OK, téléphone en veille,
+  au retour la télécommande ne répond plus. Cause : la reconnexion WebSocket n'était que
+  réactive — elle attendait qu'OkHttp constate la mort du socket (ping 20 s + pong
+  manquant, jusqu'à 40 s) puis 3 s ; rien n'était branché sur le cycle de vie, et
+  `onClosing` (HA ferme de son côté un client endormi) n'était pas traité, donc le socket
+  restait un zombie affiché « Connecté ». Retenu, sans nouvelle dépendance :
+  - `HaClient.reconnect()` rouvre le socket immédiatement (compteur de génération : les
+    callbacks de l'ancien socket sont ignorés) ; appelé par `AppContainer.wake()` depuis
+    `Application.registerActivityLifecycleCallbacks` (`onActivityResumed`) et depuis
+    `ModesTileService.onStartListening` — plutôt que `ProcessLifecycleOwner`, qui aurait
+    ajouté `lifecycle-process` pour le même résultat.
+  - `onClosing` répond au close pour que `onClosed` déclenche la reconnexion.
+  - Tout appel REST passe par un wrapper : une `IOException` met la ligne d'état en
+    « Hors ligne — … » et relance le socket, au lieu de mourir dans un `Log.w`.
+  - Le socket reste ouvert en arrière-plan (les tuiles lisent l'état des prises) ; on ne
+    le coupe pas au `onPause`. Si la conso batterie devenait visible, c'est ça qu'on revoit.
+
 ## UI v1
 
 - **Bottom bar, 4 tabs : Lights / TV / Radio / Réglages** (depuis le 2026-09-07).
@@ -209,6 +231,12 @@ app, minimale, qui remplace les télécommandes pénibles et les apps constructe
   — le NordVPN du routeur ne donne pas d'accès entrant).
 
 ## Journal
+
+### 2026-09-11 — reprise après veille
+Bug remonté par François : après `onPause`/`onResume`, plus de liaison avec les prises.
+Diagnostic et correctif dans HaClient / Portal6App / Backend / ModesTileService (voir
+Décisions « Liaison HA et cycle de vie ») ; `assembleDebug` passe sur le Mac. Non testé
+sur le téléphone (débranché) → question ouverte.
 
 ### 2026-08-30
 Création du doc. Cadrage v1 : Android/Compose, 2 tabs (Lights/TV), grille 2×4 +

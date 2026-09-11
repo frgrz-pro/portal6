@@ -54,6 +54,11 @@ class BackendHolder(
         }
     }
 
+    /** Retour au premier plan (écran, tuile) : rouvrir la liaison HA sans attendre. */
+    fun wake() {
+        _backend.value.client?.reconnect()
+    }
+
     private fun build(settings: HaSettings): Backend {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         return if (settings.isConfigured) {

@@ -25,6 +25,7 @@ class ModesTileService : TileService() {
     override fun onStartListening() {
         super.onStartListening()
         val app = container
+        app.wake()
         scope?.cancel()
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).also { s ->
             s.launch {
