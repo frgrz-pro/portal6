@@ -4,8 +4,24 @@
     {
       "name": "portal6-web",
       "runtimeExecutable": "C:\\Users\\Franc\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-      "runtimeArgs": ["-m", "http.server", "8713", "--directory", "apps/web"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8713",
+        "--directory",
+        "apps/web"
+      ],
       "port": 8713
+    },
+    {
+      "name": "food",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "apps/food/server.py",
+        "--port",
+        "8714"
+      ],
+      "port": 8714
     }
   ]
 }

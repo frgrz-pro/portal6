@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Food">
+  <title>Food</title>
+  <link rel="stylesheet" href="style.css?v=20260911">
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <h1>🍽️ Food <span id="clock"></span></h1>
+    <div class="persons" title="Nombre de personnes">
+      👥 <input type="range" id="persons" min="1" max="8" step="1" value="2"> <b id="persons-n">2</b>
+    </div>
+  </div>
+
+  <!-- Idées (deck) -->
+  <section id="tab-ideas" class="tab">
+    <div class="inbox" id="inbox" hidden></div>
+    <div class="chips" id="moments"></div>
+    <div class="deck" id="deck"></div>
+    <div class="deck-actions">
+      <button class="round no" id="btn-no" title="Pas maintenant">✕</button>
+      <button class="round info" id="btn-info" title="Détail">i</button>
+      <button class="round yes" id="btn-yes" title="Je la garde">♥</button>
+    </div>
+  </section>
+
+  <!-- Validées -->
+  <section id="tab-liked" class="tab" hidden>
+    <h2 class="sec">Restes à réchauffer</h2>
+    <div class="list" id="leftovers"></div>
+    <h2 class="sec">Recettes validées</h2>
+    <div class="list" id="liked"></div>
+  </section>
+
+  <!-- Stock -->
+  <section id="tab-stock" class="tab" hidden>
+    <input class="search" id="stock-search" type="search" placeholder="Chercher un ingrédient…">
+    <label class="toggle"><input type="checkbox" id="stock-only"> Seulement ce qui est en stock</label>
+    <div id="stock"></div>
+    <h2 class="sec">Ajouter un ingrédient</h2>
+    <form class="add" id="add-ing">
+      <input name="name" placeholder="Nom" required>
+      <select name="unit"><option>pièce</option><option>g</option><option>ml</option><option>tranche</option><option>cas</option><option>cac</option></select>
+      <select name="category"><option value="frigo">Frigo</option><option value="frais">Frais</option><option value="congelo">Congélo</option><option value="placard">Placard</option></select>
+      <button class="btn small" type="submit">Ajouter</button>
+    </form>
+  </section>
+</div>
+
+<nav class="tabs">
+  <button data-tab="ideas" aria-current="page"><span class="i">🔥</span>Idées</button>
+  <button data-tab="liked"><span class="i">♥</span>Validées<span class="n" id="liked-n" hidden></span></button>
+  <button data-tab="stock"><span class="i">🧊</span>Stock</button>
+</nav>
+
+<dialog id="dlg"><div class="dlg" id="dlg-body"></div></dialog>
+<div class="toast" id="toast"></div>
+
+<script src="app.js?v=20260911"></script>
+</body>
+</html>
