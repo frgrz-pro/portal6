@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# p6 sysapps — supprime des apps de /System/Applications (volume système scellé).
+# sysapps-remove — supprime des apps de /System/Applications (volume système scellé).
 # ⚠️ DESTRUCTIF et hors des clous Apple. Procédure et risques : .docs/mac-maintenance.md § 2bis.
 #
-#   p6 sysapps            DRY-RUN : vérifie les prérequis, liste ce qui serait supprimé
+#   sysapps-remove.sh          DRY-RUN : vérifie les prérequis, liste ce qui serait supprimé
 #   p6 sysapps --apply    supprime + crée le snapshot bootable (sudo)
 #
 # Prérequis (en Recovery : power maintenu → Options → Terminal) :
@@ -58,7 +58,7 @@ printf '   ---- total ~%d Mo\n' $((total / 1024))
 
 if [ $APPLY = 0 ]; then
   echo; echo "DRY-RUN : rien n'a été touché."
-  [ $ready = 1 ] && echo "Prérequis OK → p6 sysapps --apply" \
+  [ $ready = 1 ] && echo "Prérequis OK → scripts/mac/sysapps-remove.sh --apply" \
                  || echo "Prérequis manquants → passer par la Recovery (voir en-tête)."
   exit 0
 fi
