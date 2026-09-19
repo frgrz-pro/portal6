@@ -40,6 +40,12 @@ commandé, achats par vagues avec conditions de déblocage. Résumé :
 | Vagues 2–6 — Matériel | 376–606 € | Étalé sur les phases, chaque vague a ses conditions |
 | **Total projet** | **≈ 570–825 €** | + 10–15 % de casse/apprentissage |
 
+## Mac / réseau (logiciel)
+
+| Article | Statut | Prix | Débloqué par |
+|---|---|---|---|
+| **Little Snitch** (pare-feu sortant par app) | ⏸ | ~45 € | Seulement si **LuLu** (gratuit, Objective-See) ne suffit pas — à tester d'abord ([mac-maintenance.md](mac-maintenance.md)) |
+
 ## Synthèse — ce qui est achetable maintenant
 
 1. **Outillage radio** (~200 €) — non bloqué, sert aussi à tout le reste du bricolage.

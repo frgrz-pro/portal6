@@ -66,6 +66,12 @@ p6() {
   else
     echo "venv absent : lance ./setup/bootstrap.sh"
   fi
+  # sous-commandes maintenance Mac (scripts/mac/) : p6 disk | apps | net
+  case "\${1:-}" in
+    disk) shift; scripts/mac/disk-audit.sh "\$@";;
+    apps) shift; scripts/mac/apps-audit.sh "\$@";;
+    net)  shift; scripts/mac/net-monitor.sh "\$@";;
+  esac
 }
 alias portal6=p6
 EOF
