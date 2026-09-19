@@ -8,6 +8,13 @@ sous-commande dans le shell `p6` : `p6 disk`, `p6 apps`, `p6 net` (scripts dans
 
 ## Questions ouvertes
 
+- [ ] 🔴 **Avant `sysapps-remove.sh --apply`** : pull+push portal6 (GitHub Desktop), copier
+  sur le WD ce qui n'existe nulle part ailleurs (`.env`, `service-account.json`, catalogues
+  Lightroom, Documents, Pictures). Puis dry-run, puis `--apply`. Aucune destination Time
+  Machine configurée : la poser **après** le ménage.
+- [ ] Après l'opération : **réactiver SIP** (`csrutil enable` en Recovery) ? Possible en
+  gardant `authenticated-root` désactivé — à vérifier sur macOS 27.
+
 - [ ] **Ménage à faire** (🔴 François, tout est listé par `p6 disk`) : ~26 Go 🟢 sans
   risque (caches Spotify 3,4 Go, Xcode DeviceSupport 3,7 Go, Homebrew 2,1 Go, npm 1,9 Go,
   Gradle 1,8 Go, Google/Brave/Firefox…). Puis 🟡 : VM Cowork Claude 10 Go, simulateurs
@@ -67,6 +74,22 @@ Désactiver : `launchctl bootout gui/$(id -u) <plist>` (user) ou `sudo launchctl
 system <plist>` (daemon), puis supprimer le `.plist` et le helper dans
 `/Library/PrivilegedHelperTools/`.
 
+## 2bis. Supprimer des apps système (SIP off) — choix de François, 2026-09-19
+
+Piste d'abord déconseillée (gain ~600 Mo, purement visuel), **retenue quand même** par
+François qui veut un setup propre avant sa première sauvegarde complète.
+
+- Prérequis, en Recovery : `csrutil disable` + `csrutil authenticated-root disable`.
+- Script : `scripts/mac/sysapps-remove.sh` — sans argument = **dry-run** ; `--apply` monte
+  le volume système live, supprime la liste, puis `bless --create-snapshot`. Le snapshot de
+  boot courant reste intact tant que `bless` n'a pas réussi ; le volume Data n'est jamais touché.
+- **Liste arbitrée** (33 apps) : dans le tableau `APPS` du script. Gardées : Books, Music,
+  Weather, Mail, Contacts, Notes, Photos, Apps, Passwords, Mission Control, Time Machine,
+  Image Capture, Clock, Calculator, Font Book + les utilitaires de dépannage.
+- ⚠️ **Le Mac est passé en macOS 27.0 le 2026-09-19** (et non 14.8.9) : la procédure est
+  connue pour macOS 11–15, **non vérifiée sur 27**. Chaque mise à jour macOS remettra les apps.
+- Retour arrière : réinstaller macOS depuis la Recovery (conserve les données), `csrutil enable`.
+
 ## 3. Réseau — voir qui parle à qui
 
 ### Sur le Mac (fait) — `p6 net`
@@ -112,6 +135,9 @@ de la plus simple à la plus complète :
 ## Journal
 
 ### 2026-09-19
+macOS 27.0 installé, SIP désactivé par François. Liste des apps système à supprimer
+arbitrée (33), script `sysapps-remove.sh` écrit avec dry-run ; pas encore exécuté.
+
 Diagnostic des 26 Go « inaccessibles » : volumes système + snapshot de mise à jour macOS
 en attente + 6,5 Go protégés — rien à récupérer là, le gras est dans `~/Library` (26 Go de
 caches purgeables). Écrit `scripts/mac/{disk-audit,apps-audit,net-monitor}.sh` et les
